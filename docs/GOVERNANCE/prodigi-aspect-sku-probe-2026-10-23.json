@@ -1,0 +1,1948 @@
+{
+ "probedAt": "2026-10-23T17:23:30.317Z",
+ "env": "sandbox",
+ "skusAsked": 335,
+ "summary": {
+  "fine_art": {
+   "1:1": [
+    "6x6",
+    "8x8",
+    "10x10",
+    "12x12",
+    "14x14",
+    "16x16",
+    "18x18",
+    "20x20",
+    "22x22",
+    "24x24",
+    "28x28",
+    "30x30",
+    "32x32",
+    "36x36",
+    "40x40",
+    "42x42",
+    "48x48",
+    "50x50",
+    "60x60"
+   ],
+   "2:3": [
+    "4x6",
+    "6x9",
+    "8x12",
+    "12x18",
+    "16x24",
+    "20x30",
+    "24x36",
+    "30x45",
+    "32x48",
+    "40x60"
+   ],
+   "3:2": [
+    "6x4"
+   ]
+  },
+  "premium": {
+   "1:1": [
+    "6x6",
+    "8x8",
+    "10x10",
+    "12x12",
+    "16x16",
+    "18x18",
+    "20x20",
+    "24x24",
+    "28x28",
+    "30x30",
+    "32x32",
+    "36x36",
+    "40x40",
+    "42x42",
+    "48x48"
+   ],
+   "2:3": [
+    "4x6",
+    "8x12",
+    "12x18",
+    "16x24",
+    "20x30",
+    "24x36",
+    "30x45",
+    "32x48",
+    "40x60"
+   ],
+   "3:2": [
+    "6x4"
+   ]
+  },
+  "canvas": {
+   "1:1": [
+    "6x6",
+    "8x8",
+    "10x10",
+    "12x12",
+    "14x14",
+    "16x16",
+    "18x18",
+    "20x20",
+    "24x24",
+    "26x26",
+    "28x28",
+    "30x30",
+    "32x32",
+    "36x36",
+    "38x38",
+    "40x40",
+    "48x48",
+    "50x50",
+    "54x54"
+   ],
+   "2:3": [
+    "4x6",
+    "8x12",
+    "12x18",
+    "16x24",
+    "20x30",
+    "24x36",
+    "28x42",
+    "30x45",
+    "32x48",
+    "40x60"
+   ]
+  },
+  "classic_frame": {
+   "1:1": [
+    "8x8",
+    "12x12",
+    "14x14",
+    "16x16",
+    "18x18",
+    "20x20",
+    "24x24",
+    "28x28",
+    "30x30",
+    "32x32",
+    "36x36",
+    "40x40"
+   ],
+   "2:3": [
+    "8x12",
+    "12x18",
+    "16x24",
+    "20x30",
+    "24x36",
+    "30x45"
+   ]
+  },
+  "framed_canvas": {
+   "1:1": [
+    "6x6",
+    "8x8",
+    "10x10",
+    "12x12",
+    "14x14",
+    "16x16",
+    "18x18",
+    "20x20",
+    "24x24",
+    "28x28",
+    "30x30",
+    "32x32",
+    "36x36",
+    "40x40",
+    "48x48"
+   ],
+   "2:3": [
+    "4x6",
+    "8x12",
+    "12x18",
+    "16x24",
+    "20x30",
+    "24x36",
+    "28x42",
+    "30x45",
+    "32x48",
+    "40x60"
+   ]
+  }
+ },
+ "found": [
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-6X6",
+   "shape": "1:1",
+   "size": "6x6",
+   "dims": {
+    "productDimensions": {
+     "width": 6,
+     "height": 6,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-8X8",
+   "shape": "1:1",
+   "size": "8x8",
+   "dims": {
+    "productDimensions": {
+     "width": 8,
+     "height": 8,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-10X10",
+   "shape": "1:1",
+   "size": "10x10",
+   "dims": {
+    "productDimensions": {
+     "width": 10,
+     "height": 10,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-12X12",
+   "shape": "1:1",
+   "size": "12x12",
+   "dims": {
+    "productDimensions": {
+     "width": 12,
+     "height": 12,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-14X14",
+   "shape": "1:1",
+   "size": "14x14",
+   "dims": {
+    "productDimensions": {
+     "width": 36,
+     "height": 36,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-16X16",
+   "shape": "1:1",
+   "size": "16x16",
+   "dims": {
+    "productDimensions": {
+     "width": 16,
+     "height": 16,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-18X18",
+   "shape": "1:1",
+   "size": "18x18",
+   "dims": {
+    "productDimensions": {
+     "width": 18,
+     "height": 18,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-20X20",
+   "shape": "1:1",
+   "size": "20x20",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 20,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-22X22",
+   "shape": "1:1",
+   "size": "22x22",
+   "dims": {
+    "productDimensions": {
+     "width": 22,
+     "height": 22,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-24X24",
+   "shape": "1:1",
+   "size": "24x24",
+   "dims": {
+    "productDimensions": {
+     "width": 24,
+     "height": 24,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-28X28",
+   "shape": "1:1",
+   "size": "28x28",
+   "dims": {
+    "productDimensions": {
+     "width": 28,
+     "height": 28,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-30X30",
+   "shape": "1:1",
+   "size": "30x30",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 30,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-32X32",
+   "shape": "1:1",
+   "size": "32x32",
+   "dims": {
+    "productDimensions": {
+     "width": 32,
+     "height": 32,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-36X36",
+   "shape": "1:1",
+   "size": "36x36",
+   "dims": {
+    "productDimensions": {
+     "width": 36,
+     "height": 36,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-40X40",
+   "shape": "1:1",
+   "size": "40x40",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 40,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-42X42",
+   "shape": "1:1",
+   "size": "42x42",
+   "dims": {
+    "productDimensions": {
+     "width": 107,
+     "height": 107,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-48X48",
+   "shape": "1:1",
+   "size": "48x48",
+   "dims": {
+    "productDimensions": {
+     "width": 120,
+     "height": 120,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-50X50",
+   "shape": "1:1",
+   "size": "50x50",
+   "dims": {
+    "productDimensions": {
+     "width": 50,
+     "height": 50,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-60X60",
+   "shape": "1:1",
+   "size": "60x60",
+   "dims": {
+    "productDimensions": {
+     "width": 152.4,
+     "height": 152.4,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-4X6",
+   "shape": "2:3",
+   "size": "4x6",
+   "dims": {
+    "productDimensions": {
+     "width": 4,
+     "height": 6,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-6X4",
+   "shape": "3:2",
+   "size": "6x4",
+   "dims": {
+    "productDimensions": {
+     "width": 15,
+     "height": 10,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-6X9",
+   "shape": "2:3",
+   "size": "6x9",
+   "dims": {
+    "productDimensions": {
+     "width": 6,
+     "height": 9,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-8X12",
+   "shape": "2:3",
+   "size": "8x12",
+   "dims": {
+    "productDimensions": {
+     "width": 8,
+     "height": 12,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-12X18",
+   "shape": "2:3",
+   "size": "12x18",
+   "dims": {
+    "productDimensions": {
+     "width": 12,
+     "height": 18,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-16X24",
+   "shape": "2:3",
+   "size": "16x24",
+   "dims": {
+    "productDimensions": {
+     "width": 16,
+     "height": 24,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-20X30",
+   "shape": "2:3",
+   "size": "20x30",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 30,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-24X36",
+   "shape": "2:3",
+   "size": "24x36",
+   "dims": {
+    "productDimensions": {
+     "width": 24,
+     "height": 36,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-30X45",
+   "shape": "2:3",
+   "size": "30x45",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 45,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-32X48",
+   "shape": "2:3",
+   "size": "32x48",
+   "dims": {
+    "productDimensions": {
+     "width": 80,
+     "height": 120,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "fine_art",
+   "sku": "GLOBAL-FAP-40X60",
+   "shape": "2:3",
+   "size": "40x60",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 60,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-6X6",
+   "shape": "1:1",
+   "size": "6x6",
+   "dims": {
+    "productDimensions": {
+     "width": 6,
+     "height": 6,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-8X8",
+   "shape": "1:1",
+   "size": "8x8",
+   "dims": {
+    "productDimensions": {
+     "width": 8,
+     "height": 8,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-10X10",
+   "shape": "1:1",
+   "size": "10x10",
+   "dims": {
+    "productDimensions": {
+     "width": 10,
+     "height": 10,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-12X12",
+   "shape": "1:1",
+   "size": "12x12",
+   "dims": {
+    "productDimensions": {
+     "width": 12,
+     "height": 12,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-16X16",
+   "shape": "1:1",
+   "size": "16x16",
+   "dims": {
+    "productDimensions": {
+     "width": 16,
+     "height": 16,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-18X18",
+   "shape": "1:1",
+   "size": "18x18",
+   "dims": {
+    "productDimensions": {
+     "width": 45,
+     "height": 45,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-20X20",
+   "shape": "1:1",
+   "size": "20x20",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 20,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-24X24",
+   "shape": "1:1",
+   "size": "24x24",
+   "dims": {
+    "productDimensions": {
+     "width": 24,
+     "height": 24,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-28X28",
+   "shape": "1:1",
+   "size": "28x28",
+   "dims": {
+    "productDimensions": {
+     "width": 28,
+     "height": 28,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-30X30",
+   "shape": "1:1",
+   "size": "30x30",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 30,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-32X32",
+   "shape": "1:1",
+   "size": "32x32",
+   "dims": {
+    "productDimensions": {
+     "width": 32,
+     "height": 32,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-36X36",
+   "shape": "1:1",
+   "size": "36x36",
+   "dims": {
+    "productDimensions": {
+     "width": 36,
+     "height": 36,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-40X40",
+   "shape": "1:1",
+   "size": "40x40",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 40,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-42X42",
+   "shape": "1:1",
+   "size": "42x42",
+   "dims": {
+    "productDimensions": {
+     "width": 107,
+     "height": 107,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-48X48",
+   "shape": "1:1",
+   "size": "48x48",
+   "dims": {
+    "productDimensions": {
+     "width": 120,
+     "height": 120,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-4X6",
+   "shape": "2:3",
+   "size": "4x6",
+   "dims": {
+    "productDimensions": {
+     "width": 4,
+     "height": 6,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-6X4",
+   "shape": "3:2",
+   "size": "6x4",
+   "dims": {
+    "productDimensions": {
+     "width": 15,
+     "height": 10,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-8X12",
+   "shape": "2:3",
+   "size": "8x12",
+   "dims": {
+    "productDimensions": {
+     "width": 8,
+     "height": 12,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-12X18",
+   "shape": "2:3",
+   "size": "12x18",
+   "dims": {
+    "productDimensions": {
+     "width": 12,
+     "height": 18,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-16X24",
+   "shape": "2:3",
+   "size": "16x24",
+   "dims": {
+    "productDimensions": {
+     "width": 16,
+     "height": 24,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-20X30",
+   "shape": "2:3",
+   "size": "20x30",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 30,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-24X36",
+   "shape": "2:3",
+   "size": "24x36",
+   "dims": {
+    "productDimensions": {
+     "width": 24,
+     "height": 36,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-30X45",
+   "shape": "2:3",
+   "size": "30x45",
+   "dims": {
+    "productDimensions": {
+     "width": 76.2,
+     "height": 114.3,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-32X48",
+   "shape": "2:3",
+   "size": "32x48",
+   "dims": {
+    "productDimensions": {
+     "width": 80,
+     "height": 120,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "premium",
+   "sku": "GLOBAL-HPR-40X60",
+   "shape": "2:3",
+   "size": "40x60",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 60,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-6X6",
+   "shape": "1:1",
+   "size": "6x6",
+   "dims": {
+    "productDimensions": {
+     "width": 6,
+     "height": 6,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-8X8",
+   "shape": "1:1",
+   "size": "8x8",
+   "dims": {
+    "productDimensions": {
+     "width": 8,
+     "height": 8,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-10X10",
+   "shape": "1:1",
+   "size": "10x10",
+   "dims": {
+    "productDimensions": {
+     "width": 10,
+     "height": 10,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-12X12",
+   "shape": "1:1",
+   "size": "12x12",
+   "dims": {
+    "productDimensions": {
+     "width": 12,
+     "height": 12,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-14X14",
+   "shape": "1:1",
+   "size": "14x14",
+   "dims": {
+    "productDimensions": {
+     "width": 14,
+     "height": 14,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-16X16",
+   "shape": "1:1",
+   "size": "16x16",
+   "dims": {
+    "productDimensions": {
+     "width": 16,
+     "height": 16,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-18X18",
+   "shape": "1:1",
+   "size": "18x18",
+   "dims": {
+    "productDimensions": {
+     "width": 18,
+     "height": 18,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-20X20",
+   "shape": "1:1",
+   "size": "20x20",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 20,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-24X24",
+   "shape": "1:1",
+   "size": "24x24",
+   "dims": {
+    "productDimensions": {
+     "width": 24,
+     "height": 24,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-26X26",
+   "shape": "1:1",
+   "size": "26x26",
+   "dims": {
+    "productDimensions": {
+     "width": 26,
+     "height": 26,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-28X28",
+   "shape": "1:1",
+   "size": "28x28",
+   "dims": {
+    "productDimensions": {
+     "width": 28,
+     "height": 28,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-30X30",
+   "shape": "1:1",
+   "size": "30x30",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 30,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-32X32",
+   "shape": "1:1",
+   "size": "32x32",
+   "dims": {
+    "productDimensions": {
+     "width": 32,
+     "height": 32,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-36X36",
+   "shape": "1:1",
+   "size": "36x36",
+   "dims": {
+    "productDimensions": {
+     "width": 36,
+     "height": 36,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-38X38",
+   "shape": "1:1",
+   "size": "38x38",
+   "dims": {
+    "productDimensions": {
+     "width": 38,
+     "height": 38,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-40X40",
+   "shape": "1:1",
+   "size": "40x40",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 40,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-48X48",
+   "shape": "1:1",
+   "size": "48x48",
+   "dims": {
+    "productDimensions": {
+     "width": 48,
+     "height": 48,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-50X50",
+   "shape": "1:1",
+   "size": "50x50",
+   "dims": {
+    "productDimensions": {
+     "width": 50,
+     "height": 50,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-54X54",
+   "shape": "1:1",
+   "size": "54x54",
+   "dims": {
+    "productDimensions": {
+     "width": 54,
+     "height": 54,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-4X6",
+   "shape": "2:3",
+   "size": "4x6",
+   "dims": {
+    "productDimensions": {
+     "width": 4,
+     "height": 6,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-8X12",
+   "shape": "2:3",
+   "size": "8x12",
+   "dims": {
+    "productDimensions": {
+     "width": 8,
+     "height": 12,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-12X18",
+   "shape": "2:3",
+   "size": "12x18",
+   "dims": {
+    "productDimensions": {
+     "width": 12,
+     "height": 18,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-16X24",
+   "shape": "2:3",
+   "size": "16x24",
+   "dims": {
+    "productDimensions": {
+     "width": 16,
+     "height": 24,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-20X30",
+   "shape": "2:3",
+   "size": "20x30",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 30,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-24X36",
+   "shape": "2:3",
+   "size": "24x36",
+   "dims": {
+    "productDimensions": {
+     "width": 24,
+     "height": 36,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-28X42",
+   "shape": "2:3",
+   "size": "28x42",
+   "dims": {
+    "productDimensions": {
+     "width": 28,
+     "height": 42,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-30X45",
+   "shape": "2:3",
+   "size": "30x45",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 45,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-32X48",
+   "shape": "2:3",
+   "size": "32x48",
+   "dims": {
+    "productDimensions": {
+     "width": 32,
+     "height": 48,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "canvas",
+   "sku": "GLOBAL-CAN-40X60",
+   "shape": "2:3",
+   "size": "40x60",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 60,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-8X8",
+   "shape": "1:1",
+   "size": "8x8",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 20,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-12X12",
+   "shape": "1:1",
+   "size": "12x12",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 30,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-14X14",
+   "shape": "1:1",
+   "size": "14x14",
+   "dims": {
+    "productDimensions": {
+     "width": 36,
+     "height": 36,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-16X16",
+   "shape": "1:1",
+   "size": "16x16",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 40,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-18X18",
+   "shape": "1:1",
+   "size": "18x18",
+   "dims": {
+    "productDimensions": {
+     "width": 45.72,
+     "height": 45.72,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-20X20",
+   "shape": "1:1",
+   "size": "20x20",
+   "dims": {
+    "productDimensions": {
+     "width": 50,
+     "height": 50,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-24X24",
+   "shape": "1:1",
+   "size": "24x24",
+   "dims": {
+    "productDimensions": {
+     "width": 60,
+     "height": 60,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-28X28",
+   "shape": "1:1",
+   "size": "28x28",
+   "dims": {
+    "productDimensions": {
+     "width": 70,
+     "height": 70,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-30X30",
+   "shape": "1:1",
+   "size": "30x30",
+   "dims": {
+    "productDimensions": {
+     "width": 75,
+     "height": 75,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-32X32",
+   "shape": "1:1",
+   "size": "32x32",
+   "dims": {
+    "productDimensions": {
+     "width": 32,
+     "height": 32,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-36X36",
+   "shape": "1:1",
+   "size": "36x36",
+   "dims": {
+    "productDimensions": {
+     "width": 90,
+     "height": 90,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-40X40",
+   "shape": "1:1",
+   "size": "40x40",
+   "dims": {
+    "productDimensions": {
+     "width": 101.6,
+     "height": 101.6,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-8X12",
+   "shape": "2:3",
+   "size": "8x12",
+   "dims": {
+    "productDimensions": {
+     "width": 21,
+     "height": 30,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-12X18",
+   "shape": "2:3",
+   "size": "12x18",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 45,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-16X24",
+   "shape": "2:3",
+   "size": "16x24",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 60,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-20X30",
+   "shape": "2:3",
+   "size": "20x30",
+   "dims": {
+    "productDimensions": {
+     "width": 50,
+     "height": 75,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-24X36",
+   "shape": "2:3",
+   "size": "24x36",
+   "dims": {
+    "productDimensions": {
+     "width": 60,
+     "height": 90,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "classic_frame",
+   "sku": "GLOBAL-CFP-30X45",
+   "shape": "2:3",
+   "size": "30x45",
+   "dims": {
+    "productDimensions": {
+     "width": 76.2,
+     "height": 114.3,
+     "units": "cm"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-6X6",
+   "shape": "1:1",
+   "size": "6x6",
+   "dims": {
+    "productDimensions": {
+     "width": 6,
+     "height": 6,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-8X8",
+   "shape": "1:1",
+   "size": "8x8",
+   "dims": {
+    "productDimensions": {
+     "width": 8,
+     "height": 8,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-10X10",
+   "shape": "1:1",
+   "size": "10x10",
+   "dims": {
+    "productDimensions": {
+     "width": 10,
+     "height": 10,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-12X12",
+   "shape": "1:1",
+   "size": "12x12",
+   "dims": {
+    "productDimensions": {
+     "width": 12,
+     "height": 12,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-14X14",
+   "shape": "1:1",
+   "size": "14x14",
+   "dims": {
+    "productDimensions": {
+     "width": 14,
+     "height": 14,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-16X16",
+   "shape": "1:1",
+   "size": "16x16",
+   "dims": {
+    "productDimensions": {
+     "width": 16,
+     "height": 16,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-18X18",
+   "shape": "1:1",
+   "size": "18x18",
+   "dims": {
+    "productDimensions": {
+     "width": 18,
+     "height": 18,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-20X20",
+   "shape": "1:1",
+   "size": "20x20",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 20,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-24X24",
+   "shape": "1:1",
+   "size": "24x24",
+   "dims": {
+    "productDimensions": {
+     "width": 24,
+     "height": 24,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-28X28",
+   "shape": "1:1",
+   "size": "28x28",
+   "dims": {
+    "productDimensions": {
+     "width": 28,
+     "height": 28,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-30X30",
+   "shape": "1:1",
+   "size": "30x30",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 30,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-32X32",
+   "shape": "1:1",
+   "size": "32x32",
+   "dims": {
+    "productDimensions": {
+     "width": 32,
+     "height": 32,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-36X36",
+   "shape": "1:1",
+   "size": "36x36",
+   "dims": {
+    "productDimensions": {
+     "width": 36,
+     "height": 36,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-40X40",
+   "shape": "1:1",
+   "size": "40x40",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 40,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-48X48",
+   "shape": "1:1",
+   "size": "48x48",
+   "dims": {
+    "productDimensions": {
+     "width": 48,
+     "height": 48,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-4X6",
+   "shape": "2:3",
+   "size": "4x6",
+   "dims": {
+    "productDimensions": {
+     "width": 4,
+     "height": 6,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-8X12",
+   "shape": "2:3",
+   "size": "8x12",
+   "dims": {
+    "productDimensions": {
+     "width": 8,
+     "height": 12,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-12X18",
+   "shape": "2:3",
+   "size": "12x18",
+   "dims": {
+    "productDimensions": {
+     "width": 12,
+     "height": 18,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-16X24",
+   "shape": "2:3",
+   "size": "16x24",
+   "dims": {
+    "productDimensions": {
+     "width": 16,
+     "height": 24,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-20X30",
+   "shape": "2:3",
+   "size": "20x30",
+   "dims": {
+    "productDimensions": {
+     "width": 20,
+     "height": 30,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-24X36",
+   "shape": "2:3",
+   "size": "24x36",
+   "dims": {
+    "productDimensions": {
+     "width": 24,
+     "height": 36,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-28X42",
+   "shape": "2:3",
+   "size": "28x42",
+   "dims": {
+    "productDimensions": {
+     "width": 28,
+     "height": 42,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-30X45",
+   "shape": "2:3",
+   "size": "30x45",
+   "dims": {
+    "productDimensions": {
+     "width": 30,
+     "height": 45,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-32X48",
+   "shape": "2:3",
+   "size": "32x48",
+   "dims": {
+    "productDimensions": {
+     "width": 32,
+     "height": 48,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  },
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-40X60",
+   "shape": "2:3",
+   "size": "40x60",
+   "dims": {
+    "productDimensions": {
+     "width": 40,
+     "height": 60,
+     "units": "in"
+    },
+    "printAreaSizes": null
+   }
+  }
+ ]
+}
