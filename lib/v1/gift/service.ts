@@ -17,7 +17,7 @@ import { realSceneRenderer } from './mockup-real'
 import { COMPOSITION_MAX_ATTEMPTS, adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE } from './policy'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
 import { StoreError, byNewest, correctionUsed, finalizedAt, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
-import { GIFT_CONTRACT_VERSION, type CompositionView, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView } from './types'
+import { GIFT_CONTRACT_VERSION, type CompositionView, type BatchGeneration, type RestoreResponse, type RestoreStep, type BatchRequest, type BatchView, type GiftLine, type LineGeometry, type NextBatch, type PreviewView, type Series, type SessionView, type SubjectGender } from './types'
 
 export type GiftErrorCode =
   | 'image_b64_required' | 'image_too_large' | 'image_not_base64' | 'image_unreadable'
@@ -61,6 +61,12 @@ export function fromStoreError(e: unknown): never {
   throw e
 }
 
+/** The Portraits subject gender contract: only a stored 'female'/'male' is passed on; anything else (missing, malformed, old sessions) is 'unknown'; not applicable (pets, groups) is null. */
+export function genderFor(series: Series | null, v: unknown): SubjectGender | null {
+  if (series !== 'portraits') return null
+  return v === 'female' || v === 'male' ? v : 'unknown'
+}
+
 export interface GiftStorage {
   put(path: string, body: Buffer, contentType: string): Promise<void>
   get(path: string): Promise<Buffer | null>
@@ -70,7 +76,7 @@ export interface GiftStorage {
   list?(dirPrefix: string): Promise<string[]>
 }
 export type SourceAnalysis =
-  | { status: 'supported'; series: Series; peopleCount: number | null }
+  | { status: 'supported'; series: Series; peopleCount: number | null; subjectGender?: SubjectGender }
   | { status: 'unsupported' }
   | { status: 'age_restricted' }
 export interface GiftDeps {
@@ -139,7 +145,7 @@ export async function createSession(deps: GiftDeps, input: { userId: string; ima
   const t = now(deps)
   const rec: SessionRec = {
     id, user_id: input.userId, status: 'active', source_path: path, source_sha256: createHash('sha256').update(src.bytes).digest('hex'),
-    source_width: jpeg.info.width, source_height: jpeg.info.height, series: analysis.series, analysis: { peopleCount: analysis.peopleCount },
+    source_width: jpeg.info.width, source_height: jpeg.info.height, series: analysis.series, analysis: { peopleCount: analysis.peopleCount, subjectGender: genderFor(analysis.series, analysis.subjectGender) },
     lines: [], master_aspect: masterAspectFor(analysis.series, analysis.peopleCount),
     created_at: iso(t), last_activity_at: iso(t), expires_at: iso(t + RETENTION.sessionIdleDays * DAY), pinned_at: null,
     order_id: null, free_batches_granted: 0, artwork_preview_id: null, approved_at: null, final_approved_at: null, refund_requested_at: null, refunded_at: null,
@@ -185,7 +191,7 @@ export async function createSessionFromCollection(deps: GiftDeps, input: { userI
   const t = now(deps)
   const rec: SessionRec = {
     id, user_id: input.userId, status: 'active', source_path: sourcePath, source_sha256: createHash('sha256').update(art.sourcePhoto).digest('hex'),
-    source_width: jpeg.info.width, source_height: jpeg.info.height, series: art.series, analysis: { peopleCount },
+    source_width: jpeg.info.width, source_height: jpeg.info.height, series: art.series, analysis: { peopleCount, subjectGender: genderFor(art.series, analysis.series === 'portraits' ? analysis.subjectGender : undefined) },
     lines: [], master_aspect: collectionMasterAspect(art.width, art.height),
     created_at: iso(t), last_activity_at: iso(t), expires_at: iso(t + RETENTION.sessionIdleDays * DAY), pinned_at: null,
     order_id: null, free_batches_granted: 0, artwork_preview_id: null, approved_at: null, final_approved_at: null, refund_requested_at: null, refunded_at: null,
@@ -404,7 +410,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   else nextBatch = { kind: 'payment_required', amountCents: PACK_PRICE_CENTS as 299, currency: 'USD' }
   return {
     contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id,
-    source: { sourceRef: rec.id, width: rec.source_width, height: rec.source_height, series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, photoUrl: rec.source_path ? await deps.storage.signedUrl(rec.source_path, 3600) : null },
+    source: { sourceRef: rec.id, width: rec.source_width, height: rec.source_height, series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, subjectGender: genderFor(rec.series!, rec.analysis.subjectGender), photoUrl: rec.source_path ? await deps.storage.signedUrl(rec.source_path, 3600) : null },
     lines: rec.lines, geometries, masterAspect: rec.master_aspect ?? '', batches, usedEffectIds: used,
     entitlement: { freeBatchesTotal: FREE_BATCHES, freeBatchesUsed: free.used, paidPacksAvailable: packs, freeAvailable: rec.collection_preview_id ? false : free.available, freeBlockedReason: rec.collection_preview_id ? 'session_limit' : free.reason },          // 'session_limit' is an existing value, so older readers still validate: this session takes no free batch
     nextBatch, expiresAt: rec.expires_at, catalogVersion: catalogVersion(catalog),

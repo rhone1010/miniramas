@@ -49,11 +49,14 @@ export async function analyzeSource({ b64 }: { b64: string; bytes: Buffer }): Pr
   switch (routing.classification.subjectType) {
     case 'pet_animal': return { status: 'supported', series: 'pets', peopleCount: null }
     case 'person_single': {
+      let subjectGender: 'female' | 'male' | 'unknown' = 'unknown'
       try {
         const det = await detectFaceVisibility({ sourceImageB64: b64, openaiApiKey })
         if (det.age_group === 'child' || det.age_group === 'teen') return { status: 'age_restricted' }
+        // The gender comes from this same pass. More than one subject seen = mixed = unknown; never a guess.
+        subjectGender = det.subject_count_estimate <= 1 && det.gender ? (det.gender === 'f' ? 'female' : 'male') : 'unknown'
       } catch (e) { console.error('[gift/analyze] age check FAILED OPEN, as the Foyer intake does:', e) }
-      return { status: 'supported', series: 'portraits', peopleCount: null }
+      return { status: 'supported', series: 'portraits', peopleCount: null, subjectGender }
     }
     case 'person_group': {
       const set = await analyzeSourceSet({ primaryB64: b64, openaiApiKey })
