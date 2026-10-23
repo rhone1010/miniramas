@@ -433,3 +433,6 @@ body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product
 @media(min-width:1001px){.gift-pivot #workspace .stage-guidance{min-height:0;overflow:auto;flex:1}.gift-pivot #workspace .stage-navigation{margin-top:0}.gift-pivot #workspace #left .stage-guidance:has(#filters){display:flex;flex-direction:column}}
 @media(max-width:1000px){.gift-pivot #workspace .stage-guidance{min-width:0}.gift-pivot #workspace .stage-navigation{margin-top:0}}
 .gift-pivot #workspace .studio-panel .sizes button[aria-pressed="true"]{background:var(--wine);border-color:var(--wine);color:var(--ivory)}
+
+/* Match the established homepage action-control radius; image tiles remain square. */
+body #workspace button:not(.tile):not([data-feature]),body #cancel-gift-dialog button,body #mobile-step-menu button{border-radius:999px;clip-path:none}
