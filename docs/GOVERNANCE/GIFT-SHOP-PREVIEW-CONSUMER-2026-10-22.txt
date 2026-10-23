@@ -9,7 +9,7 @@ The fixtureSubject URL parameter is honored only in layout-review mode.
 No original source photographs are published by this change.
 
 Verification:
-- 101 targeted Wizard and composition-policy tests passed.
+- 102 targeted Wizard and composition-policy tests passed.
 - Real local browser, real static catalog/assets, simulated intake/session services.
 - 1660px Portrait female variants loaded from Gift Shop-only paths at 1024x1024;
   contain presentation, no horizontal overflow, no broken visible images.
@@ -25,8 +25,8 @@ expose the analyzed Portrait subject (man/woman). The Discovery intake already
 uses core.subject for this choice. CC must expose the corresponding verified
 analysis value for the same Gift source on create and restore. Do not reuse an
 unrelated Discovery localStorage subject. Until that contract exists, live Gift
-preview browsing uses Discovery's default man variant; automatic analyzed-subject
-switching is not claimed as complete. The consumer's fixture branch is the
+Portrait samples show the existing unavailable state rather than choosing a gender;
+automatic analyzed-subject switching is not claimed as complete. The consumer's fixture branch is the
 integration point to replace with that verified value.
 
 The product-first pivot remains layout-review-only pending CC's verified migration

@@ -592,3 +592,9 @@ test('Gift Shop uses its isolated square Portrait variants and keeps Groups look
  const groups=await boot('layoutReview=effects&pivot=1&fixtureSeries=groups');
  assert.equal(groups.win.document.querySelector('#screen img').getAttribute('src'),'/previews/groups/groups_jade.jpg');groups.dom.window.close();
 });
+test('live Portrait samples never infer gender from fixture parameters or silently select a variant',async()=>{
+ const {win,dom}=await boot('sessionId=project&fixtureSubject=woman',project());win.navigate('effects');
+ assert.equal(win.document.querySelectorAll('#screen img,#right .context-image').length,0);
+ assert.ok(win.document.getElementById('screen').textContent.includes('Not currently available'));
+ dom.window.close();
+});

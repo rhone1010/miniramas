@@ -75,10 +75,13 @@ function thumb(id) {
     const library = manifest?.[series], x = library?.effects?.[id];
     // Same subject-first ordering as Discovery previewUrlFor. Gift SourceView does
     // not expose the analyzed subject yet; fixture overrides never affect live sessions.
-    const subject = layoutReview && params.get('fixtureSubject') === 'woman' ? 'woman' : 'man';
+    const subject = layoutReview ? (params.get('fixtureSubject') === 'woman' ? 'woman' : 'man') : null;
+    if (series === 'portraits' && !subject)
+        return '';
     const f = (series === 'portraits' ? x?.[subject] : x?.neutral) || x?.neutral || x?.man || x?.woman || x?.all?.[0];
     return f ? library.base + id + '/' + f : '';
 }
+function effectPhoto(id, label, cls = 'photo') { const url = thumb(id); return url ? photo(url, label, cls) : '<p class="small">Not currently available</p>'; }
 function rail(title, copy) { $('left').innerHTML = (view === 'effects' ? '' : '<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>') + '<h1>' + title + '</h1>' + copy + '<div id="filters"></div>' + (view === 'effects' ? '' : '<p class="tagline">More than a gift.<br>A longer story.</p>') + '<button id="back" ' + ((!history.length && !['configuration', 'products', 'cart', 'checkout', 'focus', 'compare', 'review', 'effects'].includes(view)) || busy ? 'disabled' : '') + '>← Back</button>'; $('back').onclick = back; if (serverMode && live?.session)
     $('left').insertAdjacentHTML('beforeend', '<button id="new-gift" data-href="/gift-wizard.next.html?newGift=1&amp;resumeSessionId=' + encodeURIComponent(live.id) + '">Start a New Gift</button>');
 else if (serverMode && params.get('newGift') === '1' && params.get('resumeSessionId'))
@@ -594,8 +597,8 @@ function renderPivotEffects() {
     if (!focused)
         return;
     $('filters').innerHTML = '<h2>' + esc(fixtureSeries === 'groups' ? 'Groups' : fixtureSeries === 'pets' ? 'Pets' : 'Portraits') + '</h2><div class="filters">' + silos.map(x => '<button data-silo="' + x.id + '" aria-pressed="' + (silo === x.id) + '">' + esc(x.label) + '</button>').join('') + '</div>';
-    $('screen').innerHTML = '<div class="palette"><div class="grid">' + all.filter(e => e.category === silo).map(e => '<button class="tile" data-effect="' + e.id + '" aria-pressed="' + (effectFocus === e.id) + '">' + photo(thumb(e.id), e.label) + '<span>' + esc(e.label) + '</span></button>').join('') + '</div></div>';
-    $('right').innerHTML = '<h2>' + esc(focused.label) + '</h2>' + photo(thumb(focused.id), focused.label, 'context-image');
+    $('screen').innerHTML = '<div class="palette"><div class="grid">' + all.filter(e => e.category === silo).map(e => '<button class="tile" data-effect="' + e.id + '" aria-pressed="' + (effectFocus === e.id) + '">' + effectPhoto(e.id, e.label) + '<span>' + esc(e.label) + '</span></button>').join('') + '</div></div>';
+    $('right').innerHTML = '<h2>' + esc(focused.label) + '</h2>' + effectPhoto(focused.id, focused.label, 'context-image');
     document.querySelectorAll('[data-silo]').forEach(b => b.onclick = () => { silo = b.dataset.silo; render(); });
     document.querySelectorAll('[data-effect]').forEach(b => b.onclick = () => { effectFocus = b.dataset.effect; session.effectIds = [effectFocus]; render(); });
     primary('Choose This Effect', () => { session.effectIds = [effectFocus]; studioState.step = 'product'; go('products'); });
@@ -632,8 +635,8 @@ function renderEffects() {
         effectFocus = all[0].id;
     const focused = all.find(e => e.id === effectFocus);
     $('filters').innerHTML = '<div class="filters"><button data-silo="all" aria-pressed="' + (activeSilo === 'all') + '">All Collections <span>' + all.length + '</span></button>' + registry().silos.map(s => '<button data-silo="' + s.id + '" aria-pressed="' + (activeSilo === s.id) + '">' + esc(s.label) + ' <span>' + all.filter(e => e.category === s.id).length + '</span></button>').join('') + '</div>';
-    $('screen').innerHTML = '<h2>' + esc(activeSilo === 'all' ? 'All Collections' : registry().silos.find(s => s.id === activeSilo).label) + '</h2><div class="palette"><div class="grid">' + all.filter(e => activeSilo === 'all' || e.category === activeSilo).map(e => '<button class="tile" data-effect="' + e.id + '" aria-pressed="' + session.effectIds.includes(e.id) + '">' + photo(thumb(e.id), e.label) + '<span>' + esc(e.label) + '</span></button>').join('') + '</div></div>';
-    $('right').innerHTML = photo(thumb(focused.id), focused.label, 'context-image') + '<h2>' + esc(focused.label) + '</h2><p class="small">YOUR PREVIEW COLLECTION</p><p class="small">' + session.effectIds.length + ' of 6 selected · LITEN will choose ' + (6 - session.effectIds.length) + '</p><div class="tray">' + Array.from({ length: 6 }, (_, i) => { const id = session.effectIds[i], e = all.find(e => e.id === id); return '<div class="tray-slot">' + (e ? photo(thumb(e.id), e.label) + '<button data-remove-effect="' + e.id + '" aria-label="Remove ' + esc(e.label) + '"><span aria-hidden="true">×</span></button>' : '') + '</div>'; }).join('') + '</div><p class="small">Sample artwork only. Your photo is not transformed in this preview.</p>';
+    $('screen').innerHTML = '<h2>' + esc(activeSilo === 'all' ? 'All Collections' : registry().silos.find(s => s.id === activeSilo).label) + '</h2><div class="palette"><div class="grid">' + all.filter(e => activeSilo === 'all' || e.category === activeSilo).map(e => '<button class="tile" data-effect="' + e.id + '" aria-pressed="' + session.effectIds.includes(e.id) + '">' + effectPhoto(e.id, e.label) + '<span>' + esc(e.label) + '</span></button>').join('') + '</div></div>';
+    $('right').innerHTML = effectPhoto(focused.id, focused.label, 'context-image') + '<h2>' + esc(focused.label) + '</h2><p class="small">YOUR PREVIEW COLLECTION</p><p class="small">' + session.effectIds.length + ' of 6 selected · LITEN will choose ' + (6 - session.effectIds.length) + '</p><div class="tray">' + Array.from({ length: 6 }, (_, i) => { const id = session.effectIds[i], e = all.find(e => e.id === id); return '<div class="tray-slot">' + (e ? effectPhoto(e.id, e.label) + '<button data-remove-effect="' + e.id + '" aria-label="Remove ' + esc(e.label) + '"><span aria-hidden="true">×</span></button>' : '') + '</div>'; }).join('') + '</div><p class="small">Sample artwork only. Your photo is not transformed in this preview.</p>';
     document.querySelectorAll('[data-silo]').forEach(b => b.onclick = () => { if (mobileLayout.matches) {
         mobileSilo = b.dataset.silo;
         mobileFiltersOpen = false;
