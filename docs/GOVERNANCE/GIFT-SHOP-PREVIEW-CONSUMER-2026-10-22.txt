@@ -1,0 +1,33 @@
+Gift Shop preview consumer integration — 2026-10-22
+
+The Wizard consumes Codex 2's public/gift-wizard/effect-previews/index.next.json.
+No public/previews assets, series registry, or series lookup is changed.
+Groups continues to use /previews/groups/groups_<effect-id>.jpg.
+Portrait selection follows Discovery's existing preference order:
+requested subject, neutral, man, woman, first available.
+The fixtureSubject URL parameter is honored only in layout-review mode.
+No original source photographs are published by this change.
+
+Verification:
+- 101 targeted Wizard and composition-policy tests passed.
+- Real local browser, real static catalog/assets, simulated intake/session services.
+- 1660px Portrait female variants loaded from Gift Shop-only paths at 1024x1024;
+  contain presentation, no horizontal overflow, no broken visible images.
+- Effect -> Gift -> Canvas Details -> 12x12 selection survived refresh.
+- 390px Pets loaded native 1024x1024 Gift Shop-only previews; no horizontal overflow.
+- Effect -> Gift -> Details -> Back -> Back retained selected effect after refresh.
+- Both male and female lookup paths tested with fixture variants.
+- No paid generation, customer mutation, checkout, or deployment performed.
+
+Exact remaining CC dependency:
+lib/v1/gift/types.ts SourceView and the authenticated session projection do not
+expose the analyzed Portrait subject (man/woman). The Discovery intake already
+uses core.subject for this choice. CC must expose the corresponding verified
+analysis value for the same Gift source on create and restore. Do not reuse an
+unrelated Discovery localStorage subject. Until that contract exists, live Gift
+preview browsing uses Discovery's default man variant; automatic analyzed-subject
+switching is not claimed as complete. The consumer's fixture branch is the
+integration point to replace with that verified value.
+
+The product-first pivot remains layout-review-only pending CC's verified migration
+059 generation contracts. Existing live paid sessions retain their current flow.

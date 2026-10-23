@@ -44,7 +44,16 @@ function primary(label:string,fn:()=>void,disabled=false){const body=document.cr
 function secondary(id:string,label:string){return '<button id="'+id+'" class="secondary">'+label+'</button>'}
 function photo(url:string,alt:string,cls='photo'){return '<img class="'+cls+'" src="'+esc(url)+'" alt="'+esc(alt)+'">'}
 function field(id:string,label:string,value:string,attrs=''){return '<label class="field"><span>'+label+'</span><input id="'+id+'" value="'+esc(value)+'" '+attrs+'></label>'}
-function thumb(id:string){if(session.source?.series==='pets')return '/previews/pets/pets_'+id+'.jpg';if(session.source?.series==='groups')return '/previews/groups/groups_'+id+'.jpg';const x=manifest?.effects?.[id],f=x?.neutral||x?.woman||x?.man||x?.all?.[0];return f?manifest.base+id+'/'+f:''}
+function thumb(id:string){
+ const series=session.source?.series||fixtureSeries;
+ if(series==='groups')return '/previews/groups/groups_'+id+'.jpg';
+ const library=manifest?.[series],x=library?.effects?.[id];
+ // Same subject-first ordering as Discovery previewUrlFor. Gift SourceView does
+ // not expose the analyzed subject yet; fixture overrides never affect live sessions.
+ const subject=layoutReview&&params.get('fixtureSubject')==='woman'?'woman':'man';
+ const f=(series==='portraits'?x?.[subject]:x?.neutral)||x?.neutral||x?.man||x?.woman||x?.all?.[0];
+ return f?library.base+id+'/'+f:'';
+}
 function rail(title:string,copy:string){$('left').innerHTML=(view==='effects'?'':'<div class="eyebrow">A MORE MEANINGFUL GIFT</div><div class="rule"></div>')+'<h1>'+title+'</h1>'+copy+'<div id="filters"></div>'+(view==='effects'?'':'<p class="tagline">More than a gift.<br>A longer story.</p>')+'<button id="back" '+((!history.length&&!['configuration','products','cart','checkout','focus','compare','review','effects'].includes(view))||busy?'disabled':'')+'>← Back</button>';$('back').onclick=back;if(serverMode&&live?.session)$('left').insertAdjacentHTML('beforeend','<button id="new-gift" data-href="/gift-wizard.next.html?newGift=1&amp;resumeSessionId='+encodeURIComponent(live.id)+'">Start a New Gift</button>');else if(serverMode&&params.get('newGift')==='1'&&params.get('resumeSessionId'))$('left').insertAdjacentHTML('beforeend','<button id="resume-gift" data-href="/gift-wizard.next.html?sessionId='+encodeURIComponent(params.get('resumeSessionId')!)+'">Return to Your Gift</button>');for(const id of ['new-gift','resume-gift'])if($(id))$(id).onclick=()=>{rememberView();location.assign($(id).dataset.href!)}}
 function confirmGiftExit(destination:string){
  const opener=document.activeElement as HTMLElement|null;document.getElementById('cancel-gift-dialog')?.remove();
@@ -548,7 +557,7 @@ function initializeLayoutReview(){
 }
 // Keep the source object URL valid for browser Back/forward cache restoration.
 async function start(){try{
- const [c,f,m,samples]=await Promise.all([fetch(asset('./catalog.next.json')),serverMode?Promise.resolve(new Response('[]',{status:200})):fetch(asset('./fixtures.next.json')),fetch('/previews/effects-manifest.json'),fetch(asset('./catalog-samples/index.next.json')).catch(()=>null)]);if(!c.ok||!f.ok||!m.ok)throw Error();const catalog=await c.json();products=catalog.products;limit=catalog.maxUploadBytes;fixtures=await f.json();manifest=await m.json();if(samples?.ok){const sampleIndex=await samples.json();if(sampleIndex.version===1)catalogSamples=sampleIndex.series||{};}
+ const [c,f,m,samples]=await Promise.all([fetch(asset('./catalog.next.json')),serverMode?Promise.resolve(new Response('[]',{status:200})):fetch(asset('./fixtures.next.json')),fetch(asset('./effect-previews/index.next.json')),fetch(asset('./catalog-samples/index.next.json')).catch(()=>null)]);if(!c.ok||!f.ok||!m.ok)throw Error();const catalog=await c.json();products=catalog.products;limit=catalog.maxUploadBytes;fixtures=await f.json();manifest=await m.json();if(samples?.ok){const sampleIndex=await samples.json();if(sampleIndex.version===1)catalogSamples=sampleIndex.series||{};}
  for(const [series,path] of [['portraits','/effect-registry.js'],['groups','/groups-registry.js'],['pets','/pets-registry.js']] as const){await import(path);registries[series]=window.EFFECT_REGISTRY}
  initializeLayoutReview();if(pivotMode){restorePivotReview();pivotRestored=true;}render();
  if(serverMode){
