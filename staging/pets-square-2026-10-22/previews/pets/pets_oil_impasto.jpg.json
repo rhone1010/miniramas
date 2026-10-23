@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Create a museum-quality impasto oil portrait of the animal on a real canvas, painted with exceptional palette-knife craftsmanship. The animal portrait must occupy at least 80% of the canvas, with the head and upper body large, commanding and immediately recognizable. For horses or other very large animals, concentrate on the head, neck and upper chest rather than shrinking the animal to fit.\n\nBuild the painting from confident palette-knife strokes and thick sculptural oil paint. Use broad, decisive slabs across large planes, but allow finer, more controlled knife work around the eyes, muzzle and essential identifying features. Preserve the sophistication and complexity of a masterful finished painting rather than reducing the animal to a few crude geometric pieces. Rich ridges of paint catch raking light and cast tiny physical shadows.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their distinctive pattern, placement, proportion and relationships, translating them into beautifully judged passages of paint. Use the animal's natural palette as the foundation, enriched with restrained umber, ochre, slate, warm and cool neutrals. Preserve expression, breed, age, natural asymmetry and character.\n\nThe canvas stands on a wooden easel in a beautiful old-world artist's atelier — dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. A huge ribbed industrial skylight of aged iron and glass floods the studio with soft dramatic daylight. Atmospheric, romantic, slightly dusty and collected over generations. Keep the atelier visible and beautiful but secondary to the large painting. Shallow depth of field. NO TEXT.\nAvoid a three-dimensional sculpture or bust. Avoid crude low-detail block painting, simplistic geometric patches, smooth photographic fur, blended airbrush gradients or tiny broken dabs. This is a highly accomplished palette-knife oil painting on canvas.",
+  "style": "realistic",
+  "preset": "oil_impasto",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Create a museum-quality impasto oil portrait of the animal on a real canvas, painted with exceptional palette-knife craftsmanship. The animal portrait must occupy at least 80% of the canvas, with the head and upper body large, commanding and immediately recognizable. For horses or other very large animals, concentrate on the head, neck and upper chest rather than shrinking the animal to fit.\n\nBuild the painting from confident palette-knife strokes and thick sculptural oil paint. Use broad, decisive slabs across large planes, but allow finer, more controlled knife work around the eyes, muzzle and essential identifying features. Preserve the sophistication and complexity of a masterful finished painting rather than reducing the animal to a few crude geometric pieces. Rich ridges of paint catch raking light and cast tiny physical shadows.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their distinctive pattern, placement, proportion and relationships, translating them into beautifully judged passages of paint. Use the animal's natural palette as the foundation, enriched with restrained umber, ochre, slate, warm and cool neutrals. Preserve expression, breed, age, natural asymmetry and character.\n\nThe canvas stands on a wooden easel in a beautiful old-world artist's atelier — dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. A huge ribbed industrial skylight of aged iron and glass floods the studio with soft dramatic daylight. Atmospheric, romantic, slightly dusty and collected over generations. Keep the atelier visible and beautiful but secondary to the large painting. Shallow depth of field. NO TEXT.\nAvoid a three-dimensional sculpture or bust. Avoid crude low-detail block painting, simplistic geometric patches, smooth photographic fur, blended airbrush gradients or tiny broken dabs. This is a highly accomplished palette-knife oil painting on canvas.",
+      "duration_ms": 24937,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The rendered sculpture maintains recognizable features such as the vibrant color pattern and overall shape, closely resembling the specific individual parrot in the photograph."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 27243
+}

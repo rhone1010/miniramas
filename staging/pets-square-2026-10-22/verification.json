@@ -1,0 +1,12 @@
+{
+  "effects": 36,
+  "statuses": {
+    "review_required": 11,
+    "complete": 25
+  },
+  "used_sources": 14,
+  "replicate_requests": 48,
+  "actual_cost_usd": null,
+  "cost_note": "Provider responses do not include billed dollar amounts; receipts retain provider IDs, usage and metrics.",
+  "errors": []
+}

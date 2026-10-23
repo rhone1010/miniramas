@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a premium limited-edition designer vinyl art figure. The result is a real manufactured collectible object, photographed as a physical sculpture.\n\nPreserve an unmistakable likeness through intelligent simplification and gentle caricature. Give the animal a moderately oversized sculpted head, compact body and confident toy-like proportions while retaining the anatomy, expression and character that make this particular animal recognizable.\n\nThe entire figure is beautifully molded vinyl with smooth sculptural geometry and subtle seams. Translate the face and body into clean dimensional forms with inset glossy eyes. Fur, feathers, scales and other surface characteristics become broad sculpted graphic forms rather than realistic biological surfaces.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their pattern, placement, proportion and relationships as carefully as facial structure, translating them into beautifully painted vinyl.\n\nShow the complete figure standing on a simple display base in a warm, characterful home interior. Place it on a well-loved wooden side table or shelf among a few softly blurred personal objects such as books, a small plant, framed photographs and everyday keepsakes. The surroundings feel lived-in and personal without competing with the figure.\n\nUse beautiful high-end photography, shallow depth of field and soft natural window light that reveals the curves, molded geometry and subtle sheen of the vinyl. Leave generous space around the figure and make its small physical scale immediately apparent.\n\nThe result should feel like an expensive commissioned art object of a beloved animal, created by an accomplished character designer and sculptor and displayed with affection in someone's home. Playful, beautifully made and unmistakably this animal. NO TEXT.\nAvoid Funko-style extreme proportions, giant square heads, bobbleheads, plush materials, realistic fur, feathers or scales, action-figure joints, cheap plastic or generic cartoon animals.",
+  "style": "realistic",
+  "preset": "designer_vinyl",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a premium limited-edition designer vinyl art figure. The result is a real manufactured collectible object, photographed as a physical sculpture.\n\nPreserve an unmistakable likeness through intelligent simplification and gentle caricature. Give the animal a moderately oversized sculpted head, compact body and confident toy-like proportions while retaining the anatomy, expression and character that make this particular animal recognizable.\n\nThe entire figure is beautifully molded vinyl with smooth sculptural geometry and subtle seams. Translate the face and body into clean dimensional forms with inset glossy eyes. Fur, feathers, scales and other surface characteristics become broad sculpted graphic forms rather than realistic biological surfaces.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their pattern, placement, proportion and relationships as carefully as facial structure, translating them into beautifully painted vinyl.\n\nShow the complete figure standing on a simple display base in a warm, characterful home interior. Place it on a well-loved wooden side table or shelf among a few softly blurred personal objects such as books, a small plant, framed photographs and everyday keepsakes. The surroundings feel lived-in and personal without competing with the figure.\n\nUse beautiful high-end photography, shallow depth of field and soft natural window light that reveals the curves, molded geometry and subtle sheen of the vinyl. Leave generous space around the figure and make its small physical scale immediately apparent.\n\nThe result should feel like an expensive commissioned art object of a beloved animal, created by an accomplished character designer and sculptor and displayed with affection in someone's home. Playful, beautifully made and unmistakably this animal. NO TEXT.\nAvoid Funko-style extreme proportions, giant square heads, bobbleheads, plush materials, realistic fur, feathers or scales, action-figure joints, cheap plastic or generic cartoon animals.",
+      "duration_ms": 21308,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The render captures the overall likeness and expression of the bulldog but simplifies some facial markings and proportions slightly."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 23219
+}

@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a sumptuous romantic portrait of an aristocratic animal of the Elizabethan court, preserving its breed, build and markings. Dress the animal in richly woven velvet, silk and brocade in deep wine, aged black, muted emerald and tarnished gold, with an elaborate period lace ruff and restrained antique jewelry. Likeness is important. show animal from thighs to top of head. Age image with filters and reduce saturation of the subjects coat\nThe animal belongs completely to the period rather than appearing as a modern person in historical costume. Give it a natural, reserved courtly posture, shoulders and withers slightly turned, head turned approximately 30 degrees to the left and eyes looking quietly to the side. Its presence is noble, composed and self-possessed. Avoid modern portrait poses and contemporary fashion or glamour styling. its foreleg is resting on a period wooden pedestal. the animal is looking up slightly\nPhotograph the animal deep inside an intimate Elizabethan manor chamber by dim firelight and candlelight, with dark carved oak, faded tapestries, aged plaster, heavy textiles and glimpses of leaded-glass windows disappearing into shadow. The room should feel inhabited, old and atmospheric rather than staged.\nGive the entire photograph a softly aged, time-worn color character: faded wine red, aged black, tarnished gold, tobacco brown, warm umber and muted forest green. Slightly desaturated colors, lifted warm blacks, gentle amber haze, restrained contrast, subtle grain and softened highlights, as though the image itself has acquired centuries of patina. Deep velvety shadows and the uneven falloff of candlelight.\nRomantic and intimate rather than theatrical or glamorous, like an old Elizabethan oil portrait somehow captured through a camera, imperfect, atmospheric and quietly luxurious. Worn jewelry is fine. An foreleg or paw appears only when touching the body, such as at the chin, head or collar. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+  "style": "realistic",
+  "preset": "elizabethan",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a sumptuous romantic portrait of an aristocratic animal of the Elizabethan court, preserving its breed, build and markings. Dress the animal in richly woven velvet, silk and brocade in deep wine, aged black, muted emerald and tarnished gold, with an elaborate period lace ruff and restrained antique jewelry. Likeness is important. show animal from thighs to top of head. Age image with filters and reduce saturation of the subjects coat\nThe animal belongs completely to the period rather than appearing as a modern person in historical costume. Give it a natural, reserved courtly posture, shoulders and withers slightly turned, head turned approximately 30 degrees to the left and eyes looking quietly to the side. Its presence is noble, composed and self-possessed. Avoid modern portrait poses and contemporary fashion or glamour styling. its foreleg is resting on a period wooden pedestal. the animal is looking up slightly\nPhotograph the animal deep inside an intimate Elizabethan manor chamber by dim firelight and candlelight, with dark carved oak, faded tapestries, aged plaster, heavy textiles and glimpses of leaded-glass windows disappearing into shadow. The room should feel inhabited, old and atmospheric rather than staged.\nGive the entire photograph a softly aged, time-worn color character: faded wine red, aged black, tarnished gold, tobacco brown, warm umber and muted forest green. Slightly desaturated colors, lifted warm blacks, gentle amber haze, restrained contrast, subtle grain and softened highlights, as though the image itself has acquired centuries of patina. Deep velvety shadows and the uneven falloff of candlelight.\nRomantic and intimate rather than theatrical or glamorous, like an old Elizabethan oil portrait somehow captured through a camera, imperfect, atmospheric and quietly luxurious. Worn jewelry is fine. An foreleg or paw appears only when touching the body, such as at the chin, head or collar. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 20787,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The render captures the specific cat's distinctive markings and expression well, but the coat texture and length show some drift from the source animal."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 22591
+}

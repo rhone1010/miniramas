@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a carved translucent alabaster sculpture with warm subsurface scattering, milky stone depth, soft glowing edges, faint amber veining, polished and semi-translucent high points, and deeper cloudy opacity in thicker areas. The ENTIRE animal including coat, ears, muzzle, tail and paws is rendered in this same translucent alabaster; the animal's markings are expressed as deeper cloudy veining and tonal shifts within the stone, following the exact pattern of the source coat so the markings remain readable while the whole sculpture stays alabaster. THE PIECE IS STONE, NOT A COLOURED ANIMAL. No fur colour, no eye colour, no coat colour survives - the markings read as veining and tone WITHIN the stone and nothing else. At most a 15% warm tint across the whole sculpture; anything more and it stops being carved and starts being painted. Soft directional light raking across the form so the translucency reads, deep shadow on the far side, strong falloff. Photographic and highly idealised - a real carved object in real light. Background: a quiet gallery alcove, warm stone and shadow, heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 15% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source. show light shining through the stone in places that are thinner\nNo real skin, hair, fur, or scales. Simplify the coat of the animal to simulate being carved from stone. tint the stone by 20% to match pets skin, hair, fur, scale pattern.",
+  "style": "realistic",
+  "preset": "alabaster",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a carved translucent alabaster sculpture with warm subsurface scattering, milky stone depth, soft glowing edges, faint amber veining, polished and semi-translucent high points, and deeper cloudy opacity in thicker areas. The ENTIRE animal including coat, ears, muzzle, tail and paws is rendered in this same translucent alabaster; the animal's markings are expressed as deeper cloudy veining and tonal shifts within the stone, following the exact pattern of the source coat so the markings remain readable while the whole sculpture stays alabaster. THE PIECE IS STONE, NOT A COLOURED ANIMAL. No fur colour, no eye colour, no coat colour survives - the markings read as veining and tone WITHIN the stone and nothing else. At most a 15% warm tint across the whole sculpture; anything more and it stops being carved and starts being painted. Soft directional light raking across the form so the translucency reads, deep shadow on the far side, strong falloff. Photographic and highly idealised - a real carved object in real light. Background: a quiet gallery alcove, warm stone and shadow, heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 15% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source. show light shining through the stone in places that are thinner\nNo real skin, hair, fur, or scales. Simplify the coat of the animal to simulate being carved from stone. tint the stone by 20% to match pets skin, hair, fur, scale pattern.",
+      "duration_ms": 18004,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The sculpture captures the general likeness of the cat, but the markings and fur texture are simplified, compromising the identity of the specific animal."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The sculpture captures the general likeness of the cat, but the markings and fur texture are simplified, compromising the identity of the specific animal.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Transform the animal into a carved translucent alabaster sculpture with warm subsurface scattering, milky stone depth, soft glowing edges, faint amber veining, polished and semi-translucent high points, and deeper cloudy opacity in thicker areas. The ENTIRE animal including coat, ears, muzzle, tail and paws is rendered in this same translucent alabaster; the animal's markings are expressed as deeper cloudy veining and tonal shifts within the stone, following the exact pattern of the source coat so the markings remain readable while the whole sculpture stays alabaster. THE PIECE IS STONE, NOT A COLOURED ANIMAL. No fur colour, no eye colour, no coat colour survives - the markings read as veining and tone WITHIN the stone and nothing else. At most a 15% warm tint across the whole sculpture; anything more and it stops being carved and starts being painted. Soft directional light raking across the form so the translucency reads, deep shadow on the far side, strong falloff. Photographic and highly idealised - a real carved object in real light. Background: a quiet gallery alcove, warm stone and shadow, heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 15% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source. show light shining through the stone in places that are thinner\nNo real skin, hair, fur, or scales. Simplify the coat of the animal to simulate being carved from stone. tint the stone by 20% to match pets skin, hair, fur, scale pattern.",
+      "duration_ms": 19669,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The likeness is good, with preserved markings and proportions, but the expression and some fur texture details are less distinct than in the source."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 39106
+}

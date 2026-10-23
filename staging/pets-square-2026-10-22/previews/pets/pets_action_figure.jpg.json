@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a premium highly detailed collectible action figure, clearly a manufactured physical toy while preserving an immediately recognizable likeness. Put the figure in a dramatic pose. NO TEXT. Camera foreshortening, kinetic energy captured as physical 3D materials.\n\nUse the subtle eye of a skilled character sculptor: preserve the distinctive proportions, expression, age, asymmetries and features that make this animal recognizable. Slightly simplify and stylize the anatomy into a high-end collectible figure without becoming cartoonish.\n\nShow realistic molded and painted materials, finely sculpted surface detail and discreet visible articulation appropriate to the animal's anatomy.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their pattern, placement, proportion and relationships as carefully as facial structure. Translate fur, feathers or scales into the sculpted and painted materials of the figure rather than reproducing a living animal.\n\nPhotograph the figure in a premium collector display setting with enough surrounding space to clearly establish its small physical scale. Include a tasteful display base and heavily blurred hints of a collectible shop.\n\nUse beautiful product photography with soft directional light, realistic reflections and shallow depth of field. The figure should feel tangible enough to pick up: exquisitely manufactured, slightly stylized and unmistakably this animal.\nAvoid cartoon faces, dolls, realistic living-animal surfaces, superhero styling or invented accessories.",
+  "style": "realistic",
+  "preset": "action_figure",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a premium highly detailed collectible action figure, clearly a manufactured physical toy while preserving an immediately recognizable likeness. Put the figure in a dramatic pose. NO TEXT. Camera foreshortening, kinetic energy captured as physical 3D materials.\n\nUse the subtle eye of a skilled character sculptor: preserve the distinctive proportions, expression, age, asymmetries and features that make this animal recognizable. Slightly simplify and stylize the anatomy into a high-end collectible figure without becoming cartoonish.\n\nShow realistic molded and painted materials, finely sculpted surface detail and discreet visible articulation appropriate to the animal's anatomy.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their pattern, placement, proportion and relationships as carefully as facial structure. Translate fur, feathers or scales into the sculpted and painted materials of the figure rather than reproducing a living animal.\n\nPhotograph the figure in a premium collector display setting with enough surrounding space to clearly establish its small physical scale. Include a tasteful display base and heavily blurred hints of a collectible shop.\n\nUse beautiful product photography with soft directional light, realistic reflections and shallow depth of field. The figure should feel tangible enough to pick up: exquisitely manufactured, slightly stylized and unmistakably this animal.\nAvoid cartoon faces, dolls, realistic living-animal surfaces, superhero styling or invented accessories.",
+      "duration_ms": 16419,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The render maintains key features like the muzzle shape and ear placement, but there is slight drift in the marking pattern and the body proportions are somewhat simplified."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 18076
+}

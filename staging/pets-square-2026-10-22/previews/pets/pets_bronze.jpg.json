@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "make the animal into a realistic patinated bronze sculpture — classic warm bronze with deep verdigris settling into the recesses and bright polish on the raised features: brow, cheekbones, muzzle and jaw. Face, coat and collar all rendered in the same patinated bronze, dignified and tasteful, never costume-like. Hard directional key light from the upper left with deep shadow across the right and strong falloff. Professional magazine-cover photography. No letters, no plaque. The entire sculpture is bronze — no other materials, no real fur, feathers, scales or claws. Background: a civic plaza at dusk, warm low light, heavily out of focus. The sculpture stands on a weathered granite pedestal. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nThe fur, hair, feather patterns and colors are as essential to likeness as facial structure is to humans. ensure this is weighted properly to achieve pet likeness. tint the bronze to match the pets coloring",
+  "style": "realistic",
+  "preset": "bronze",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "make the animal into a realistic patinated bronze sculpture — classic warm bronze with deep verdigris settling into the recesses and bright polish on the raised features: brow, cheekbones, muzzle and jaw. Face, coat and collar all rendered in the same patinated bronze, dignified and tasteful, never costume-like. Hard directional key light from the upper left with deep shadow across the right and strong falloff. Professional magazine-cover photography. No letters, no plaque. The entire sculpture is bronze — no other materials, no real fur, feathers, scales or claws. Background: a civic plaza at dusk, warm low light, heavily out of focus. The sculpture stands on a weathered granite pedestal. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nThe fur, hair, feather patterns and colors are as essential to likeness as facial structure is to humans. ensure this is weighted properly to achieve pet likeness. tint the bronze to match the pets coloring",
+      "duration_ms": 17020,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The sculpted horse retains basic features but has notable discrepancies in muzzle length and overall proportions that drift away from the specific individual in the photo."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The sculpted horse retains basic features but has notable discrepancies in muzzle length and overall proportions that drift away from the specific individual in the photo.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "make the animal into a realistic patinated bronze sculpture — classic warm bronze with deep verdigris settling into the recesses and bright polish on the raised features: brow, cheekbones, muzzle and jaw. Face, coat and collar all rendered in the same patinated bronze, dignified and tasteful, never costume-like. Hard directional key light from the upper left with deep shadow across the right and strong falloff. Professional magazine-cover photography. No letters, no plaque. The entire sculpture is bronze — no other materials, no real fur, feathers, scales or claws. Background: a civic plaza at dusk, warm low light, heavily out of focus. The sculpture stands on a weathered granite pedestal. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nThe fur, hair, feather patterns and colors are as essential to likeness as facial structure is to humans. ensure this is weighted properly to achieve pet likeness. tint the bronze to match the pets coloring",
+      "duration_ms": 19943,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The rendered animal has similar facial features and markings but significant differences in muzzle length and ear placement, affecting its identity as the specific individual."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The rendered animal has similar facial features and markings but significant differences in muzzle length and ear placement, affecting its identity as the specific individual.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 6/10 < 8/10 — \"The rendered animal has similar facial features and markings but significant differences in muzzle length and ear placement, affecting its identity as the specific individual.\"",
+  "fatal_error": null,
+  "duration_ms": 38676
+}

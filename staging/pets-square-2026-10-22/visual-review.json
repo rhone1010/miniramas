@@ -1,0 +1,7 @@
+{
+  "pencil_sketch": "Visual review: output reads as a photographic metallic cat rather than an evident pencil drawing. Production prompt unchanged; do not activate without review.",
+  "impressionist": "Visual review: output reads as a sculptural impasto object. Likeness passed but effect presentation needs review before activation.",
+  "action_figure": "Visual review: dog on display base; review whether toy articulation is sufficiently evident.",
+  "porcelain": "Visual review: cat remains photographic rather than clearly porcelain; automated likeness pass is not effect approval.",
+  "quilted": "Visual review: output reads largely photographic; quilting treatment needs approval."
+}

@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "A solid sculpture of the animal carved entirely from graphite — hard pencil-lead grey with a burnished sheen, the surface worked in visible pencil strokes that wrap the form: crosshatching in the recesses, broad shading across the planes, edges softly smudged. Eyes and lips are graphite. No coat, no real coat. The collar carries through in the same material. A real object standing in real light, casting its own shadow. Monochrome throughout. Likeness is critical. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nSet in a beautiful old-world artist's atelier — dark timber, plaster walls, antique easels, stacked canvases and old studies pinned around the room, a huge ribbed skylight above flooding it with soft daylight. the background is in full color\nAvoid a drawing on paper, an easel-mounted picture or any flat image. Avoid a duplicated face. Avoid colour.",
+  "style": "realistic",
+  "preset": "pencil_sketch",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "A solid sculpture of the animal carved entirely from graphite — hard pencil-lead grey with a burnished sheen, the surface worked in visible pencil strokes that wrap the form: crosshatching in the recesses, broad shading across the planes, edges softly smudged. Eyes and lips are graphite. No coat, no real coat. The collar carries through in the same material. A real object standing in real light, casting its own shadow. Monochrome throughout. Likeness is critical. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nSet in a beautiful old-world artist's atelier — dark timber, plaster walls, antique easels, stacked canvases and old studies pinned around the room, a huge ribbed skylight above flooding it with soft daylight. the background is in full color\nAvoid a drawing on paper, an easel-mounted picture or any flat image. Avoid a duplicated face. Avoid colour.",
+      "duration_ms": 29137,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 5,
+          "reason": "While the rendered cat maintains a similar pose and some color patterns, the facial features, head shape, and markings do not closely match the specific individual from the source image."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 5/10 < 8/10 — \"While the rendered cat maintains a similar pose and some color patterns, the facial features, head shape, and markings do not closely match the specific individual from the source image.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "A solid sculpture of the animal carved entirely from graphite — hard pencil-lead grey with a burnished sheen, the surface worked in visible pencil strokes that wrap the form: crosshatching in the recesses, broad shading across the planes, edges softly smudged. Eyes and lips are graphite. No coat, no real coat. The collar carries through in the same material. A real object standing in real light, casting its own shadow. Monochrome throughout. Likeness is critical. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nSet in a beautiful old-world artist's atelier — dark timber, plaster walls, antique easels, stacked canvases and old studies pinned around the room, a huge ribbed skylight above flooding it with soft daylight. the background is in full color\nAvoid a drawing on paper, an easel-mounted picture or any flat image. Avoid a duplicated face. Avoid colour.",
+      "duration_ms": 19941,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The render captures the general posture and markings of the original cat but has a more simplified expression and differing head shape."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The render captures the general posture and markings of the original cat but has a more simplified expression and differing head shape.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The render captures the general posture and markings of the original cat but has a more simplified expression and differing head shape.\"",
+  "fatal_error": null,
+  "duration_ms": 51284
+}

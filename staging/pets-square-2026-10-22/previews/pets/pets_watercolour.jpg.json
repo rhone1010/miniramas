@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Create an extraordinary contemporary watercolor portrait from the source, worthy of a major watercolor exhibition. Preserve the animals' poses, interaction, expressions and unmistakable identities, but interpret the photograph boldly rather than simply reproducing it.\n\nPaint on exceptionally heavy, medium-gray watercolor paper with a deep pronounced tooth and luxurious handmade texture. The gray paper remains clearly visible throughout the artwork, acting as a sophisticated midtone rather than an empty background.\n\nMake the animals large and commanding, filling most of the sheet and occasionally extending beyond its edges.\n\nUse dramatic contrast between control and freedom. Paint the eyes, expressions and a handful of identifying features with breathtaking precision, then allow the rest to dissolve into loose transparent washes, wet-on-wet blooms, granulation, pigment explosions, backruns, splashes and long spontaneous drips.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their essential placement and relationships, but simplify them into confident gestures and washes. Let natural colors transition selectively into luminous cobalt, turquoise, violet, quinacridone, ochre and burnt sienna while remaining recognizable.\n\nLeave substantial areas of gray paper exposed. Let some edges disappear completely into water and pigment while others snap into exquisite focus. Use the heavy tooth to catch pigment unevenly, creating beautiful granulation and dry-brush texture.\n\nShow just enough of the physical sheet to reveal a few natural deckled edges and a soft shadow beneath the exceptionally thick paper, without pulling attention away from the artwork. The painting should dominate the frame. Museum-quality contemporary watercolor, expressive, sophisticated and unmistakably handmade. NO TEXT.\nAvoid white paper, smooth paper, sculpture, ceramic, opaque paint, evenly rendered watercolor, coloring-book outlines, uniform detail, literal photographic reproduction, timid pastel washes or digital illustration.",
+  "style": "realistic",
+  "preset": "watercolour",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Create an extraordinary contemporary watercolor portrait from the source, worthy of a major watercolor exhibition. Preserve the animals' poses, interaction, expressions and unmistakable identities, but interpret the photograph boldly rather than simply reproducing it.\n\nPaint on exceptionally heavy, medium-gray watercolor paper with a deep pronounced tooth and luxurious handmade texture. The gray paper remains clearly visible throughout the artwork, acting as a sophisticated midtone rather than an empty background.\n\nMake the animals large and commanding, filling most of the sheet and occasionally extending beyond its edges.\n\nUse dramatic contrast between control and freedom. Paint the eyes, expressions and a handful of identifying features with breathtaking precision, then allow the rest to dissolve into loose transparent washes, wet-on-wet blooms, granulation, pigment explosions, backruns, splashes and long spontaneous drips.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their essential placement and relationships, but simplify them into confident gestures and washes. Let natural colors transition selectively into luminous cobalt, turquoise, violet, quinacridone, ochre and burnt sienna while remaining recognizable.\n\nLeave substantial areas of gray paper exposed. Let some edges disappear completely into water and pigment while others snap into exquisite focus. Use the heavy tooth to catch pigment unevenly, creating beautiful granulation and dry-brush texture.\n\nShow just enough of the physical sheet to reveal a few natural deckled edges and a soft shadow beneath the exceptionally thick paper, without pulling attention away from the artwork. The painting should dominate the frame. Museum-quality contemporary watercolor, expressive, sophisticated and unmistakably handmade. NO TEXT.\nAvoid white paper, smooth paper, sculpture, ceramic, opaque paint, evenly rendered watercolor, coloring-book outlines, uniform detail, literal photographic reproduction, timid pastel washes or digital illustration.",
+      "duration_ms": 20219,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The render closely preserves the specific features of the source animal, including the head shape, muzzle, and overall expression, with only minor drift in fur texture representation."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 22287
+}

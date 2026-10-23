@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "The animal is built as a clockwork automaton — brass and steel plate over a visible movement, tiny gears, jewelled bearings and coiled springs turning in the openings at the temple, throat and shoulder. The face is shaped brass, its panels following this animal's own brow, cheekbones and jaw, joints hairline-fine where the plates meet. Eyes stay real in size and spacing. The collar rebuilt in engraved plate. Warm brass, blued steel, a little verdigris in the seams. Likeness is critical. Photographic and highly idealized — a real made object in real light, the finest piece of its kind. Background: a watchmaker's bench, loupes and movements out of focus, warm low light. Preserve natural facial character, asymmetry, lines and scars. No real fur, feathers or scales or coat. Make coat, beards, mustaches flat plates with deep grooves to match the existing hairs style and texture as close as possible.\nPlace the animal inside an intimate old Swiss watchmaker's workshop, warm, cluttered and handcrafted, with the charm of Geppetto's shop. Behind it, tall divided-light wood windows look out onto a narrow old-European district of crooked stone buildings, weathered plaster facades, shop signs and a cobbled pedestrian lane receding into the distance. Shelves and workbenches filled with watchmaker's tools, tiny drawers, brass instruments and half-finished clocks create layers of depth. Warm amber workshop light inside contrasts with soft cool daylight from the street, atmospheric and cinematic. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+  "style": "realistic",
+  "preset": "clockwork",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The animal is built as a clockwork automaton — brass and steel plate over a visible movement, tiny gears, jewelled bearings and coiled springs turning in the openings at the temple, throat and shoulder. The face is shaped brass, its panels following this animal's own brow, cheekbones and jaw, joints hairline-fine where the plates meet. Eyes stay real in size and spacing. The collar rebuilt in engraved plate. Warm brass, blued steel, a little verdigris in the seams. Likeness is critical. Photographic and highly idealized — a real made object in real light, the finest piece of its kind. Background: a watchmaker's bench, loupes and movements out of focus, warm low light. Preserve natural facial character, asymmetry, lines and scars. No real fur, feathers or scales or coat. Make coat, beards, mustaches flat plates with deep grooves to match the existing hairs style and texture as close as possible.\nPlace the animal inside an intimate old Swiss watchmaker's workshop, warm, cluttered and handcrafted, with the charm of Geppetto's shop. Behind it, tall divided-light wood windows look out onto a narrow old-European district of crooked stone buildings, weathered plaster facades, shop signs and a cobbled pedestrian lane receding into the distance. Shelves and workbenches filled with watchmaker's tools, tiny drawers, brass instruments and half-finished clocks create layers of depth. Warm amber workshop light inside contrasts with soft cool daylight from the street, atmospheric and cinematic. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 20636,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The render captures the general likeness and expression of the dog, but the proportions and some distinctive features, like the muzzle length and ear posture, show noticeable drift."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The render captures the general likeness and expression of the dog, but the proportions and some distinctive features, like the muzzle length and ear posture, show noticeable drift.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "The animal is built as a clockwork automaton — brass and steel plate over a visible movement, tiny gears, jewelled bearings and coiled springs turning in the openings at the temple, throat and shoulder. The face is shaped brass, its panels following this animal's own brow, cheekbones and jaw, joints hairline-fine where the plates meet. Eyes stay real in size and spacing. The collar rebuilt in engraved plate. Warm brass, blued steel, a little verdigris in the seams. Likeness is critical. Photographic and highly idealized — a real made object in real light, the finest piece of its kind. Background: a watchmaker's bench, loupes and movements out of focus, warm low light. Preserve natural facial character, asymmetry, lines and scars. No real fur, feathers or scales or coat. Make coat, beards, mustaches flat plates with deep grooves to match the existing hairs style and texture as close as possible.\nPlace the animal inside an intimate old Swiss watchmaker's workshop, warm, cluttered and handcrafted, with the charm of Geppetto's shop. Behind it, tall divided-light wood windows look out onto a narrow old-European district of crooked stone buildings, weathered plaster facades, shop signs and a cobbled pedestrian lane receding into the distance. Shelves and workbenches filled with watchmaker's tools, tiny drawers, brass instruments and half-finished clocks create layers of depth. Warm amber workshop light inside contrasts with soft cool daylight from the street, atmospheric and cinematic. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 20534,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "While the sculpted dog maintains a similar expression and overall stance, major drift occurs in proportions and the coat's fur length, making it less recognizable as the specific individual."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"While the sculpted dog maintains a similar expression and overall stance, major drift occurs in proportions and the coat's fur length, making it less recognizable as the specific individual.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 6/10 < 8/10 — \"While the sculpted dog maintains a similar expression and overall stance, major drift occurs in proportions and the coat's fur length, making it less recognizable as the specific individual.\"",
+  "fatal_error": null,
+  "duration_ms": 42717
+}

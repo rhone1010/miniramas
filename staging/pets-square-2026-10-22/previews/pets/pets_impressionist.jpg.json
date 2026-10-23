@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Rebuild the animal as a bust sculpted entirely out of thick oil paint — a three-dimensional object, not a painting. Every surface is impasto with real mass: face, coat, neck, shoulders and withers, collar. Broad slabs and ridges of colour laid on with a knife, each stroke standing proud with a hard lifted edge and casting its own small shadow. The coat is the boldest passage, long ropes and sweeps of paint holding the real coat pattern's length and direction. Colours natural to this animal's complexion and clothing, pushed and broken — the shadows carried in violet and green rather than grey. Paint runs down over the shoulders and withers and pools on the round base the bust stands on. Likeness is critical; the animal reads clearly despite the crudeness of the marks. The bust stands on a round base. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nAvoid a flat painting or anything on canvas — this is a solid object standing in a room. Avoid smooth or photo-realistic skin. Avoid thin, blended or evenly applied paint. Avoid grey or black shadows.",
+  "style": "realistic",
+  "preset": "impressionist",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Rebuild the animal as a bust sculpted entirely out of thick oil paint — a three-dimensional object, not a painting. Every surface is impasto with real mass: face, coat, neck, shoulders and withers, collar. Broad slabs and ridges of colour laid on with a knife, each stroke standing proud with a hard lifted edge and casting its own small shadow. The coat is the boldest passage, long ropes and sweeps of paint holding the real coat pattern's length and direction. Colours natural to this animal's complexion and clothing, pushed and broken — the shadows carried in violet and green rather than grey. Paint runs down over the shoulders and withers and pools on the round base the bust stands on. Likeness is critical; the animal reads clearly despite the crudeness of the marks. The bust stands on a round base. Set in a beautiful old-world artist's atelier, cluttered and eclectic, with dark aged timber, plaster walls, antique easels, stacked canvases, portfolios, drawing tools and old studies casually pinned around the room. Above is a huge ribbed industrial skylight of aged iron and glass, flooding the studio with dramatic soft daylight and long directional shadows. Atmospheric, romantic, slightly dusty, collected over generations rather than designed. Shallow depth of field. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nAvoid a flat painting or anything on canvas — this is a solid object standing in a room. Avoid smooth or photo-realistic skin. Avoid thin, blended or evenly applied paint. Avoid grey or black shadows.",
+      "duration_ms": 16145,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The render captures the overall likeness and expression of the dog but simplifies some markings, resulting in minor drift from the source's distinctive features."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 17797
+}

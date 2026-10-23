@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Sculpt the pet entirely from one continuous mass of Taj Mahal quartzite. Every visible surface, including face, ears, muzzle, paws and tail, is polished or carved stone. Absolutely no real fur, hair, feathers, scales, skin or animal surface texture. Preserve breed, build, age, facial structure and the exact MAP of coat/feather markings; markings are essential to likeness, but exist ONLY as subtle mineral tone and veining within the quartzite. Warm ivory-honey stone, gold-brown veins, ≤15% pet-color tint. Raw quarry stone ~1/6 bottom/right. Conservatory dusk, iron stand, hard upper-left light. NO REAL HAIR, FUR, SKIN or SCALES! Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+  "style": "realistic",
+  "preset": "stone",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Sculpt the pet entirely from one continuous mass of Taj Mahal quartzite. Every visible surface, including face, ears, muzzle, paws and tail, is polished or carved stone. Absolutely no real fur, hair, feathers, scales, skin or animal surface texture. Preserve breed, build, age, facial structure and the exact MAP of coat/feather markings; markings are essential to likeness, but exist ONLY as subtle mineral tone and veining within the quartzite. Warm ivory-honey stone, gold-brown veins, ≤15% pet-color tint. Raw quarry stone ~1/6 bottom/right. Conservatory dusk, iron stand, hard upper-left light. NO REAL HAIR, FUR, SKIN or SCALES! Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 19498,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 5,
+          "reason": "The render has noticeable drift in head proportions and muzzle length, making it less recognizable as the same individual, despite retaining some markings."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 5/10 < 8/10 — \"The render has noticeable drift in head proportions and muzzle length, making it less recognizable as the same individual, despite retaining some markings.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Sculpt the pet entirely from one continuous mass of Taj Mahal quartzite. Every visible surface, including face, ears, muzzle, paws and tail, is polished or carved stone. Absolutely no real fur, hair, feathers, scales, skin or animal surface texture. Preserve breed, build, age, facial structure and the exact MAP of coat/feather markings; markings are essential to likeness, but exist ONLY as subtle mineral tone and veining within the quartzite. Warm ivory-honey stone, gold-brown veins, ≤15% pet-color tint. Raw quarry stone ~1/6 bottom/right. Conservatory dusk, iron stand, hard upper-left light. NO REAL HAIR, FUR, SKIN or SCALES! Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 24382,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The sculpture resembles the same individual dog with similar head shape and markings, but the body proportions and coat texture differ significantly."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The sculpture resembles the same individual dog with similar head shape and markings, but the body proportions and coat texture differ significantly.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The sculpture resembles the same individual dog with similar head shape and markings, but the body proportions and coat texture differ significantly.\"",
+  "fatal_error": null,
+  "duration_ms": 45471
+}

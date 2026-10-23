@@ -1,0 +1,1742 @@
+{
+  "created": "2026-10-23T00:40:59.569Z",
+  "source_directory": "H:/litenco_pets",
+  "sources": [
+    {
+      "filename": "pet_01.jpg",
+      "sha256": "0426880fd2be51df11ca31047f0ad1adb11b32b0d545e598403add112964ae00",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_02.jpg",
+      "sha256": "e4a4069a175313f4b1e113abff813a3d80fa8d4aad3796a8f03ae63c3a152134",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_03.jpg",
+      "sha256": "57640f36db5bd8bc0bf6ece89465efd5238a0b8476a906d01a0b51bac5ba589b",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_04.jpg",
+      "sha256": "27ec70c18dcf0c61bebe0e912476c994ba3f93291f196c810ae77aa8da79b1dc",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_05.jpg",
+      "sha256": "2f2463d99ba18c4d813a904fbf13be0626255f1496c11ebce6f0c27a06d12ba2",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_06.jpg",
+      "sha256": "108c961679bf7969b31ef01a9b441fcdc13b83835a3e3f6b99e8bd306addfd21",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_07.jpg",
+      "sha256": "ccc5197bfd9cf70ec9d913b491c6f8b9f18544afbe0bf2051ba58ef6206273d2",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_08.jpg",
+      "sha256": "cb4c179fab55a851d01fabcba343b3834741df924e82f405db85f248322e9cb7",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_09.jpg",
+      "sha256": "c76adad0846f6cd795c370e11ea3aa40ae008dcb7e5493f3e633979971b41d64",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_10.jpg",
+      "sha256": "649301ad4a4647acfdc678f62ec061762c7560fb72663ba2834a68f7cc88a3ae",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_11.jpg",
+      "sha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_12.jpg",
+      "sha256": "7aed6f88fd577405b326a0092149a70db04d0d4d84cd53f14da78c31a2ecab3b",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_13.jpg",
+      "sha256": "9d3426a81634c74d406da9bed600a9a8572505f796e2fd315662a170c4672750",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_14.jpg",
+      "sha256": "0cffb31e2f42e9c2fe360646133d8a8faa94507a109c94c54e895262c6d3ba5d",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_15.jpg",
+      "sha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_16.jpg",
+      "sha256": "24b8939e8dfbd66a73d5b634324386c0404a34414e99b325fb6fd9f2f6f0e295",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_17.jpg",
+      "sha256": "7b7df860ff4c38c2a52d20c214c679071ba54db82b2290aaa3140af03cdddefc",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_18.jpg",
+      "sha256": "acdcd7c4c51487cf3d0421098460a4a154cad0284351ed02ccb29e59f44dc843",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_19.jpg",
+      "sha256": "da41f64a3f21ee36ff0d1e865cd9ef0e9cf16ea13ffa3c6939c7d80720816440",
+      "visually_inspected": true
+    },
+    {
+      "filename": "pet_20.jpg",
+      "sha256": "cde8dcdad1c9cfa5a61923818c7f8857ff03cbf9ad9daf329d3b626f47b5cedb",
+      "visually_inspected": true
+    }
+  ],
+  "model": "google/nano-banana-2.1",
+  "aspect_ratio": "1:1",
+  "jobs": [
+    {
+      "effect_id": "bronze",
+      "label": "Bronze",
+      "silo": "cast_carved",
+      "source_filename": "pet_12.jpg",
+      "source_notes": "Horse portrait, clear head; human remains outside primary subject.",
+      "output": "previews/pets/pets_bronze.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "5f5b7778fd0642e20b2e6c1859a47602e34ee510cae2a0480ff87e428bb65ed6",
+      "source_sha256": "7aed6f88fd577405b326a0092149a70db04d0d4d84cd53f14da78c31a2ecab3b",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "adfed309be11fe99637c51853977f9ba636fe7826d29b091df9a676ccb567338",
+      "reason": "fail: 6/10 < 8/10 \u2014 \"The rendered animal has similar facial features and markings but significant differences in muzzle length and ear placement, affecting its identity as the specific individual.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "ebony",
+      "label": "Ebony",
+      "silo": "cast_carved",
+      "source_filename": "pet_08.jpg",
+      "source_notes": "Long-haired tabby in side pose; distinctive coat.",
+      "output": "previews/pets/pets_ebony.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "253d03dc67b2af499504f227baf82fa11cbe313c86cdd7c914ecd91e340b45c1",
+      "source_sha256": "cb4c179fab55a851d01fabcba343b3834741df924e82f405db85f248322e9cb7",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "ec47cfdba485f00f2cac072214b984da1dca41c6495798510bf277a3654d2940",
+      "reason": "fail: 6/10 < 8/10 \u2014 \"The render captures the overall style and proportions well, but there is noticeable drift in facial markings and expression that makes it less recognizable as the specific individual.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "plushy",
+      "label": "Plushy",
+      "silo": "by_hand",
+      "source_filename": "pet_07.jpg",
+      "source_notes": "Bulldog with distinctive muzzle and expression.",
+      "output": "previews/pets/pets_plushy.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "500bbaf6760e1943ea2352af61c2dca94554dfcc02e8cf8869dec490c1f7ae53",
+      "source_sha256": "ccc5197bfd9cf70ec9d913b491c6f8b9f18544afbe0bf2051ba58ef6206273d2",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "7bed65d74c6a7d5b013ac46d3831fa869cc82df4e706a3e79e5d9127845cb515",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "stone",
+      "label": "Stone",
+      "silo": "cast_carved",
+      "source_filename": "pet_10.jpg",
+      "source_notes": "Great Dane with visible markings and full seated pose.",
+      "output": "previews/pets/pets_stone.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "bc97ed9c66745c3a822374ce6e7c29fcc06858ffa142bc8a0bd3d88fc39c425e",
+      "source_sha256": "649301ad4a4647acfdc678f62ec061762c7560fb72663ba2834a68f7cc88a3ae",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "9bb60a9564726001281001ce63af0357221dbbbe90894c098b15d25ca6fbfb60",
+      "reason": "fail: 7/10 < 8/10 \u2014 \"The sculpture resembles the same individual dog with similar head shape and markings, but the body proportions and coat texture differ significantly.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "alabaster",
+      "label": "Alabaster",
+      "silo": "cast_carved",
+      "source_filename": "pet_13.jpg",
+      "source_notes": "Close cat portrait, clear eyes and coat markings.",
+      "output": "previews/pets/pets_alabaster.jpg",
+      "status": "complete",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "45956b2e916faaff886738e720a28040b15a88a0e639a7e1da7063420e78e4ab",
+      "source_sha256": "9d3426a81634c74d406da9bed600a9a8572505f796e2fd315662a170c4672750",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "0fb4fe6b45c260130edcb4e3bdd17999a40dda15e246612c09e0b2c95ed4a847",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "victorian",
+      "label": "Victorian",
+      "silo": "another_time",
+      "source_filename": "pet_18.jpg",
+      "source_notes": "Tortoiseshell cat with distinctive asymmetric markings.",
+      "output": "previews/pets/pets_victorian.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "77ff6f68144bcde8557410fa0c39010d20e8170924870f504c069760843b7fd9",
+      "source_sha256": "acdcd7c4c51487cf3d0421098460a4a154cad0284351ed02ccb29e59f44dc843",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "05fc24ea745d78275ed3a16e73c3bee030c89141f6bab580f81491bdcbda6795",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "clown",
+      "label": "Clown",
+      "silo": "make_believe",
+      "source_filename": "pet_11.jpg",
+      "source_notes": "Dachshund in motion; distinctive ears and proportions.",
+      "output": "previews/pets/pets_clown.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "9dff49ea521c9e33f8d9ac272f62bc4cfd91ea77be570f020977daf640cc4413",
+      "source_sha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "21244e1260e44b630f62ce6787af67c8abf2d6cc7808bcd5c00dc34880606c50",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "elizabethan",
+      "label": "Elizabethan",
+      "silo": "another_time",
+      "source_filename": "pet_08.jpg",
+      "source_notes": "Long-haired tabby in side pose; distinctive coat.",
+      "output": "previews/pets/pets_elizabethan.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "792253043822417dbb50bb3b44ea65b912f3d7464c98270b626c1e5e80c51c0c",
+      "source_sha256": "cb4c179fab55a851d01fabcba343b3834741df924e82f405db85f248322e9cb7",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "fcdc4f3853626d51f5e08120a64643a876c9f22346f2a7de74ff8ab686333f5a",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "persian_court",
+      "label": "Persian Court",
+      "silo": "another_time",
+      "source_filename": "pet_13.jpg",
+      "source_notes": "Close cat portrait, clear eyes and coat markings.",
+      "output": "previews/pets/pets_persian_court.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "8475fe795a3d9c2dc526890668676edcaf7722d7d9b55d877bec02c6b11eb40f",
+      "source_sha256": "9d3426a81634c74d406da9bed600a9a8572505f796e2fd315662a170c4672750",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "7ff760c58c24db1abe1f9a8fb8f24ffcd167220c5ff2e140a05902d5ef78b8ff",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "pencil_sketch",
+      "label": "Pencil Sketch",
+      "silo": "painted",
+      "source_filename": "pet_15.jpg",
+      "source_notes": "Stretching tabby; clear full-body pose.",
+      "output": "previews/pets/pets_pencil_sketch.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "a3c37662f575b8108af939250d93f4ced2bf34766fdb4a9c53219674f9374089",
+      "source_sha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "401d1238cdd1bd257c4f32f665eaf1f036675c2f973fb538c387eadbde830429",
+      "reason": "fail: 7/10 < 8/10 \u2014 \"The render captures the general posture and markings of the original cat but has a more simplified expression and differing head shape.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "impressionist",
+      "label": "Impressionist",
+      "silo": "painted",
+      "source_filename": "pet_02.jpg",
+      "source_notes": "Golden retriever with visible expression and paws.",
+      "output": "previews/pets/pets_impressionist.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "958a4bc1964bb246ae06e6407d7088b5a075a6b0b2cf40e1d5639b56e9ff3eb1",
+      "source_sha256": "e4a4069a175313f4b1e113abff813a3d80fa8d4aad3796a8f03ae63c3a152134",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "bf2c3ec8d50d7f5fc92dff260a70e35dbc7d709d0447a10c6a17d05cc78e24e1",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "oil_impasto",
+      "label": "Impasto Oil",
+      "silo": "painted",
+      "source_filename": "pet_16.jpg",
+      "source_notes": "Perched scarlet macaw, clear silhouette.",
+      "output": "previews/pets/pets_oil_impasto.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "1d533fb8314c731095ff3e066be484c1b3e4bb2910c2630f6eb7a1c2bf9ac18f",
+      "source_sha256": "24b8939e8dfbd66a73d5b634324386c0404a34414e99b325fb6fd9f2f6f0e295",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "2ea6f8c558763d271f9fa08d5c6bc733cfff3129e4f713585d886ee4aa006812",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "sea_glass",
+      "label": "Sea Glass",
+      "silo": "make_believe",
+      "source_filename": "pet_19.jpg",
+      "source_notes": "Iguana with visible scales and profile.",
+      "output": "previews/pets/pets_sea_glass.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "d4c05d2cb840a0d233cb8ebc849098790f66d803d118311fb63b8301a51ac004",
+      "source_sha256": "da41f64a3f21ee36ff0d1e865cd9ef0e9cf16ea13ffa3c6939c7d80720816440",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "c69a906842f70a1979004ef4679eb1487d3a7383bea7c2fafe0091a4a8289832",
+      "reason": "fail: 7/10 < 8/10 \u2014 \"The render is recognizable as the same individual animal, but there are slight variations in the color pattern and expression that create minor drift.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "action_figure",
+      "label": "Action Figure",
+      "silo": "make_believe",
+      "source_filename": "pet_11.jpg",
+      "source_notes": "Dachshund in motion; distinctive ears and proportions.",
+      "output": "previews/pets/pets_action_figure.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "edf30ad74f887bd22d447c4dc6006f3873e8b5def39cf8ff60f4c6fed5bafbdb",
+      "source_sha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "886615d1887f62b66b3fae50e747e88b9b555d2ce698b32d4f1259e1626e3c53",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "designer_vinyl",
+      "label": "Designer Vinyl",
+      "silo": "make_believe",
+      "source_filename": "pet_07.jpg",
+      "source_notes": "Bulldog with distinctive muzzle and expression.",
+      "output": "previews/pets/pets_designer_vinyl.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "640b91c40599437cc4f55c0be9431413a9dba512ebd3d360e5bfa1065d371b2b",
+      "source_sha256": "ccc5197bfd9cf70ec9d913b491c6f8b9f18544afbe0bf2051ba58ef6206273d2",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "87747e212950908f9a1e5f8acd833becf6d37e09c3c692a13359d629faa070b4",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "mosaic_portrait",
+      "label": "Mosaic",
+      "silo": "by_hand",
+      "source_filename": "pet_18.jpg",
+      "source_notes": "Tortoiseshell cat with distinctive asymmetric markings.",
+      "output": "previews/pets/pets_mosaic_portrait.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "9b63a4d7d482f7fb0dda9a63d553ff3cfbeb617b60798e349f067e23ef71fe1d",
+      "source_sha256": "acdcd7c4c51487cf3d0421098460a4a154cad0284351ed02ccb29e59f44dc843",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "9310864b00faa36433cd7c32bab6f8eb00739fe8101478d0e43508e9a1efec5d",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "ice",
+      "label": "Ice & Frost",
+      "silo": "make_believe",
+      "source_filename": "pet_10.jpg",
+      "source_notes": "Great Dane with visible markings and full seated pose.",
+      "output": "previews/pets/pets_ice.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "b59eeaa05b247f872dcd6c270f58a1b75f449fbc8430bd7da98e2d64e838689c",
+      "source_sha256": "649301ad4a4647acfdc678f62ec061762c7560fb72663ba2834a68f7cc88a3ae",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "a457d6ce448ed9aac3cd60f96b79114484a6c0b979eebf9d0757df9878b8fa76",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "cubism",
+      "label": "Cubism",
+      "silo": "painted",
+      "source_filename": "pet_20.jpg",
+      "source_notes": "Bearded dragon with textured body and distinct silhouette.",
+      "output": "previews/pets/pets_cubism.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "dc930a6d5f261d95f0a77d9f7c1a683a36cf6d0eb5854a7db56aea97e60c593f",
+      "source_sha256": "cde8dcdad1c9cfa5a61923818c7f8857ff03cbf9ad9daf329d3b626f47b5cedb",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "0bdba20deef59193e97b969efbacd5a8f86cb6c97f10532c92159da1baf9b592",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "art_nouveau",
+      "label": "Art Nouveau",
+      "silo": "painted",
+      "source_filename": "pet_16.jpg",
+      "source_notes": "Perched scarlet macaw, clear silhouette.",
+      "output": "previews/pets/pets_art_nouveau.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "4c6e1835cd6dd3b9ee37c712d0f6b0b549e73997dfc9a292b1bad68bd8fa7ec3",
+      "source_sha256": "24b8939e8dfbd66a73d5b634324386c0404a34414e99b325fb6fd9f2f6f0e295",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "49118fbad346affa3f165dfe60dc85f45fdafe11b00915b079c0d5d1b56ecfb2",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "deco_twenties",
+      "label": "Deco Twenties",
+      "silo": "another_time",
+      "source_filename": "pet_06.jpg",
+      "source_notes": "Golden retriever seated, clear face and coat.",
+      "output": "previews/pets/pets_deco_twenties.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "efada69ba78ca43436816e493198269ac1ff89082e60b17589c80ef5e9230c39",
+      "source_sha256": "108c961679bf7969b31ef01a9b441fcdc13b83835a3e3f6b99e8bd306addfd21",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "89a80fbaf230f97a24a1939c8b27ec5f6a91806822442d2698eeccef5d2f4aa5",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "samurai",
+      "label": "Samurai",
+      "silo": "another_time",
+      "source_filename": "pet_12.jpg",
+      "source_notes": "Horse portrait, clear head; human remains outside primary subject.",
+      "output": "previews/pets/pets_samurai.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "255b56b3a7df016e1cc2ce3fb6cb8943d082316bc7b50ebcc167458ec84c45cc",
+      "source_sha256": "7aed6f88fd577405b326a0092149a70db04d0d4d84cd53f14da78c31a2ecab3b",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "a0e68cc444fd54ce8b0e29b3f06920e281aa2ade274cb00253338e2aee0ac08f",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "stained_glass",
+      "label": "Stained Glass",
+      "silo": "by_hand",
+      "source_filename": "pet_01.jpg",
+      "source_notes": "Macaw with extended wings; strong colour and silhouette.",
+      "output": "previews/pets/pets_stained_glass.jpg",
+      "status": "complete",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "a0f38ef304092827f33b3e1e55b0ce9dc310338fa8f298f4469bd90fc90a5059",
+      "source_sha256": "0426880fd2be51df11ca31047f0ad1adb11b32b0d545e598403add112964ae00",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "63898bf391a96d0020bd817dc37f43abdb6242e3f2627e6125acd07fb1613661",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "neon",
+      "label": "Neon",
+      "silo": "make_believe",
+      "source_filename": "pet_19.jpg",
+      "source_notes": "Iguana with visible scales and profile.",
+      "output": "previews/pets/pets_neon.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "77978dd9704094caadb78ff65878824358ce4c2213e3c1c73662478470a7a92b",
+      "source_sha256": "da41f64a3f21ee36ff0d1e865cd9ef0e9cf16ea13ffa3c6939c7d80720816440",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "5aa8fbfca6abfa5a4e7ee5e25682a10214210d0a9f3ef5f6499689f012e56a81",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "polished_gold",
+      "label": "Polished Gold",
+      "silo": "cast_carved",
+      "source_filename": "pet_12.jpg",
+      "source_notes": "Horse portrait, clear head; human remains outside primary subject.",
+      "output": "previews/pets/pets_polished_gold.jpg",
+      "status": "review_required",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "f32f69166a17bb0c6fe12cdf9d5d015abb33c01d863dd499b9f5699e725db22d",
+      "source_sha256": "7aed6f88fd577405b326a0092149a70db04d0d4d84cd53f14da78c31a2ecab3b",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "reason": "Recovered original successful provider prediction after engine polling timeout. Automated likeness evaluation was not completed; visual review required.",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "c2755b43f966f12a96d8e63bd258b53b107eb18ae5ad1190e3b38e70c43dd05d",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "driftwood_resin",
+      "label": "Driftwood & Resin",
+      "silo": "by_hand",
+      "source_filename": "pet_15.jpg",
+      "source_notes": "Stretching tabby; clear full-body pose.",
+      "output": "previews/pets/pets_driftwood_resin.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "c8db073d4705d53c5e5d5bdb324e00b67b9426ee229c8995fc364824d9a8e02d",
+      "source_sha256": "1c59d105540c130b224ee0f3754e1c9366692e7794e1e321b9d34cf5ff8649db",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "611c5caf9a09f88cb7d48157d817bb274b700cd41da5a2e5f589d64970522881",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "origami",
+      "label": "Origami",
+      "silo": "by_hand",
+      "source_filename": "pet_01.jpg",
+      "source_notes": "Macaw with extended wings; strong colour and silhouette.",
+      "output": "previews/pets/pets_origami.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "5bae82024c3c723541bff4f6f7070e5492cf046f051ecffe45bbd9f60f5fc6e8",
+      "source_sha256": "0426880fd2be51df11ca31047f0ad1adb11b32b0d545e598403add112964ae00",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "7a0fcd5b0df7c9d80c9a5963ed30c51f13ac9771fb6445c90ce1796da30a009c",
+      "reason": "fail: 6/10 < 8/10 \u2014 \"The render captures the general form and colors of the parrot but significantly simplifies the specific facial markings and proportions, making it less recognizable as the same individual.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "porcelain",
+      "label": "Porcelain",
+      "silo": "by_hand",
+      "source_filename": "pet_08.jpg",
+      "source_notes": "Long-haired tabby in side pose; distinctive coat.",
+      "output": "previews/pets/pets_porcelain.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "e28188769386e291f2ec0798572f9ddfd41463383a39d62cca044b7180b219c7",
+      "source_sha256": "cb4c179fab55a851d01fabcba343b3834741df924e82f405db85f248322e9cb7",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "7c47ca58893c064059a151d1b7f5dc5b70b0fd7ae9f19b09a9574c67249c3594",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "retro_robot",
+      "label": "Retro Robot",
+      "silo": "make_believe",
+      "source_filename": "pet_20.jpg",
+      "source_notes": "Bearded dragon with textured body and distinct silhouette.",
+      "output": "previews/pets/pets_retro_robot.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "86f02775985fae049da979215ce662c2f18a175b4573ec60f43c6526d1913617",
+      "source_sha256": "cde8dcdad1c9cfa5a61923818c7f8857ff03cbf9ad9daf329d3b626f47b5cedb",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "3bdf014145ab42df2eff88eee1557b2246512024897985d792a32af1faacfbb9",
+      "reason": "fail: 4/10 < 8/10 \u2014 \"The render significantly alters the head shape and proportions, leading to a loss of recognizable identity despite some surface markings being similar.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "clockwork",
+      "label": "Clockwork",
+      "silo": "make_believe",
+      "source_filename": "pet_11.jpg",
+      "source_notes": "Dachshund in motion; distinctive ears and proportions.",
+      "output": "previews/pets/pets_clockwork.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "9fca666ea8d5fccddcacca71f9d316c453afd1633ee343cdc04840b87e4aac06",
+      "source_sha256": "3ef3e17201a2e5a17adfc1f8c75e0559c313fc96b71da982f596761e1be265f4",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "98c33576c3937affe5d8cd41347150b139c6794c060ec4ae559f6e4bdd5108f1",
+      "reason": "fail: 6/10 < 8/10 \u2014 \"While the sculpted dog maintains a similar expression and overall stance, major drift occurs in proportions and the coat's fur length, making it less recognizable as the specific individual.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "iron",
+      "label": "Iron",
+      "silo": "cast_carved",
+      "source_filename": "pet_10.jpg",
+      "source_notes": "Great Dane with visible markings and full seated pose.",
+      "output": "previews/pets/pets_iron.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "2bcb80927f05b7789e928020b66cb3448189ae114090c0fecbc3f1eab4a45969",
+      "source_sha256": "649301ad4a4647acfdc678f62ec061762c7560fb72663ba2834a68f7cc88a3ae",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "58d55a9edabd9996521ffbc74b3a3bafc4491ccc386980f9cc585f47a1b16052",
+      "reason": "fail: 7/10 < 8/10 \u2014 \"Good likeness, but the rendering has simplified the markings and altered the head shape slightly, impacting identity recognition.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "jade",
+      "label": "Carved Jade",
+      "silo": "cast_carved",
+      "source_filename": "pet_19.jpg",
+      "source_notes": "Iguana with visible scales and profile.",
+      "output": "previews/pets/pets_jade.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "32637de9086b2c75b774c72dbe03d17759648dc651b29c92c83c94ca525eaf82",
+      "source_sha256": "da41f64a3f21ee36ff0d1e865cd9ef0e9cf16ea13ffa3c6939c7d80720816440",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "5a4cad0d2535e44a8c7bdd5892bf76ddb46ffedeb4137dd0936e92ebc1cd9a98",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "art_deco",
+      "label": "Art Deco",
+      "silo": "another_time",
+      "source_filename": "pet_13.jpg",
+      "source_notes": "Close cat portrait, clear eyes and coat markings.",
+      "output": "previews/pets/pets_art_deco.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "88cbbbe55107a9a5871d83fa1c312cc0fdeb31db365feb78c2ea42222904e329",
+      "source_sha256": "9d3426a81634c74d406da9bed600a9a8572505f796e2fd315662a170c4672750",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "c6f0673d23a53abce38dfca91c0a3ef3f96a759a09ec55531a1f3492e810afba",
+      "reason": "pass: 8/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "ukiyo_e",
+      "label": "Ukiyo-e",
+      "silo": "painted",
+      "source_filename": "pet_16.jpg",
+      "source_notes": "Perched scarlet macaw, clear silhouette.",
+      "output": "previews/pets/pets_ukiyo_e.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "939f06b24dbb3305025eebc2373277d0108fb90ef31c582cb6cebfd74443dc3e",
+      "source_sha256": "24b8939e8dfbd66a73d5b634324386c0404a34414e99b325fb6fd9f2f6f0e295",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "6ab4eb7e424c5264dc1d89d3a404f4fe6e41ea3a90b51eecae452a9d07cc02c6",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "watercolour",
+      "label": "Watercolour",
+      "silo": "painted",
+      "source_filename": "pet_06.jpg",
+      "source_notes": "Golden retriever seated, clear face and coat.",
+      "output": "previews/pets/pets_watercolour.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "ed81dead336c54f8cb01ffdc847f0d2317d20df8dfea992b5b7f15c803e67b53",
+      "source_sha256": "108c961679bf7969b31ef01a9b441fcdc13b83835a3e3f6b99e8bd306addfd21",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "7710c104df19ed131abcb408e096d3acac4342ff0eba1cd4108d7e6ab7b9c301",
+      "reason": "pass: 9/10 \u2265 8/10",
+      "retry_count": 0
+    },
+    {
+      "effect_id": "sheet_music",
+      "label": "Sheet Music",
+      "silo": "by_hand",
+      "source_filename": "pet_18.jpg",
+      "source_notes": "Tortoiseshell cat with distinctive asymmetric markings.",
+      "output": "previews/pets/pets_sheet_music.jpg",
+      "status": "review_required",
+      "attempts": 2,
+      "actual_cost_usd": null,
+      "prompt_sha256": "81dbb321cfb1c7d422bd37981ebbce0c44f78824a476884be87f388324dfab7a",
+      "source_sha256": "acdcd7c4c51487cf3d0421098460a4a154cad0284351ed02ccb29e59f44dc843",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "aabb02d9d6aafb9913651ebc010b4c9a1685942f00793e0d446af024972ea6cc",
+      "reason": "fail: 5/10 < 8/10 \u2014 \"The sculpted cat shares some resemblance in facial structure and markings but diverges significantly in coat texture and has an overly stylized form that diminishes individual identity.\"",
+      "retry_count": 1
+    },
+    {
+      "effect_id": "quilted",
+      "label": "Quilted",
+      "silo": "by_hand",
+      "source_filename": "pet_07.jpg",
+      "source_notes": "Bulldog with distinctive muzzle and expression.",
+      "output": "previews/pets/pets_quilted.jpg",
+      "status": "complete",
+      "attempts": 1,
+      "actual_cost_usd": null,
+      "prompt_sha256": "f90ac45ee1d0dd3894c27a662375409b297de7f4efe9541cf5dadc4abf238d7e",
+      "source_sha256": "ccc5197bfd9cf70ec9d913b491c6f8b9f18544afbe0bf2051ba58ef6206273d2",
+      "parameters": {
+        "aspect_ratio": "1:1",
+        "output_format": "jpg"
+      },
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "output_sha256": "c61e3449981f3a559207c072a1171f36ddf807d856b13ed6be55af03d8c6ffea",
+      "reason": "pass: 10/10 \u2265 8/10",
+      "retry_count": 0
+    }
+  ],
+  "receipts": [
+    {
+      "effect_id": "bronze",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:41:10.713Z",
+      "http_status": 201,
+      "id": "xadpx3k1xsrmr0d1crt9fdr7xr",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 14.150693866,
+        "resolution_target": "1K",
+        "total_time": 14.184782235
+      }
+    },
+    {
+      "effect_id": "bronze",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:41:27.733Z",
+      "http_status": 201,
+      "id": "dkp9dxn33xrmw0d1crtajxr4wg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 16.461894516,
+        "resolution_target": "1K",
+        "total_time": 16.488034507
+      }
+    },
+    {
+      "effect_id": "ebony",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:41:49.192Z",
+      "http_status": 201,
+      "id": "rgkc287sr5rmt0d1crtbrke1tm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 19.067917915,
+        "resolution_target": "1K",
+        "total_time": 19.100004936
+      }
+    },
+    {
+      "effect_id": "ebony",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:42:11.853Z",
+      "http_status": 201,
+      "id": "1dvzjcajasrmy0d1crts2d9h9m",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 12.446525344,
+        "resolution_target": "1K",
+        "total_time": 12.471254017
+      }
+    },
+    {
+      "effect_id": "plushy",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:42:29.390Z",
+      "http_status": 201,
+      "id": "akbabtmkwdrmw0d1crtreav6bw",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 26.578643658,
+        "resolution_target": "1K",
+        "total_time": 26.616121415
+      }
+    },
+    {
+      "effect_id": "stone",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:43:00.655Z",
+      "http_status": 201,
+      "id": "3n3qe38dy9rmr0d1crvbnhgm0w",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 16.522882945,
+        "resolution_target": "1K",
+        "total_time": 16.550670442
+      }
+    },
+    {
+      "effect_id": "stone",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:43:20.153Z",
+      "http_status": 201,
+      "id": "6qpm6h2v05rmt0d1crv8zqz5r4",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 20.644061399,
+        "resolution_target": "1K",
+        "total_time": 20.678125081
+      }
+    },
+    {
+      "effect_id": "alabaster",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:43:46.003Z",
+      "http_status": 201,
+      "id": "kpfcafdzmsrmw0d1crv8xrcebr",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 14.943570628,
+        "resolution_target": "1K",
+        "total_time": 14.968313431
+      }
+    },
+    {
+      "effect_id": "alabaster",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:44:04.008Z",
+      "http_status": 201,
+      "id": "w6tn8q064hrmt0d1crvsmdmtbm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 17.073311406,
+        "resolution_target": "1K",
+        "total_time": 17.094055139
+      }
+    },
+    {
+      "effect_id": "victorian",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:44:25.288Z",
+      "http_status": 201,
+      "id": "pzjy82jr8srmy0d1crvv2bg298",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 17.677398361,
+        "resolution_target": "1K",
+        "total_time": 17.707345019
+      }
+    },
+    {
+      "effect_id": "clown",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:44:47.124Z",
+      "http_status": 201,
+      "id": "v756w2nf5srmy0d1crvskc5z14",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.449285011,
+        "resolution_target": "1K",
+        "total_time": 15.474225699
+      }
+    },
+    {
+      "effect_id": "elizabethan",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:45:07.235Z",
+      "http_status": 201,
+      "id": "r0qrwyzxnhrmy0d1crvs0n2sym",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 17.294568005,
+        "resolution_target": "1K",
+        "total_time": 17.322359162
+      }
+    },
+    {
+      "effect_id": "persian_court",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:45:29.630Z",
+      "http_status": 201,
+      "id": "gz4jwzjn1hrmw0d1crwa71gmj8",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.833516303,
+        "resolution_target": "1K",
+        "total_time": 15.861095872
+      }
+    },
+    {
+      "effect_id": "pencil_sketch",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:45:50.405Z",
+      "http_status": 201,
+      "id": "wr4wzkn56nrmt0d1crwak0gnqr",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 26.01208966,
+        "resolution_target": "1K",
+        "total_time": 26.038544123
+      }
+    },
+    {
+      "effect_id": "pencil_sketch",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:46:19.541Z",
+      "http_status": 201,
+      "id": "anz048gqm5rmy0d1crwv6zqjs4",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 16.673698183,
+        "resolution_target": "1K",
+        "total_time": 16.699983575
+      }
+    },
+    {
+      "effect_id": "impressionist",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:46:41.168Z",
+      "http_status": 201,
+      "id": "dndt37vbqdrmt0d1crwv888gc0",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 13.405432355,
+        "resolution_target": "1K",
+        "total_time": 13.435699323
+      }
+    },
+    {
+      "effect_id": "oil_impasto",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:46:59.652Z",
+      "http_status": 201,
+      "id": "dy8gb25nmnrmy0d1crwtrm459w",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 20.037480843,
+        "resolution_target": "1K",
+        "total_time": 20.110548352
+      }
+    },
+    {
+      "effect_id": "sea_glass",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:47:25.704Z",
+      "http_status": 201,
+      "id": "b41q84rs8nrmt0d1crx8mjd3mg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.765707675,
+        "resolution_target": "1K",
+        "total_time": 15.791930189
+      }
+    },
+    {
+      "effect_id": "sea_glass",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:47:44.273Z",
+      "http_status": 201,
+      "id": "8f1d3fb1jxrmt0d1crx95246vw",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.439720617,
+        "resolution_target": "1K",
+        "total_time": 15.469392151
+      }
+    },
+    {
+      "effect_id": "action_figure",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:48:04.460Z",
+      "http_status": 201,
+      "id": "hy57t2djd1rmy0d1crxb8aj414",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 13.50133078,
+        "resolution_target": "1K",
+        "total_time": 13.529261068
+      }
+    },
+    {
+      "effect_id": "designer_vinyl",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:48:22.825Z",
+      "http_status": 201,
+      "id": "vnk4kjfqz5rmy0d1crxb5ss2y8",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 17.827734867,
+        "resolution_target": "1K",
+        "total_time": 17.867149592
+      }
+    },
+    {
+      "effect_id": "mosaic_portrait",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:48:45.620Z",
+      "http_status": 201,
+      "id": "hxkadd2mc9rmt0d1crxt91pwr4",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 14.494674817,
+        "resolution_target": "1K",
+        "total_time": 14.529156638
+      }
+    },
+    {
+      "effect_id": "ice",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:49:05.404Z",
+      "http_status": 201,
+      "id": "radvvgn2hhrmt0d1crxs24dmem",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 51.445872015,
+        "resolution_target": "1K",
+        "total_time": 51.47399923
+      }
+    },
+    {
+      "effect_id": "cubism",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:50:02.237Z",
+      "http_status": 201,
+      "id": "5chs6j3xbsrmr0d1cryacyyrf4",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 29.859526611,
+        "resolution_target": "1K",
+        "total_time": 29.884655223
+      }
+    },
+    {
+      "effect_id": "art_nouveau",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:50:36.363Z",
+      "http_status": 201,
+      "id": "jw158702xxrmt0d1cryvmfe6bg",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.922673891,
+        "resolution_target": "1K",
+        "total_time": 15.948442363
+      }
+    },
+    {
+      "effect_id": "deco_twenties",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:50:57.428Z",
+      "http_status": 201,
+      "id": "veqtpm2mwnrmr0d1cryr8esg6m",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.200256282,
+        "resolution_target": "1K",
+        "total_time": 15.230934676
+      }
+    },
+    {
+      "effect_id": "samurai",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:51:17.751Z",
+      "http_status": 201,
+      "id": "20ty81d5q1rmw0d1crysj239qc",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.382393878,
+        "resolution_target": "1K",
+        "total_time": 15.41140427
+      }
+    },
+    {
+      "effect_id": "stained_glass",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:51:38.794Z",
+      "http_status": 201,
+      "id": "4xh8dyqqf1rmy0d1cryv0wgvhw",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.269975042,
+        "resolution_target": "1K",
+        "total_time": 15.297929073
+      }
+    },
+    {
+      "effect_id": "stained_glass",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:51:57.431Z",
+      "http_status": 201,
+      "id": "b3bn3ra021rmr0d1crzaf7t5z8",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.070785159,
+        "resolution_target": "1K",
+        "total_time": 15.098447726
+      }
+    },
+    {
+      "effect_id": "neon",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:52:18.756Z",
+      "http_status": 201,
+      "id": "c1mb0rcks5rmt0d1crz94kh4xc",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 16.004089665,
+        "resolution_target": "1K",
+        "total_time": 16.037335194
+      }
+    },
+    {
+      "effect_id": "polished_gold",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:52:40.148Z",
+      "http_status": 202,
+      "id": "rvfy57q6ehrmy0d1crzbnssfmw",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 149.894967418,
+        "resolution_target": "1K",
+        "total_time": 149.923330551
+      }
+    },
+    {
+      "effect_id": "driftwood_resin",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:54:46.524Z",
+      "http_status": 201,
+      "id": "r1xg48pmy1rmy0d1cs090z2tp8",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.676700579,
+        "resolution_target": "1K",
+        "total_time": 15.704675074
+      }
+    },
+    {
+      "effect_id": "origami",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:55:07.118Z",
+      "http_status": 201,
+      "id": "s2m1ze93shrmt0d1cs0smyjkmm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.404511841,
+        "resolution_target": "1K",
+        "total_time": 15.436603705
+      }
+    },
+    {
+      "effect_id": "origami",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:55:25.125Z",
+      "http_status": 201,
+      "id": "ff10kk3bdhrmw0d1cs0t8k95mm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 23.94944567,
+        "resolution_target": "1K",
+        "total_time": 23.980687366
+      }
+    },
+    {
+      "effect_id": "porcelain",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "starting",
+      "started": "2026-10-23T00:55:54.208Z",
+      "http_status": 202,
+      "id": "nz2fhzyw35rmy0d1cs0t3f908m"
+    },
+    {
+      "effect_id": "retro_robot",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:57:19.438Z",
+      "http_status": 201,
+      "id": "d0eg5119ndrmt0d1cs1rxfhze4",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 16.362876484,
+        "resolution_target": "1K",
+        "total_time": 16.386797345
+      }
+    },
+    {
+      "effect_id": "retro_robot",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:57:38.405Z",
+      "http_status": 201,
+      "id": "75w549bm3xrmr0d1cs1tjx50q0",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 14.123188152,
+        "resolution_target": "1K",
+        "total_time": 14.148255527
+      }
+    },
+    {
+      "effect_id": "clockwork",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:57:56.710Z",
+      "http_status": 201,
+      "id": "bhdy5jnwfnrmy0d1cs1t1cfzr8",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 17.496172647,
+        "resolution_target": "1K",
+        "total_time": 17.520785499
+      }
+    },
+    {
+      "effect_id": "clockwork",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:58:17.347Z",
+      "http_status": 201,
+      "id": "386nq8ramxrmw0d1cs296zbe6w",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 17.583342158,
+        "resolution_target": "1K",
+        "total_time": 17.615045986
+      }
+    },
+    {
+      "effect_id": "iron",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:58:39.487Z",
+      "http_status": 201,
+      "id": "pp4mzp314drmt0d1cs2bjm5v80",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 18.589492751,
+        "resolution_target": "1K",
+        "total_time": 18.618195498
+      }
+    },
+    {
+      "effect_id": "iron",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:59:01.464Z",
+      "http_status": 201,
+      "id": "jz4k1xnq89rmt0d1cs28havpbm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 16.132622233,
+        "resolution_target": "1K",
+        "total_time": 16.160951143
+      }
+    },
+    {
+      "effect_id": "jade",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:59:21.808Z",
+      "http_status": 201,
+      "id": "6b37ndr819rmy0d1cs2rm2kzb4",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 25.365163226,
+        "resolution_target": "1K",
+        "total_time": 25.402464396
+      }
+    },
+    {
+      "effect_id": "art_deco",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T00:59:53.116Z",
+      "http_status": 201,
+      "id": "587g1sm1r1rmt0d1cs2vw3dmn8",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 18.743113097,
+        "resolution_target": "1K",
+        "total_time": 18.765429377
+      }
+    },
+    {
+      "effect_id": "ukiyo_e",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T01:00:17.429Z",
+      "http_status": 201,
+      "id": "73rn4npzw9rmr0d1cs2t2yn1xw",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 15.546895209,
+        "resolution_target": "1K",
+        "total_time": 15.579626338
+      }
+    },
+    {
+      "effect_id": "watercolour",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T01:00:37.993Z",
+      "http_status": 201,
+      "id": "k1qmcd9gk5rmw0d1cs3bvzatk4",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 16.677804455,
+        "resolution_target": "1K",
+        "total_time": 16.706427663
+      }
+    },
+    {
+      "effect_id": "sheet_music",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T01:01:00.261Z",
+      "http_status": 201,
+      "id": "65pn0c47mxrmr0d1cs3and6arm",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 21.346058764,
+        "resolution_target": "1K",
+        "total_time": 21.381959855
+      }
+    },
+    {
+      "effect_id": "sheet_music",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T01:01:24.858Z",
+      "http_status": 201,
+      "id": "4hd74ez7pnrmw0d1cs38fs17z4",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 30.29912913,
+        "resolution_target": "1K",
+        "total_time": 30.331973261
+      }
+    },
+    {
+      "effect_id": "quilted",
+      "provider": "api.replicate.com",
+      "model": "google/nano-banana-2.1",
+      "actual_cost_usd": null,
+      "status": "succeeded",
+      "started": "2026-10-23T01:02:00.137Z",
+      "http_status": 201,
+      "id": "hvfrwdbhasrmw0d1cs3rz136am",
+      "metrics": {
+        "image_output_count": 1,
+        "predict_time": 16.117526569,
+        "resolution_target": "1K",
+        "total_time": 16.141080683
+      }
+    }
+  ],
+  "status": "generation_complete_review_pending",
+  "completed_images": 36,
+  "actual_cost_usd": null,
+  "cost_note": "Provider responses contain no billed dollar amounts; usage and prediction receipts are recorded."
+}

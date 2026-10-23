@@ -3,7 +3,8 @@ from PIL import Image, ImageDraw
 import json, html, shutil
 
 stage=Path('staging/pets-square-2026-10-22')
-m=json.loads((stage/'manifest.json').read_text())
+m=json.loads((stage/'manifest.json').read_text(encoding='utf-8'))
+notes=json.loads((stage/'visual-review.json').read_text(encoding='utf-8-sig')) if (stage/'visual-review.json').exists() else {}
 (stage/'sources').mkdir(exist_ok=True)
 for name in {j['source_filename'] for j in m['jobs']}:
     shutil.copyfile(Path(m['source_directory'])/name,stage/'sources'/name)
@@ -23,7 +24,7 @@ for silo in dict.fromkeys(j['silo'] for j in m['jobs']):
         if j['silo']!=silo:continue
         parts+=['<article style="width:280px"><h3>'+html.escape(j['label'])+'</h3>']
         if j.get('output_sha256'):parts+=['<a href="'+j['output']+'"><img width="280" height="280" alt="'+html.escape(j['label'])+'" src="'+j['output']+'"></a>']
-        parts+=['<p>'+html.escape(j['status'])+' · '+html.escape(str(j.get('dimensions','')))+'</p><a href="sources/'+j['source_filename']+'">Source: '+j['source_filename']+'</a><p>'+html.escape(j.get('reason',''))+'</p></article>']
+        parts+=['<p>'+html.escape(j['status'])+' · '+html.escape(str(j.get('dimensions','')))+'</p><a href="sources/'+j['source_filename']+'">Source: '+j['source_filename']+'</a><p>'+html.escape(j.get('reason',''))+'</p><p>'+html.escape(notes.get(j['effect_id'],''))+'</p></article>']
     parts+=['</div>']
 (stage/'index.html').write_text(''.join(parts),encoding='utf-8')
 print('Review images:',len(ready))

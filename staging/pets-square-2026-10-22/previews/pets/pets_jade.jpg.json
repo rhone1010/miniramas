@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "make the animal into a realistic carved jade statue, dramatic lighting, sub-surface scattering, highly polished. professional grade photography for a magazine cover. No letters, no plaque. The background should be a japanese temple in a cherry blossom park at night (slightly blurred). The eyes are carved jade like the rest of the piece, holding the animal's own eye shape and gaze — never photoreal, amber, or glass eyes. Light transmits through the thinnest sections; the light originates outside the piece and the jade transmits it, never emits. Do not over illuminate facial features internally. Polished but not glassy — a soft waxy lustre. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+  "style": "realistic",
+  "preset": "jade",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "make the animal into a realistic carved jade statue, dramatic lighting, sub-surface scattering, highly polished. professional grade photography for a magazine cover. No letters, no plaque. The background should be a japanese temple in a cherry blossom park at night (slightly blurred). The eyes are carved jade like the rest of the piece, holding the animal's own eye shape and gaze — never photoreal, amber, or glass eyes. Light transmits through the thinnest sections; the light originates outside the piece and the jade transmits it, never emits. Do not over illuminate facial features internally. Polished but not glassy — a soft waxy lustre. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 29987,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The render closely resembles the individual animal with preserved markings and overall shape, but there is minor drift in the eye shape and muzzle profile."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 31445
+}

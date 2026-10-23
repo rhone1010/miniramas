@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into an extraordinary museum-quality mosaic artwork built completely from thousands of individually placed tesserae. The animal must unmistakably read as handcrafted mosaic, never as a realistic animal with mosaic lines drawn over it.\n\nSimplify fur, feathers, scales and complex coat detail into intentional fields and flowing rhythms of small irregular glass, ceramic and stone pieces. Use larger expressive tesserae across broad body areas and increasingly fine, intricate pieces around the eyes, face and other identifying features. Every piece has its own edge, thickness, slight angle and handmade irregularity, separated by visible but refined grout.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve the distinctive map, placement, proportion and relationships of the animal's colors and markings, but translate them completely into mosaic material. Let the direction, color and rhythm of the tesserae describe anatomy and character instead of literal fur or scales.\n\nUse a rich palette derived from the source animal, expanded with translucent jewel-like glass, glazed ceramic, natural stone and occasional restrained gold tesserae. The surface should be tactile and physically dimensional, with grazing gallery light revealing uneven planes, tiny reflections and handcrafted depth.\n\nPreserve the animal's pose, expression and recognizable character. If multiple animals or objects appear, simplify them into the same coherent mosaic language rather than rendering anything realistically. Sophisticated one-of-a-kind fine art, richly crafted and unmistakably based on the source. NO TEXT.\nAvoid realistic fur, feathers or scales beneath mosaic lines. Avoid large fitted panels, regular square tiles, pixel art, printed textures, photographic surfaces or loss of the animal's distinctive markings.",
+  "style": "realistic",
+  "preset": "mosaic_portrait",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into an extraordinary museum-quality mosaic artwork built completely from thousands of individually placed tesserae. The animal must unmistakably read as handcrafted mosaic, never as a realistic animal with mosaic lines drawn over it.\n\nSimplify fur, feathers, scales and complex coat detail into intentional fields and flowing rhythms of small irregular glass, ceramic and stone pieces. Use larger expressive tesserae across broad body areas and increasingly fine, intricate pieces around the eyes, face and other identifying features. Every piece has its own edge, thickness, slight angle and handmade irregularity, separated by visible but refined grout.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve the distinctive map, placement, proportion and relationships of the animal's colors and markings, but translate them completely into mosaic material. Let the direction, color and rhythm of the tesserae describe anatomy and character instead of literal fur or scales.\n\nUse a rich palette derived from the source animal, expanded with translucent jewel-like glass, glazed ceramic, natural stone and occasional restrained gold tesserae. The surface should be tactile and physically dimensional, with grazing gallery light revealing uneven planes, tiny reflections and handcrafted depth.\n\nPreserve the animal's pose, expression and recognizable character. If multiple animals or objects appear, simplify them into the same coherent mosaic language rather than rendering anything realistically. Sophisticated one-of-a-kind fine art, richly crafted and unmistakably based on the source. NO TEXT.\nAvoid realistic fur, feathers or scales beneath mosaic lines. Avoid large fitted panels, regular square tiles, pixel art, printed textures, photographic surfaces or loss of the animal's distinctive markings.",
+      "duration_ms": 18185,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "Excellent likeness with preserved markings and facial features, though the texture may vary slightly; overall, the specific individual is easily recognizable."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 19637
+}

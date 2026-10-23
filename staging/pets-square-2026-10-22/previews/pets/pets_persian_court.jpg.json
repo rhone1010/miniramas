@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a sumptuous romantic portrait of an animal of the Safavid Persian court, preserving its breed, build and markings. Dress the animal in richly woven crimson, madder red and tarnished-gold brocade, layered period garments, a jeweled sash, restrained antique jewelry and a small elegant Safavid turban between the ears. Likeness is important.\nThe animal belongs completely to the period, with a natural, reserved courtly posture and quiet, self-possessed expression. Avoid modern posing and contemporary styling.\nPhotograph the animal in an intimate Safavid palace chamber by dim oil-lamp and candlelight, with carved plaster, faded Persian textiles, dark wood and intricate tilework disappearing into shadow. Slightly desaturated coat and colors, warm lifted blacks, amber haze, subtle grain and softened highlights. Deep velvety shadows with uneven flame falloff.\nRomantic and intimate rather than theatrical, like an old Persian court portrait somehow captured through a camera, imperfect, atmospheric and quietly luxurious.\nPeriod objects may be held — a book, a scroll, a cup, prayer beads, a flower. Nothing modern. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+  "style": "realistic",
+  "preset": "persian_court",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a sumptuous romantic portrait of an animal of the Safavid Persian court, preserving its breed, build and markings. Dress the animal in richly woven crimson, madder red and tarnished-gold brocade, layered period garments, a jeweled sash, restrained antique jewelry and a small elegant Safavid turban between the ears. Likeness is important.\nThe animal belongs completely to the period, with a natural, reserved courtly posture and quiet, self-possessed expression. Avoid modern posing and contemporary styling.\nPhotograph the animal in an intimate Safavid palace chamber by dim oil-lamp and candlelight, with carved plaster, faded Persian textiles, dark wood and intricate tilework disappearing into shadow. Slightly desaturated coat and colors, warm lifted blacks, amber haze, subtle grain and softened highlights. Deep velvety shadows with uneven flame falloff.\nRomantic and intimate rather than theatrical, like an old Persian court portrait somehow captured through a camera, imperfect, atmospheric and quietly luxurious.\nPeriod objects may be held — a book, a scroll, a cup, prayer beads, a flower. Nothing modern. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 18525,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The rendered animal closely resembles the source with preserved markings and expression, but there is slight drift in fur texture and coat length."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 20099
+}

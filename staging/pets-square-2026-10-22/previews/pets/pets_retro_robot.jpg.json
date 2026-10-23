@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a charming atomic-age tin robot, unmistakably the same person. Preserve the exact silhouette, shape and proportions of the animal's face, and preserve the natural size, spacing and placement of their features. Construct that familiar face from a few simple, smoothly pressed pieces of enamelled sheet metal, rather than reproducing real fur, feathers or scales or substituting mechanical facial features.\nEyes remain the animal's normal size and shape, set naturally into the metal face. The muzzle is a simple articulated metal muzzle that preserves the animal's expression. No camera lenses, mechanical teeth, grille nose or exaggerated robot features. Dont change expression. Cream, red and chrome sheet metal, rivets, seams, gauges and antenna complete the robot.\nThe feeling is charming vintage tin toy brought to life, not cyborg, android or humanoid machinery. Retro-futurist 1950s city softly out of focus. No text or signage. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+  "style": "realistic",
+  "preset": "retro_robot",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a charming atomic-age tin robot, unmistakably the same person. Preserve the exact silhouette, shape and proportions of the animal's face, and preserve the natural size, spacing and placement of their features. Construct that familiar face from a few simple, smoothly pressed pieces of enamelled sheet metal, rather than reproducing real fur, feathers or scales or substituting mechanical facial features.\nEyes remain the animal's normal size and shape, set naturally into the metal face. The muzzle is a simple articulated metal muzzle that preserves the animal's expression. No camera lenses, mechanical teeth, grille nose or exaggerated robot features. Dont change expression. Cream, red and chrome sheet metal, rivets, seams, gauges and antenna complete the robot.\nThe feeling is charming vintage tin toy brought to life, not cyborg, android or humanoid machinery. Retro-futurist 1950s city softly out of focus. No text or signage. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 18968,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 5,
+          "reason": "The rendered animal has lost distinctive facial markings and proportions, making it less recognizable as the same individual despite some retained characteristics."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 5/10 < 8/10 — \"The rendered animal has lost distinctive facial markings and proportions, making it less recognizable as the same individual despite some retained characteristics.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Transform the animal into a charming atomic-age tin robot, unmistakably the same person. Preserve the exact silhouette, shape and proportions of the animal's face, and preserve the natural size, spacing and placement of their features. Construct that familiar face from a few simple, smoothly pressed pieces of enamelled sheet metal, rather than reproducing real fur, feathers or scales or substituting mechanical facial features.\nEyes remain the animal's normal size and shape, set naturally into the metal face. The muzzle is a simple articulated metal muzzle that preserves the animal's expression. No camera lenses, mechanical teeth, grille nose or exaggerated robot features. Dont change expression. Cream, red and chrome sheet metal, rivets, seams, gauges and antenna complete the robot.\nThe feeling is charming vintage tin toy brought to life, not cyborg, android or humanoid machinery. Retro-futurist 1950s city softly out of focus. No text or signage. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 16720,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 4,
+          "reason": "The render significantly alters the head shape and proportions, leading to a loss of recognizable identity despite some surface markings being similar."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 4/10 < 8/10 — \"The render significantly alters the head shape and proportions, leading to a loss of recognizable identity despite some surface markings being similar.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 4/10 < 8/10 — \"The render significantly alters the head shape and proportions, leading to a loss of recognizable identity despite some surface markings being similar.\"",
+  "fatal_error": null,
+  "duration_ms": 37091
+}

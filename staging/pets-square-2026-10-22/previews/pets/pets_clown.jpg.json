@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a circle de soleil clown, preserving its breed, build and markings precisely. A ruffled collar in muted tones in silk sits at the throat, a small conical hat with a large pom-pom in same colors perches between the ears, and a round red nose caps the muzzle. Soft greasepaint in white, and ruffle colors follows the animal's OWN markings rather than covering them, around the eyes, nose and mouth - the pattern it already has, picked out in paint. costume over the body; Warm theatrical light from a single spot above, deep falloff into a darkened big-top interior, tiered seating and rigging out of focus behind. Photographic and highly idealised - a real animal in real light, dignified and delighted rather than mocked. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nAvoid a sad or frightened expression. Avoid a full-body costume or clothing. Avoid painting over the animal's natural markings. Avoid horror or menace.",
+  "style": "realistic",
+  "preset": "clown",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a circle de soleil clown, preserving its breed, build and markings precisely. A ruffled collar in muted tones in silk sits at the throat, a small conical hat with a large pom-pom in same colors perches between the ears, and a round red nose caps the muzzle. Soft greasepaint in white, and ruffle colors follows the animal's OWN markings rather than covering them, around the eyes, nose and mouth - the pattern it already has, picked out in paint. costume over the body; Warm theatrical light from a single spot above, deep falloff into a darkened big-top interior, tiered seating and rigging out of focus behind. Photographic and highly idealised - a real animal in real light, dignified and delighted rather than mocked. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nAvoid a sad or frightened expression. Avoid a full-body costume or clothing. Avoid painting over the animal's natural markings. Avoid horror or menace.",
+      "duration_ms": 18270,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The rendered animal maintains recognition with similar head shape, muzzle length, and expression, although the clown costume introduces some deviation in overall appearance."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 19908
+}

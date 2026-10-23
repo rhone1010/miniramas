@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a realistic romantic photograph of an aristocratic animal at an elegant 1926 hotel party, preserving facial likeness. Dress the animal in a black dinner fitted collar-piece with satin lapels, white wing-collar shirt, black bow tie and white silk pocket square. Hair slicked flat with pomade and a hard side part, clean-shaven. Likeness is essential. It should belong completely to the period, never appearing modern in vintage costume.\nBehind it, an opulent 1920s ballroom dissolves into mirrored panels, muted gold ornament, low amber lamps and cigarette haze, heavily out of focus with no other animals visible.\nGive the photograph a gently aged 1920s character: muted warm color, restrained sepia-amber cast, slightly desaturated ivory coat, softened blacks, subtle grain, highlight bloom and gentle corner falloff. Retain subdued gold, tobacco and warm coat tones. It should feel like a beautifully preserved early color photograph, not monochrome or a modern vintage filter.\nPreserve natural facial structure, lines, scars and asymmetry. Remove temporary blemishes only. Never reshape, enlarge eyes or de-age. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+  "style": "realistic",
+  "preset": "deco_twenties",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a realistic romantic photograph of an aristocratic animal at an elegant 1926 hotel party, preserving facial likeness. Dress the animal in a black dinner fitted collar-piece with satin lapels, white wing-collar shirt, black bow tie and white silk pocket square. Hair slicked flat with pomade and a hard side part, clean-shaven. Likeness is essential. It should belong completely to the period, never appearing modern in vintage costume.\nBehind it, an opulent 1920s ballroom dissolves into mirrored panels, muted gold ornament, low amber lamps and cigarette haze, heavily out of focus with no other animals visible.\nGive the photograph a gently aged 1920s character: muted warm color, restrained sepia-amber cast, slightly desaturated ivory coat, softened blacks, subtle grain, highlight bloom and gentle corner falloff. Retain subdued gold, tobacco and warm coat tones. It should feel like a beautifully preserved early color photograph, not monochrome or a modern vintage filter.\nPreserve natural facial structure, lines, scars and asymmetry. Remove temporary blemishes only. Never reshape, enlarge eyes or de-age. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 18377,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The sculpture closely resembles the specific animal with preserved head shape, muzzle length, and distinctive features, but the expression appears slightly more formal than in the source."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 20212
+}

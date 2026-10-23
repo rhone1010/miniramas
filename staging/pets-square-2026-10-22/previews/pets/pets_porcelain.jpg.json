@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Reimagine the pet as an exquisite designer porcelain collectible — unmistakably a crafted figurine rather than a real animal with a glossy surface.\n\nPreserve the pet's distinctive character, breed and expression while gently stylizing the form: slightly simplified anatomy, softened sculptural planes, a subtly larger and more expressive head and eyes, elegant rounded paws and beautifully modeled features. Make it charming and collectible without becoming cartoonish.\n\nThe entire figurine is fine fired porcelain with a luminous glazed surface. Natural colors and markings are recreated as sophisticated hand-painted underglaze. THE MARKINGS AND COLORS ARE THE LIKENESS — preserve their distinctive pattern, placement and relationships. Eyes are jewel-like painted and glazed porcelain, not biological eyes. Show subtle evidence of craftsmanship: fine crazing, glaze pooling, delicate sculpted edges and slight handmade irregularity.\n\nPresent the figurine nestled in pale natural packing straw inside a beautiful simple wooden keepsake box, suggesting a treasured object carefully stored and passed through a family.\n\nKeep everything surrounding the pet LIGHT, WARM AND NEUTRAL — ivory, cream, pale wood and soft straw. The background is heavily blurred into luminous creamy bokeh with only subtle suggestions of an elegant home and fine china. No dark cabinets or visual clutter.\n\nThe porcelain pet dominates the image, beautifully lit with soft window light and immediately recognizable as a precious designer collectible. Sweet, sophisticated, tactile and full of personality. NO TEXT.\nAvoid photorealistic living-animal anatomy, realistic fur, biological eyes, dark backgrounds, busy china displays, cartoon proportions, cheap ceramic souvenirs or blue-and-white porcelain styling.",
+  "style": "realistic",
+  "preset": "porcelain",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Reimagine the pet as an exquisite designer porcelain collectible — unmistakably a crafted figurine rather than a real animal with a glossy surface.\n\nPreserve the pet's distinctive character, breed and expression while gently stylizing the form: slightly simplified anatomy, softened sculptural planes, a subtly larger and more expressive head and eyes, elegant rounded paws and beautifully modeled features. Make it charming and collectible without becoming cartoonish.\n\nThe entire figurine is fine fired porcelain with a luminous glazed surface. Natural colors and markings are recreated as sophisticated hand-painted underglaze. THE MARKINGS AND COLORS ARE THE LIKENESS — preserve their distinctive pattern, placement and relationships. Eyes are jewel-like painted and glazed porcelain, not biological eyes. Show subtle evidence of craftsmanship: fine crazing, glaze pooling, delicate sculpted edges and slight handmade irregularity.\n\nPresent the figurine nestled in pale natural packing straw inside a beautiful simple wooden keepsake box, suggesting a treasured object carefully stored and passed through a family.\n\nKeep everything surrounding the pet LIGHT, WARM AND NEUTRAL — ivory, cream, pale wood and soft straw. The background is heavily blurred into luminous creamy bokeh with only subtle suggestions of an elegant home and fine china. No dark cabinets or visual clutter.\n\nThe porcelain pet dominates the image, beautifully lit with soft window light and immediately recognizable as a precious designer collectible. Sweet, sophisticated, tactile and full of personality. NO TEXT.\nAvoid photorealistic living-animal anatomy, realistic fur, biological eyes, dark backgrounds, busy china displays, cartoon proportions, cheap ceramic souvenirs or blue-and-white porcelain styling.",
+      "duration_ms": 83791,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The render is recognizable as the same individual animal but features a simplified fur texture and some drift in ear shape."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 85547
+}

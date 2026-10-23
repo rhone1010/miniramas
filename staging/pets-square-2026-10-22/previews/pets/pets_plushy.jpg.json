@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "make this animal into a plushy doll. maintain the characteristics that make this animal unique but make a playful simplistic childs favorite toy. simplify the details. exagerate eyes, nose, etc. no text. maintain the coloring and patten of the animal. maintain the physical position. maintain the expressiveness of the eyes and micro gestures if present of the face. use a blurred background of a comfortable home interior and beautiful wooden floors. this is a treasured family stuffed animal that seems to have some life",
+  "style": "realistic",
+  "preset": "plushy",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "make this animal into a plushy doll. maintain the characteristics that make this animal unique but make a playful simplistic childs favorite toy. simplify the details. exagerate eyes, nose, etc. no text. maintain the coloring and patten of the animal. maintain the physical position. maintain the expressiveness of the eyes and micro gestures if present of the face. use a blurred background of a comfortable home interior and beautiful wooden floors. this is a treasured family stuffed animal that seems to have some life",
+      "duration_ms": 29634,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 9,
+          "reason": "The rendered animal closely resembles the source in head shape, muzzle proportions, and facial markings, with only minor deviations in texture and expression."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 9/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 9/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 31370
+}

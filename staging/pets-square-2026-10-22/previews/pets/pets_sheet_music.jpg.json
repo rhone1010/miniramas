@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the entire figure into a museum-quality sculpture constructed from sheet music, musical notation, manuscript pages, and flowing musical scores. The complete sculpture—including head, coat, shoulders and withers, chest, collar fabric, and forelegs—emerges from thousands of folded, curled, layered, and suspended pages. No conventional real surfaces remain anywhere on the form. Musical staffs sweep across the face, neck, shoulders and withers, chest, collar, and forelegs like topographic contours. Notes, rests, clefs, and dynamic markings become structural elements that define the nose, lips, cheeks, coat, collar, shoulder line, and foreleg contours. Hair is formed from cascading ribbons of sheet music twisting through space like melodies frozen in motion. Portions of the sculpture appear to unravel into floating pages and drifting notes, creating a sense of music escaping the form. No real fur, feathers or scales anywhere — the face, neck, forehead and ears are all built from layered notation pages, not coat. The staffs and notation continue across the entire face. This is the most common failure. Avoid flat printed surfaces, 2D sheet music collage, or pages without dimensional architecture. Avoid losing the likeness — the notation follows the animal's true facial structure so they remain clearly recognizable. Sculpture on a base on the stage of an empty symphony hall — music stands and chairs in rows behind, a cello and timpani left where the players finished, tiered seating receding into the dark, one warm working light overhead. Heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+  "style": "realistic",
+  "preset": "sheet_music",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the entire figure into a museum-quality sculpture constructed from sheet music, musical notation, manuscript pages, and flowing musical scores. The complete sculpture—including head, coat, shoulders and withers, chest, collar fabric, and forelegs—emerges from thousands of folded, curled, layered, and suspended pages. No conventional real surfaces remain anywhere on the form. Musical staffs sweep across the face, neck, shoulders and withers, chest, collar, and forelegs like topographic contours. Notes, rests, clefs, and dynamic markings become structural elements that define the nose, lips, cheeks, coat, collar, shoulder line, and foreleg contours. Hair is formed from cascading ribbons of sheet music twisting through space like melodies frozen in motion. Portions of the sculpture appear to unravel into floating pages and drifting notes, creating a sense of music escaping the form. No real fur, feathers or scales anywhere — the face, neck, forehead and ears are all built from layered notation pages, not coat. The staffs and notation continue across the entire face. This is the most common failure. Avoid flat printed surfaces, 2D sheet music collage, or pages without dimensional architecture. Avoid losing the likeness — the notation follows the animal's true facial structure so they remain clearly recognizable. Sculpture on a base on the stage of an empty symphony hall — music stands and chairs in rows behind, a cello and timpani left where the players finished, tiered seating receding into the dark, one warm working light overhead. Heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 24597,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The render captures the general characteristics and markings of the cat but significantly drifts in fur texture and volume, making it less recognizable as the specific individual."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The render captures the general characteristics and markings of the cat but significantly drifts in fur texture and volume, making it less recognizable as the specific individual.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Transform the entire figure into a museum-quality sculpture constructed from sheet music, musical notation, manuscript pages, and flowing musical scores. The complete sculpture—including head, coat, shoulders and withers, chest, collar fabric, and forelegs—emerges from thousands of folded, curled, layered, and suspended pages. No conventional real surfaces remain anywhere on the form. Musical staffs sweep across the face, neck, shoulders and withers, chest, collar, and forelegs like topographic contours. Notes, rests, clefs, and dynamic markings become structural elements that define the nose, lips, cheeks, coat, collar, shoulder line, and foreleg contours. Hair is formed from cascading ribbons of sheet music twisting through space like melodies frozen in motion. Portions of the sculpture appear to unravel into floating pages and drifting notes, creating a sense of music escaping the form. No real fur, feathers or scales anywhere — the face, neck, forehead and ears are all built from layered notation pages, not coat. The staffs and notation continue across the entire face. This is the most common failure. Avoid flat printed surfaces, 2D sheet music collage, or pages without dimensional architecture. Avoid losing the likeness — the notation follows the animal's true facial structure so they remain clearly recognizable. Sculpture on a base on the stage of an empty symphony hall — music stands and chairs in rows behind, a cello and timpani left where the players finished, tiered seating receding into the dark, one warm working light overhead. Heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.",
+      "duration_ms": 33708,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 5,
+          "reason": "The sculpted cat shares some resemblance in facial structure and markings but diverges significantly in coat texture and has an overly stylized form that diminishes individual identity."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 5/10 < 8/10 — \"The sculpted cat shares some resemblance in facial structure and markings but diverges significantly in coat texture and has an overly stylized form that diminishes individual identity.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 5/10 < 8/10 — \"The sculpted cat shares some resemblance in facial structure and markings but diverges significantly in coat texture and has an overly stylized form that diminishes individual identity.\"",
+  "fatal_error": null,
+  "duration_ms": 60313
+}

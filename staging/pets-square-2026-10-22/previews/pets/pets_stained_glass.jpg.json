@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "Transform the animal into a fully three-dimensional stained-glass sculpture, combining intricate Tiffany art glass with the physical anatomy and volume of the animal.\n\nConstruct the animal from many individually fitted pieces of real art glass: irregular shards, chips, slivers and fractured polygons with organic variation in shape and scale. Use finer fragmentation around the face, eyes and identifying features, with broader expressive pieces elsewhere. The pieces physically wrap around the animal's anatomy so it reads as a solid three-dimensional sculpture, never a flat window.\n\nJoin the glass with exceptionally fine metallic GOLD wire, delicate and subordinate to the glass.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their pattern, placement, proportion and relationships as carefully as facial structure. Translate those markings into richly varied translucent cathedral, opalescent and jewel-toned art glass rather than reproducing literal fur, feathers or scales.\n\nUse TWO distinct light sources. Warm internal illumination glows outward through the sculpture while soft directional external light creates reflections, highlights and sculptural shadows across its physical form. The internal light makes the glass glow; the external light reveals its anatomy and volume.\n\nEvery visible part of the animal is glass and fine gold wire. Background: an atmospheric Tiffany lamp shop with softly glowing stained-glass lamps and shallow depth of field.\nAvoid thick lead, black outlines, broad seams, flat stained glass, mosaic-window appearance, realistic fur, feathers or scales, or losing the animal's markings beneath the glass.",
+  "style": "realistic",
+  "preset": "stained_glass",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Transform the animal into a fully three-dimensional stained-glass sculpture, combining intricate Tiffany art glass with the physical anatomy and volume of the animal.\n\nConstruct the animal from many individually fitted pieces of real art glass: irregular shards, chips, slivers and fractured polygons with organic variation in shape and scale. Use finer fragmentation around the face, eyes and identifying features, with broader expressive pieces elsewhere. The pieces physically wrap around the animal's anatomy so it reads as a solid three-dimensional sculpture, never a flat window.\n\nJoin the glass with exceptionally fine metallic GOLD wire, delicate and subordinate to the glass.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their pattern, placement, proportion and relationships as carefully as facial structure. Translate those markings into richly varied translucent cathedral, opalescent and jewel-toned art glass rather than reproducing literal fur, feathers or scales.\n\nUse TWO distinct light sources. Warm internal illumination glows outward through the sculpture while soft directional external light creates reflections, highlights and sculptural shadows across its physical form. The internal light makes the glass glow; the external light reveals its anatomy and volume.\n\nEvery visible part of the animal is glass and fine gold wire. Background: an atmospheric Tiffany lamp shop with softly glowing stained-glass lamps and shallow depth of field.\nAvoid thick lead, black outlines, broad seams, flat stained glass, mosaic-window appearance, realistic fur, feathers or scales, or losing the animal's markings beneath the glass.",
+      "duration_ms": 18639,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "While the sculpted figure is recognizable as a macaw, it lacks distinct facial marking patterns and specific proportions that would identify it as the same individual bird."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"While the sculpted figure is recognizable as a macaw, it lacks distinct facial marking patterns and specific proportions that would identify it as the same individual bird.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "Transform the animal into a fully three-dimensional stained-glass sculpture, combining intricate Tiffany art glass with the physical anatomy and volume of the animal.\n\nConstruct the animal from many individually fitted pieces of real art glass: irregular shards, chips, slivers and fractured polygons with organic variation in shape and scale. Use finer fragmentation around the face, eyes and identifying features, with broader expressive pieces elsewhere. The pieces physically wrap around the animal's anatomy so it reads as a solid three-dimensional sculpture, never a flat window.\n\nJoin the glass with exceptionally fine metallic GOLD wire, delicate and subordinate to the glass.\n\nTHE MARKINGS AND COLORS ARE THE LIKENESS. Preserve their pattern, placement, proportion and relationships as carefully as facial structure. Translate those markings into richly varied translucent cathedral, opalescent and jewel-toned art glass rather than reproducing literal fur, feathers or scales.\n\nUse TWO distinct light sources. Warm internal illumination glows outward through the sculpture while soft directional external light creates reflections, highlights and sculptural shadows across its physical form. The internal light makes the glass glow; the external light reveals its anatomy and volume.\n\nEvery visible part of the animal is glass and fine gold wire. Background: an atmospheric Tiffany lamp shop with softly glowing stained-glass lamps and shallow depth of field.\nAvoid thick lead, black outlines, broad seams, flat stained glass, mosaic-window appearance, realistic fur, feathers or scales, or losing the animal's markings beneath the glass.",
+      "duration_ms": 19241,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 8,
+          "reason": "The sculpted figure closely resembles the source parrot with similar coloration and facial features, though the marking pattern and texture are less detailed, leading to minor drift."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 8/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 8/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 39712
+}

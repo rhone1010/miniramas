@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "prompt_used": "Reimagine the entire source image as an extraordinary museum-quality art quilt made as a thick luxurious queen-size duvet.\n\nInterpret EVERYTHING depicted in the source through the same textile language. Animals, toys, yarn, furniture, plants and every other object become simplified designed shapes constructed from fabric. Nothing within the pictured scene remains realistic or dimensional outside the quilt.\n\nSimplify complex forms, textures and animal markings into intentional groups of color and strong graphic shapes. Preserve the distinctive patterns, expressions, poses and relationships that make the animals recognizable, while allowing an accomplished textile artist to interpret and simplify them.\n\nConstruct the image from exquisitely selected cotton, linen, velvet, woven and patterned fabrics using sophisticated piecing, appliqué, embroidery and quilting. Visible seams, layered fabric edges, intricate hand stitching and flowing quilting lines unify the entire composition. Generous batting creates rich dimensional relief and makes the duvet visibly thick, soft and substantial.\n\nThe craftsmanship is exceptional — a one-of-a-kind contemporary fiber artwork worthy of a major museum or textile gallery, with sophisticated color harmony, extraordinary material choices and beautiful handmade detail.\n\nDisplay the large queen-size duvet hanging vertically from an elegant minimal textile display, its substantial thickness, stitched border, gentle folds and weight clearly visible. The quilt fills most of the frame.\n\nThe surrounding gallery or refined interior is LIGHT, neutral and HEAVILY BLURRED into soft luminous bokeh. Beautiful diffused natural light reveals the fabric, stitching and relief while keeping all attention on the quilt. NO TEXT.\nAvoid realistic objects within the quilt, literal yarn or props sitting on its surface, realistic fur, photographic textures, printed photographs, separate stuffed animals, thin blankets, crude patchwork or hobby-craft quality.",
+  "style": "realistic",
+  "preset": "quilted",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "Reimagine the entire source image as an extraordinary museum-quality art quilt made as a thick luxurious queen-size duvet.\n\nInterpret EVERYTHING depicted in the source through the same textile language. Animals, toys, yarn, furniture, plants and every other object become simplified designed shapes constructed from fabric. Nothing within the pictured scene remains realistic or dimensional outside the quilt.\n\nSimplify complex forms, textures and animal markings into intentional groups of color and strong graphic shapes. Preserve the distinctive patterns, expressions, poses and relationships that make the animals recognizable, while allowing an accomplished textile artist to interpret and simplify them.\n\nConstruct the image from exquisitely selected cotton, linen, velvet, woven and patterned fabrics using sophisticated piecing, appliqué, embroidery and quilting. Visible seams, layered fabric edges, intricate hand stitching and flowing quilting lines unify the entire composition. Generous batting creates rich dimensional relief and makes the duvet visibly thick, soft and substantial.\n\nThe craftsmanship is exceptional — a one-of-a-kind contemporary fiber artwork worthy of a major museum or textile gallery, with sophisticated color harmony, extraordinary material choices and beautiful handmade detail.\n\nDisplay the large queen-size duvet hanging vertically from an elegant minimal textile display, its substantial thickness, stitched border, gentle folds and weight clearly visible. The quilt fills most of the frame.\n\nThe surrounding gallery or refined interior is LIGHT, neutral and HEAVILY BLURRED into soft luminous bokeh. Beautiful diffused natural light reveals the fabric, stitching and relief while keeping all attention on the quilt. NO TEXT.\nAvoid realistic objects within the quilt, literal yarn or props sitting on its surface, realistic fur, photographic textures, printed photographs, separate stuffed animals, thin blankets, crude patchwork or hobby-craft quality.",
+      "duration_ms": 19022,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 10,
+          "reason": "The rendered animal closely matches the source in head shape, facial markings, and expression, making it fully recognizable as the same individual."
+        }
+      ],
+      "passed": true,
+      "pass_reason": "pass: 10/10 ≥ 8/10"
+    }
+  ],
+  "final_pass": true,
+  "final_reason": "pass: 10/10 ≥ 8/10",
+  "fatal_error": null,
+  "duration_ms": 20555
+}

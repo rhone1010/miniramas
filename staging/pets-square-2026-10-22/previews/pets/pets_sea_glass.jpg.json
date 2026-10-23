@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "prompt_used": "The animal is sculpted from a single continuous form of weathered translucent beach glass, with flowing strands of individually worn sea glass preserving the original coat pattern. Frosted seafoam, aqua, emerald, turquoise and cobalt glass glow with brilliant internal caustics and refracted sunlight, while tiny amber fragments appear only as subtle accents. Ocean foam, spray and flowing water wrap naturally around the sculpture as it emerges from the surf. Dramatic backlighting through sea spray. Turn clothing into sea glass and very translucent. Bright catchlight in both eyes. Background: a rocky shoreline in low sun, surf breaking behind, heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nNo skin, ceramic, mosaic or tiled appearance.",
+  "style": "realistic",
+  "preset": "sea_glass",
+  "environment": "gallery",
+  "action": "as_photographed",
+  "subject_count": 1,
+  "refined": false,
+  "refine_ms": null,
+  "refine_decision": "explicit (override=false)",
+  "expanded": false,
+  "expand_ms": null,
+  "expand_skip": "initial_preview",
+  "swapped": false,
+  "swap_ms": null,
+  "swap_skip": "not applicable: face swap is a human-face model; pet identity is held by prompt + scoring",
+  "pets_detected_source": 1,
+  "pets_detected_render": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "prompt_used": "The animal is sculpted from a single continuous form of weathered translucent beach glass, with flowing strands of individually worn sea glass preserving the original coat pattern. Frosted seafoam, aqua, emerald, turquoise and cobalt glass glow with brilliant internal caustics and refracted sunlight, while tiny amber fragments appear only as subtle accents. Ocean foam, spray and flowing water wrap naturally around the sculpture as it emerges from the surf. Dramatic backlighting through sea spray. Turn clothing into sea glass and very translucent. Bright catchlight in both eyes. Background: a rocky shoreline in low sun, surf breaking behind, heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nNo skin, ceramic, mosaic or tiled appearance.",
+      "duration_ms": 18568,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 6,
+          "reason": "The render displays similar colors and features, but the head shape and eye proportions have drifted, making it less recognizable as the same individual animal."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 6/10 < 8/10 — \"The render displays similar colors and features, but the head shape and eye proportions have drifted, making it less recognizable as the same individual animal.\""
+    },
+    {
+      "attempt": 2,
+      "prompt_used": "The animal is sculpted from a single continuous form of weathered translucent beach glass, with flowing strands of individually worn sea glass preserving the original coat pattern. Frosted seafoam, aqua, emerald, turquoise and cobalt glass glow with brilliant internal caustics and refracted sunlight, while tiny amber fragments appear only as subtle accents. Ocean foam, spray and flowing water wrap naturally around the sculpture as it emerges from the surf. Dramatic backlighting through sea spray. Turn clothing into sea glass and very translucent. Bright catchlight in both eyes. Background: a rocky shoreline in low sun, surf breaking behind, heavily out of focus. Complete full-body sculpture: the whole animal from nose to tail to paws, nothing omitted, simplified or cropped. IF THE ANIMAL IS A HORSE OR OTHER LARGE ANIMAL, frame the head and neck only - a full horse at this scale leaves the head too small to recognise. THE MARKINGS ARE THE LIKENESS - preserve their pattern, placement and proportion exactly, because they do for an animal what facial structure does for a person. The animal's head occupies about 20% of the image. A collar and tags carry through in the same material and are welcome; they are identity, not props. Preserve breed, build, age and natural asymmetry. Add nothing that is not in the source.\nNo skin, ceramic, mosaic or tiled appearance.",
+      "duration_ms": 18490,
+      "per_figure_scores": [
+        {
+          "figure_index": 0,
+          "score": 7,
+          "reason": "The render is recognizable as the same individual animal, but there are slight variations in the color pattern and expression that create minor drift."
+        }
+      ],
+      "passed": false,
+      "pass_reason": "fail: 7/10 < 8/10 — \"The render is recognizable as the same individual animal, but there are slight variations in the color pattern and expression that create minor drift.\""
+    }
+  ],
+  "final_pass": false,
+  "final_reason": "fail: 7/10 < 8/10 — \"The render is recognizable as the same individual animal, but there are slight variations in the color pattern and expression that create minor drift.\"",
+  "fatal_error": null,
+  "duration_ms": 38140
+}
