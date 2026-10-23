@@ -16,6 +16,8 @@ const productDrafts:Record<string,{size:string;copies:number}>={};
 let studioState:StudioState={step:'product',productId:'',size:'',copies:1,drafts:productDrafts};
 let session=newSession(),view:View='photo',history:View[]=[],products:Product[]=[],fixtures:Preview[]=[],registries={} as Record<Series,Registry>,manifest:any,originalPortraitManifest:any;
 let shoppingFavoriteId:string|null=null;
+const productPhotography=new Map<string,string>();
+const unavailableCatalogOptions=new Map<string,{label:string;reason:string}[]>();
 let featuredProduct='';
 let catalogSamples:Partial<Record<Series,Record<string,{desktop:string;mobile:string;placeholder:boolean;templateId?:string}>>>={};
 function catalogPhoto(p:Product,cls:string){const sample=session.source?.series?catalogSamples[session.source.series]?.[p.id]:undefined;if(!sample||!isApprovedScene(p.id,sample.templateId)||!sample.desktop.endsWith('-scene-desktop.webp')||!sample.mobile.endsWith('-scene-mobile.webp'))return photo(asset(p.image),p.label,cls);return '<picture><source media="(max-width:600px)" srcset="'+esc(sample.mobile)+'">'+photo(sample.desktop,p.label,cls)+'</picture>'}
@@ -74,7 +76,7 @@ function render(){
  if(view==='effects'&&!pivotMode){const filters=$('filters');for(const id of ['back','new-gift'])if($(id))filters.before($(id))}
  const exits=document.createElement('div');exits.className='actions';
  if(['cart','checkout'].includes(view))($('back') as HTMLButtonElement).disabled=busy;
- const cancel=document.createElement('button');cancel.textContent='Cancel';const resumeId=live?.id||params.get('sessionId')||params.get('resumeSessionId');cancel.dataset.href='/gifts.next.html?newGift=1'+(resumeId?'&resumeSessionId='+encodeURIComponent(resumeId):'');cancel.onclick=()=>confirmGiftExit(cancel.dataset.href!);if(!pivotMode&&(view!=='photo'||!!live?.session||!!sourceURL)&&!['review','focus','compare','products','configuration'].includes(view))exits.append(cancel);if(exits.childElementCount)$('left').append(exits);if(view==='photo'&&!history.length)$('back').hidden=true;
+ const cancel=document.createElement('button');cancel.textContent='Cancel';const resumeId=live?.id||params.get('sessionId')||params.get('resumeSessionId');cancel.dataset.href='/gifts.next.html?newGift=1'+(resumeId?'&resumeSessionId='+encodeURIComponent(resumeId):'');cancel.onclick=()=>confirmGiftExit(cancel.dataset.href!);if(!pivotMode&&(view!=='photo'||!!live?.session||!!sourceURL)&&!['review','focus','compare','products','configuration'].includes(view))exits.append(cancel);if(exits.childElementCount)$('left').append(exits);if(view==='photo'&&!history.length&&!pivotMode)$('back').hidden=true;
  document.querySelectorAll<HTMLButtonElement>('[data-product-preview]').forEach(b=>b.onclick=()=>{productPreviews.delete(b.dataset.productPreview!);render()});
  adaptMobileView();
  rememberView();
@@ -147,6 +149,13 @@ function renderPhoto(){
  rail('Your<br>Photo','<p>Let’s start with a photo and some details.</p><p>A great photo helps us create art you’ll be proud to give — and one they’ll treasure for years to come.</p>');
  $('right').innerHTML=sourceURL?'<div class="source-holder">'+photo(sourceURL,'Your uploaded photograph')+'</div>'+'<p>Photo uploaded.</p><p class="small">Sample analysis and artwork only. Your photo is not transformed in this preview.</p>'+secondary('change-photo','Change photo'):'<h2>Photo tips</h2><ul class="tips"><li>Use a clear, well-lit photo</li><li>A close-up works best</li><li>Natural lighting looks great</li><li>Avoid heavy filters</li></ul>';
  $('screen').innerHTML='<input id="photo" type="file" accept="image/jpeg,image/png,image/webp" hidden>'+(sourceURL?'<h2>Who is this gift for?</h2><fieldset class="radios"><legend hidden>Who is this gift for?</legend>'+recipientOptions.map(x=>'<label class="radio"><input type="radio" name="recipient" value="'+esc(x)+'" '+(session.recipient===x?'checked':'')+'><span>'+x+'</span></label>').join('')+'</fieldset>':'<h2>Upload your photo</h2><div class="upload" id="drop"><div class="upload-icon" aria-hidden="true">↑</div><p>Drag and drop your photo here<br>or</p><button id="choose-photo">Choose a Photo</button><p class="small">JPEG, PNG or WebP · up to '+(limit/1000000).toFixed(2)+' MB</p></div>');
+ if(pivotMode){
+  $('left').querySelector('.tagline')?.remove();
+  const start=document.createElement('button');start.id='pivot-start';start.textContent='Start Over';start.onclick=()=>{if(sourceURL)confirmGiftExit('/gift-wizard.next.html?newGift=1'+(live?'&resumeSessionId='+encodeURIComponent(live.id):''));else ($('photo') as HTMLInputElement).click()};$('left').insertBefore(start,$('back'));
+  const backButton=$('back') as HTMLButtonElement;backButton.disabled=busy;backButton.textContent='Back';backButton.onclick=()=>{if(history.length)back();else location.assign('/gifts.next.html?newGift=1'+(live?'&resumeSessionId='+encodeURIComponent(live.id):''))};
+  const icon=$('screen').querySelector('.upload-icon');if(icon)icon.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="M29 70H23C10 70 7 52 20 46C17 33 29 23 40 27C48 9 74 15 77 35C96 34 101 61 84 69H72M50 88V41M34 57L50 41L66 57"/></svg>';
+  const prompt=$('drop')?.querySelector('p');if(prompt)prompt.textContent='Drag and drop your photo here or';
+ }
  if(analyzingSource){$('screen').insertAdjacentHTML('beforeend','<section class="upload analysis-feedback" role="status"><h2>Analyzing your photo…</h2></section>');if($('drop'))$('drop').hidden=true}
  const choose=()=>{if(!busy)($('photo') as HTMLInputElement).click()};
  if($('choose-photo'))$('choose-photo').onclick=choose;
@@ -274,9 +283,10 @@ function renderPivotEffects(){
 }
 function renderPivotProducts(){
  pivotRail(studioState.step==='product'?'Choose<br>your Gift':'Choose<br>your Size');$('right').innerHTML='';$('back').hidden=true;
- const choices=products.map(p=>({...p,image:familyPhoto({id:p.id,image:asset(p.image)}),options:(p.options as CatalogOption[]).filter(o=>giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
+ const familyOrder=['fine_art','premium','framed','mug','matted','canvas','framed_canvas','card'];
+ const choices=[...products].sort((a,b)=>familyOrder.indexOf(a.id)-familyOrder.indexOf(b.id)).map(p=>({...p,unavailableOptions:unavailableCatalogOptions.get(p.id),image:familyPhoto({id:p.id,image:asset(p.image)}),options:(p.options as CatalogOption[]).filter(o=>giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
  mountStudio($('screen'),{products:choices,state:studioState,navigationHost:$('left'),configurationHost:$('right'),
-  previewHtml:p=>photo(p.image,p.label),canAdd:()=>false,onAdd:()=>{},addLabel:'Craft',
+  sizeHeading:'Available Sizes',detailsIntroHtml:(p,o)=>'<h3>Your Product</h3>'+((o as CatalogOption).familyNote?'<div class="product-guidance"><p>'+esc((o as CatalogOption).familyNote)+'</p></div>':''),detailsHtml:(p,o)=>{if(!o)return photo(p.image,p.label);const url=o?productPhotography.get(p.id+':'+o.size):null;return url?photo(url,p.label):'<p role="status">Product photography unavailable.</p>'},previewHtml:p=>photo(p.image,p.label),canAdd:()=>false,onAdd:()=>{},addLabel:'Craft',
   onChange:s=>{studioState=s;if(layoutReview)rememberPivotReview();else rememberView();$('left').querySelector('h1')!.innerHTML=s.step==='product'?'Choose<br>your Gift':'Choose<br>your Size';document.body.dataset.pivotStep=s.step;document.querySelectorAll('.progress li').forEach((el,i)=>{if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});if(mobileLayout.matches){$('mobile-progress')?.remove();renderMobileProgress()}},
   onExit:()=>go('effects'),utilityHtml:'<p class="small">'+(pivotSubjectCount()>=2?'Landscape: unavailable manufacturing SKU':'')+'</p>'});
  document.body.dataset.pivotStep=studioState.step;
@@ -575,6 +585,13 @@ async function syncCatalog(){
  const api=live?.api||new GiftBackend((url,init)=>fetch(url,init));
  const catalog=await api.catalog();
  const availability=live?await api.availability(live.id):null;
+ unavailableCatalogOptions.clear();
+ for(const p of catalog.products.filter(p=>p.status!=='launch'||p.retailCents===null)){const list=unavailableCatalogOptions.get(p.family)||[];list.push({label:p.label,reason:(p.disabledReason||'retail_price_pending').replace(/_/g,' ')});unavailableCatalogOptions.set(p.family,list)}
+ productPhotography.clear();
+ if(availability){const sceneIds=[...new Set(availability.products.map(p=>p.preview?.sceneId).filter((id):id is string=>!!id))];
+  await Promise.all(sceneIds.map(async id=>{try{const r=await fetch('/gift-wizard/mockup-scenes/'+encodeURIComponent(id)+'/scene.next.json');if(!r.ok)return;const d=await r.json();if(d.id!==id||typeof d.sourceImage!=='string'||d.sourceImage.includes('/')||d.sourceImage.includes('\\'))return;for(const p of availability.products.filter(p=>p.preview?.sceneId===id&&isApprovedScene(p.productId,id)))productPhotography.set(p.productId,'/gift-wizard/mockup-scenes/'+encodeURIComponent(id)+'/'+encodeURIComponent(d.sourceImage))}catch{}}));
+ }
+
  const allowed=(id:string,fallback:boolean)=>availability?availability.products.find(p=>p.productId===id)?.purchasable===true:fallback;
  products=products.map(p=>({...p,available:catalog.products.some(c=>c.family===p.id&&allowed(c.productId,c.selectable)),options:catalog.products.filter(c=>c.family===p.id&&c.status==='launch'&&c.retailCents!==null).map(c=>({sku:c.sku,size:c.size,family:c.family,label:c.label,retailCents:c.retailCents!,attributes:c.attributes,compatible:allowed(c.productId,c.selectable),imageWidthIn:c.requirements.picturePx.w/c.requirements.ppi,imageHeightIn:c.requirements.picturePx.h/c.requirements.ppi,requiredPx:c.requirements.finalPx,familyNote:c.note}))}));
 }
