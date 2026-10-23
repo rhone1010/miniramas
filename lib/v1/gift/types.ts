@@ -40,7 +40,11 @@ export interface SourceView {
 }
 
 /** A product the customer chose BEFORE art exists. productId and size come from the canonical catalog (/api/v1/print/catalog). */
-export interface GiftLine { lineId: string; productId: string; size: string; copies: number }
+export interface GiftLine {
+  lineId: string; productId: string; size: string; copies: number
+  /** Generations flow: the accepted generation (picture) this line is made from. It is the line's approved composition, bound when the cart is set; it cannot change after payment. */
+  generationId?: string
+}
 
 /** The geometry a line will eventually print at, from the catalog. Informational: the server derives it. */
 /**
@@ -150,7 +154,7 @@ export interface GenerationView {
   /** Watermarked large preview (signed URL, one hour); null until ready. Re-read the session or this generation for a fresh one. */
   url: string | null
   /** 'free' counts against the six free generations; 'paid' used a unit of a $2.99 pack. A failed generation counts for nothing. */
-  kind: 'free' | 'paid'
+  kind: 'free' | 'paid' | 'correction'
   accepted: boolean
   acceptedAt: string | null
   /** The identity the order will pin (sha256 of the stored clean picture). Present when ready. */

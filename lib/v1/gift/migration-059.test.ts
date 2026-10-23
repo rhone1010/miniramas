@@ -113,6 +113,23 @@ it.skipIf(!PGlite)('migration 059: one effect, six free then packs of six, failu
     const o = (await q(`insert into print_orders(stripe_session_id, status) values ('cs_059','awaiting_artwork') returning id`))[0].id; await q('update gift_sessions set order_id=$2 where id=$1', [E, o])
     expect(await bad(`select gift_choose_effect($1,$2,$3)`, [E, U3, 'bronze'])).toMatch(/order_not_awaiting_artwork/)
 
+    // ── the one free post-purchase correction: a generation outside the allowance, idempotent per key, only while the order awaits approval
+    const mkCorr = await mk(U3, 'photo-K'); await q('select gift_choose_effect($1,$2,$3)', [mkCorr, U3, 'bronze'])
+    const cUsed = (await status(E, U3)).o_free_used
+    expect(await bad('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [mkCorr, U3, 'correction-a', 'x', 'y', 'z'])).toMatch(/order_payment_required/)
+    const c1 = (await q('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, 'correction-a', 'fine_art:12x18', 'a667', '2:3']))[0]; expect(c1).toMatchObject({ o_reused: false, o_status: 'pending' })
+    expect((await q('select kind, pack_id from gift_generations where id=$1', [c1.o_generation_id]))[0]).toEqual({ kind: 'correction', pack_id: null })
+    expect((await q('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, 'correction-a', 'fine_art:12x18', 'a667', '2:3']))[0]).toMatchObject({ o_generation_id: c1.o_generation_id, o_reused: true })
+    expect((await status(E, U3)).o_free_used).toBe(cUsed); expect((await q('select count(*)::int n from gift_free_grants where generation_id=$1', [c1.o_generation_id]))[0].n).toBe(0)
+    await fail(c1.o_generation_id, U3); expect((await q('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, 'correction-a', 'fine_art:12x18', 'a667', '2:3']))[0]).toMatchObject({ o_status: 'pending', o_reused: true })
+    expect(await bad('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, key(1), 'fine_art:12x18', 'a667', '2:3'])).toMatch(/invalid_idempotency_key/)       // an ordinary generation's key is not a correction's
+    expect(await bad('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U1, 'correction-b', 'x', 'y', 'z'])).toMatch(/session_not_found/)
+    await finish(c1.o_generation_id, U3)
+    // an accepted generation becomes a line's approved composition (the column and the shared files)
+    await q(`insert into gift_compositions(session_id,line_id,preview_id,attempt,status,composed_path,preview_path,generation_id,approved_at) values ($1,'g',$2,1,'approved','c','p',$3,now())`, [E, A2, c1.o_generation_id])
+    expect((await q('select generation_id from gift_compositions where session_id=$1 and line_id=$2', [E, 'g']))[0].generation_id).toBe(c1.o_generation_id)
+    await q('update gift_sessions set final_approved_at = now() where id=$1', [E]); expect(await bad('select * from gift_reserve_correction($1,$2,$3,$4,$5,$6)', [E, U3, 'correction-c', 'x', 'y', 'z'])).toMatch(/order_not_awaiting_artwork/)
+
     // ── collection sessions: the effect is fixed to the owned artwork's
     const L = (await q(`insert into gift_sessions(user_id, source_sha256, source_width, source_height, series, master_aspect, expires_at) values ($1,'photo-C',1,1,'portraits','1:1', now() + interval '7 days') returning id`, [U3]))[0].id
     const cb = (await q(`insert into gift_batches(session_id,user_id,batch_index,kind,idempotency_key,effect_ids) values ($1,$2,1,'collection','collection:abcdefgh',array['bronze']) returning id`, [L, U3]))[0].id

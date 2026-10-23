@@ -60,7 +60,7 @@ create table if not exists public.gift_generations (
   product_id       text not null,
   geometry_key     text not null,
   aspect           text not null,
-  kind             text not null check (kind in ('free', 'paid')),
+  kind             text not null check (kind in ('free', 'paid', 'correction')),
   pack_id          uuid references public.gift_preview_packs(id),
   idempotency_key  text not null check (length(idempotency_key) between 8 and 80),
   status           text not null default 'pending' check (status in ('pending', 'generating', 'ready', 'failed')),
@@ -199,6 +199,38 @@ begin
   return query select new_id, k.o_kind, false, 'pending'::text;
 end $$;
 
+-- THE ONE FREE POST-PURCHASE CORRECTION of a line: a new generation of the same product shape that does not touch the allowance (no free grant, no pack unit). The "one per line" rule is
+-- the existing gift_use_correction counter, spent by the caller once the corrected composition exists; the idempotency key (one per line) makes a retry resume the same row.
+create or replace function public.gift_reserve_correction(p_session uuid, p_user uuid, p_key text, p_product text, p_geometry text, p_aspect text)
+returns table (o_generation_id uuid, o_reused boolean, o_status text)
+language plpgsql security definer set search_path = public as $$
+declare s public.gift_sessions; o record; g public.gift_generations; eff text; inflight int; new_id uuid;
+begin
+  select * into s from public.gift_sessions where id = p_session for update;
+  if not found or s.user_id <> p_user then raise exception 'session_not_found'; end if;
+  if s.status <> 'active' then raise exception 'session_expired'; end if;
+  if s.flow <> 'generations' and s.collection_preview_id is null then raise exception 'flow_not_generations'; end if;
+  if s.refunded_at is not null then raise exception 'order_refunded'; end if;
+  if s.refund_requested_at is not null then raise exception 'refund_pending'; end if;
+  if s.order_id is null then raise exception 'order_payment_required'; end if;
+  select status::text as status into o from public.print_orders where id = s.order_id;
+  if not found or o.status <> 'awaiting_artwork' or s.final_approved_at is not null or s.approved_at is not null then raise exception 'order_not_awaiting_artwork'; end if;
+  if s.artwork_preview_id is null then raise exception 'effect_not_chosen'; end if;
+  select gp.effect_id into eff from public.gift_previews gp where gp.id = s.artwork_preview_id;
+  if p_key is null or length(p_key) not between 8 and 80 then raise exception 'invalid_idempotency_key'; end if;
+  select * into g from public.gift_generations where session_id = p_session and idempotency_key = p_key;
+  if found then
+    if g.kind <> 'correction' then raise exception 'invalid_idempotency_key'; end if;
+    if g.status = 'failed' then update public.gift_generations set status = 'pending', error = null, lease_until = null, updated_at = now() where id = g.id; return query select g.id, true, 'pending'::text; return; end if;
+    return query select g.id, true, g.status; return;
+  end if;
+  select count(*) into inflight from public.gift_generations where session_id = p_session and (status = 'pending' or (status = 'generating' and lease_until > now()));
+  if inflight >= 2 then raise exception 'generation_in_progress'; end if;
+  insert into public.gift_generations(session_id, user_id, anchor_id, effect_id, product_id, geometry_key, aspect, kind, pack_id, idempotency_key)
+    values (p_session, p_user, s.artwork_preview_id, eff, p_product, p_geometry, p_aspect, 'correction', null, p_key) returning id into new_id;
+  return query select new_id, false, 'pending'::text;
+end $$;
+
 create or replace function public.gift_claim_generation(p_gen uuid, p_user uuid, p_lease_seconds int default 300, p_max_attempts int default 3)
 returns public.gift_generations language plpgsql security definer set search_path = public as $$
 declare r public.gift_generations;
@@ -278,6 +310,7 @@ grant select, insert, update, delete on public.gift_generations to service_role;
 revoke all on function public.gift_choose_effect(uuid, uuid, text) from public, anon, authenticated;
 revoke all on function public.gift_generation_slot(uuid, uuid, uuid, int, int, int, int) from public, anon, authenticated;
 revoke all on function public.gift_reserve_generation(uuid, uuid, text, text, text, text, int, int, int, int, int) from public, anon, authenticated;
+revoke all on function public.gift_reserve_correction(uuid, uuid, text, text, text, text) from public, anon, authenticated;
 revoke all on function public.gift_claim_generation(uuid, uuid, int, int) from public, anon, authenticated;
 revoke all on function public.gift_complete_generation(uuid, uuid, text, text, int, int, text, jsonb) from public, anon, authenticated;
 revoke all on function public.gift_fail_generation(uuid, uuid, text) from public, anon, authenticated;
@@ -286,6 +319,7 @@ revoke all on function public.gift_generation_status(uuid, uuid, int, int, int, 
 grant execute on function public.gift_choose_effect(uuid, uuid, text) to service_role;
 grant execute on function public.gift_generation_slot(uuid, uuid, uuid, int, int, int, int) to service_role;
 grant execute on function public.gift_reserve_generation(uuid, uuid, text, text, text, text, int, int, int, int, int) to service_role;
+grant execute on function public.gift_reserve_correction(uuid, uuid, text, text, text, text) to service_role;
 grant execute on function public.gift_claim_generation(uuid, uuid, int, int) to service_role;
 grant execute on function public.gift_complete_generation(uuid, uuid, text, text, int, int, text, jsonb) to service_role;
 grant execute on function public.gift_fail_generation(uuid, uuid, text) to service_role;

@@ -17,9 +17,9 @@ import { geometryKeyFor } from './composition-plan'
 import { liveEffectIds } from './effects'
 import { MAX_CONFORM_CROP, STORAGE } from './policy'
 import { GiftError, fromStoreError, generationViewOf, getSessionView, owned, type GiftDeps } from './service'
-import { finalizedAt, type SessionRec } from './store'
+import { finalizedAt, type CompositionRec, type SessionRec } from './store'
 import type { GenerationRec } from './generation-store'
-import type { GenerationView, SessionView } from './types'
+import type { GenerationView, GiftLine, SessionView } from './types'
 
 const IDEMPOTENCY = /^[\w.:-]{8,80}$/
 const now = (deps: GiftDeps) => (deps.clock ?? Date.now)()
@@ -31,6 +31,14 @@ export async function chooseEffect(deps: GiftDeps, userId: string, sessionId: st
   if (!rec.collection_preview_id && !liveEffectIds(rec.series).includes(effectId)) throw new GiftError('invalid_effect_selection')
   try { await deps.store.chooseEffect(rec.id, userId, effectId) } catch (e) { fromStoreError(e) }
   return getSessionView(deps, userId, rec.id)
+}
+
+/** The product's picture shape as the smallest whole-number ratio (2400 x 3600 -> 2 x 3), the grid an exact picture lands on. */
+export function gridOf(p: CanonicalProduct): { w: number; h: number } {
+  const { w, h } = p.requirements.picturePx
+  const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
+  const d = gcd(w, h) || 1
+  return { w: w / d, h: h / d }
 }
 
 const productOf = (id: unknown): CanonicalProduct | null => (typeof id === 'string' ? allProducts().find(p => p.productId === id) ?? null : null)
@@ -52,9 +60,14 @@ export function generationTargetFor(p: CanonicalProduct, series: SessionRec['ser
  * How to reach the exact aspect from what the model returned: nothing, or the smallest centered trim. Never an extension. Returns null when the trim would exceed the bound.
  * Pure and exported so tests pin it.
  */
-export function conformTo(width: number, height: number, target: number): { method: 'native' | 'trim'; crop: { left: number; top: number; width: number; height: number }; trimFraction: number } | null {
+export function conformTo(width: number, height: number, target: number, grid?: { w: number; h: number }): { method: 'native' | 'trim'; crop: { left: number; top: number; width: number; height: number }; trimFraction: number } | null {
   let w = width, h = height
-  if (width / height > target) w = Math.round(height * target)
+  if (grid) {
+    // The print preparation step pads anything that is not an exact multiple of the product's reduced ratio (2:3 -> multiples of 2 x 3). Landing ON the grid by trimming a few pixels means it has nothing to add.
+    const units = Math.floor(Math.min(width / grid.w, height / grid.h))
+    if (units < 1) return null
+    w = units * grid.w; h = units * grid.h
+  } else if (width / height > target) w = Math.round(height * target)
   else if (width / height < target) h = Math.round(width / target)
   w = Math.min(width, Math.max(1, w)); h = Math.min(height, Math.max(1, h))
   const trimFraction = Math.round(Math.max((width - w) / width, (height - h) / height) * 1e5) / 1e5
@@ -127,7 +140,7 @@ async function renderGeneration(deps: GiftDeps, rec: SessionRec, g: GenerationRe
     const raw = Buffer.from(out.imageB64, 'base64')
     const md = await sharp(raw).metadata()
     if (!md.width || !md.height) throw new Error('master_unreadable')
-    const fit = conformTo(md.width, md.height, p.requirements.pictureAspect)
+    const fit = conformTo(md.width, md.height, p.requirements.pictureAspect, gridOf(p))
     if (!fit) throw new Error('aspect_mismatch')
     const img = sharp(raw).removeAlpha()
     const png = await (fit.method === 'trim' ? img.extract(fit.crop) : img).png().toBuffer({ resolveWithObject: true })
@@ -163,4 +176,78 @@ export async function acceptGeneration(deps: GiftDeps, userId: string, sessionId
   const rec = await owned(deps, userId, sessionId)
   try { await deps.store.acceptGeneration(rec.id, userId, generationId) } catch (e) { fromStoreError(e) }
   return { generation: await getGeneration(deps, userId, sessionId, generationId), session: await getSessionView(deps, userId, rec.id) }
+}
+
+// ── the cart: an accepted generation IS the line's approved composition ───────────────────────────────────────────────────────────────────────────
+
+/**
+ * Called by setLines for lines that carry a generationId. The generation must be this session's, delivered, ACCEPTED, of the current effect and of the line product's picture shape. The line then gets
+ * an approved composition row that points at the generation's own files (nothing is copied, re-encoded or changed), with the picture's sha256 in its plan. Validation happens for every line before
+ * any row is written. Idempotent: a line already bound to that generation is left alone; a line bound to another one has it superseded (history kept).
+ */
+export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines: GiftLine[]): Promise<void> {
+  const bound = lines.filter(l => l.generationId)
+  if (!bound.length) return
+  if (rec.flow !== 'generations' && !rec.collection_preview_id) throw new GiftError('flow_not_generations')
+  if (!rec.artwork_preview_id) throw new GiftError('effect_not_chosen')
+  const anchor = (await deps.store.listBatches(rec.id)).flatMap(b => b.previews).find(x => x.id === rec.artwork_preview_id)
+  if (!anchor) throw new GiftError('effect_not_chosen')
+  const gens = await deps.store.listGenerations(rec.id).catch(e => fromStoreError(e))
+  const comps = await deps.store.listCompositions(rec.id)
+  const plans: Array<{ line: GiftLine; g: (typeof gens)[number]; keep: CompositionRec | null }> = []
+  for (const l of bound) {
+    const g = gens.find(x => x.id === l.generationId)
+    if (!g) throw new GiftError('generation_not_found')
+    const p = productOf(l.productId); if (!p) throw new GiftError('product_not_available')
+    if (g.status !== 'ready' || !g.master_path || !g.preview_path || !g.sha256) throw new GiftError('generation_not_ready')
+    if (!g.accepted_at) throw new GiftError('generation_not_accepted')
+    if (g.effect_id !== anchor.effect_id) throw new GiftError('stale_composition')
+    if (g.geometry_key !== geometryKeyFor(p)) throw new GiftError('composition_geometry_mismatch')
+    const live = comps.filter(c => c.line_id === l.lineId && c.preview_id === rec.artwork_preview_id && (c.status === 'ready' || c.status === 'approved'))
+    plans.push({ line: l, g, keep: live.find(c => c.generation_id === g.id && c.status === 'approved') ?? null })
+  }
+  const at = new Date(now(deps)).toISOString()
+  for (const { line, g, keep } of plans) {
+    if (keep) continue
+    for (const c of comps.filter(x => x.line_id === line.lineId && x.preview_id === rec.artwork_preview_id && (x.status === 'ready' || x.status === 'approved'))) await deps.store.patchComposition(c.id, { status: 'superseded', plan: { ...c.plan, supersededReason: 'generation_changed' } })
+    const priorSeq = comps.filter(c => c.line_id === line.lineId && c.preview_id === rec.artwork_preview_id && c.attempt === 1).map(c => c.repair_seq ?? 0)
+    const row = await deps.store.insertComposition({
+      session_id: rec.id, line_id: line.lineId, preview_id: rec.artwork_preview_id!, attempt: 1, status: 'approved', composed_path: g.master_path, preview_path: g.preview_path, width: g.width, height: g.height,
+      geometry_key: g.geometry_key, method: 'generated', source_composition_id: null, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
+      nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
+      plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: (g.generation as { targetAspect?: number } | null)?.targetAspect ?? null, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
+              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId },
+      ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
+    })
+    await deps.store.patchComposition(row.id, { approved_at: at })
+  }
+}
+
+/**
+ * The ONE free correction of a purchased generation line: a NEW generation of the same shape and effect, outside the allowance, that the customer reviews and approves like any composition. The
+ * idempotency key is per line, so a retry (or a refresh) resumes the same generation and never pays twice; the line's correction is spent only when the new picture is delivered.
+ */
+export async function correctGenerationLine(deps: GiftDeps, userId: string, rec: SessionRec, line: { line_id: string; product_id: string }, current: CompositionRec, phase: 'draft' | 'purchased'): Promise<void> {
+  const p = productOf(line.product_id); if (!p || !rec.series) throw new GiftError('product_not_available')
+  const t = generationTargetFor(p, rec.series, rec.analysis.peopleCount ?? null); if (!t) throw new GiftError('product_aspect_unsupported')
+  if (phase !== 'purchased') throw new GiftError('order_payment_required')           // before payment the customer simply generates again (it is part of the allowance)
+  let r
+  try { r = await deps.store.reserveCorrection({ sessionId: rec.id, userId, key: `correction-${line.line_id}`.slice(0, 80), productId: p.productId, geometryKey: t.geometryKey, aspect: t.aspect }) } catch (e) { fromStoreError(e) }
+  let g = r!.generation
+  if (g.status !== 'ready') {
+    const claimed = await deps.store.claimGeneration(g.id, userId)
+    if (claimed) await renderGeneration(deps, rec, claimed)
+    g = (await deps.store.getGeneration(rec.id, g.id)) ?? g
+  }
+  if (g.status !== 'ready' || !g.master_path || !g.preview_path || !g.sha256) throw new GiftError('composition_failed')
+  const comps = await deps.store.listCompositions(rec.id)
+  const priorSeq = comps.filter(c => c.line_id === line.line_id && c.preview_id === current.preview_id && c.attempt === 2).map(c => c.repair_seq ?? 0)
+  await deps.store.insertComposition({
+    session_id: rec.id, line_id: line.line_id, preview_id: current.preview_id, attempt: 2, status: 'ready', composed_path: g.master_path, preview_path: g.preview_path, width: g.width, height: g.height,
+    geometry_key: g.geometry_key, method: 'generated', source_composition_id: current.id, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
+    nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
+    plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: p.requirements.pictureAspect, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
+            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku },
+    ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
+  })
 }

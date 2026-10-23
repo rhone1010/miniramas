@@ -5,6 +5,7 @@
 // selected, on an order that has been approved and not refunded. (The composition already has the product's aspect, so the
 // existing print composition step adds nothing; upscaling, QA and placement then run exactly as for any order.)
 
+import { createHash } from 'node:crypto'
 import type { PrintOrderRow } from '../print/db'
 import type { AssetJob } from '../print/upscale/store'
 import { parseGiftRenderId } from './order-kind'
@@ -24,6 +25,17 @@ export async function loadApprovedCompositionWith(store: GiftStore, storage: Gif
   if (!comp?.composed_path) throw new Error('gift_composition_not_approved')
   const bytes = await storage.get(comp.composed_path)
   if (!bytes) throw new Error('gift_composition_missing')
+  if (comp.generation_id) {
+    // An accepted generation prints as exactly the picture the customer approved: the stored file must still hash to the generation's sha256 and to the pin recorded at checkout. The file is then
+    // used as is (it already has the product's exact shape, so print preparation adds nothing to it and only the upscale follows).
+    const gen = await store.getGeneration(session.id, comp.generation_id)
+    const pinned = (comp.plan as { artworkSha256?: string }).artworkSha256
+    const digest = createHash('sha256').update(bytes).digest('hex')
+    if (!gen || gen.status !== 'ready' || !gen.accepted_at || !gen.sha256 || digest !== gen.sha256 || digest !== pinned) throw new Error('gift_generation_changed')
+    const orderRow = await store.getOrder(order.id)
+    const pin = (orderRow?.items[job.item_index]?.frozen as { composition?: { artworkSha256?: string | null } } | undefined)?.composition
+    if (pin?.artworkSha256 && pin.artworkSha256 !== digest) throw new Error('gift_generation_changed')
+  }
   return bytes
 }
 

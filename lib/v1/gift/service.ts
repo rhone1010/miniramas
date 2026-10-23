@@ -15,6 +15,7 @@ import { decodeSource } from '../foyer/foyer-source'
 import { approvedSceneFor, requireApprovedScene } from './presentation'
 import { realSceneRenderer } from './mockup-real'
 import { COMPOSITION_MAX_ATTEMPTS, adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE, FREE_GENERATIONS, GENERATIONS_PER_PACK, GENERATION_MAX_ATTEMPTS, MAX_INFLIGHT_GENERATIONS, newSessionFlow } from './policy'
+import { bindGenerationLines } from './generations'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
 import type { GenerationAllowance, GenerationRec } from './generation-store'
 import { StoreError, byNewest, correctionUsed, finalizedAt, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
@@ -36,7 +37,7 @@ export type GiftErrorCode =
   | 'disclosure_version_required' | 'disclosure_version_mismatch' | 'rate_limited'
   | 'geometry_snapshot_invalid' | 'geometry_snapshot_unavailable' | 'stale_composition' | 'mockup_failed' | 'mockup_renderer_unavailable' | 'mockup_configuration_mismatch'
   | 'composition_failed' | 'composition_geometry_mismatch' | 'repair_claim_lost' | 'repair_not_consistent' | 'composition_not_found' | 'order_has_no_lines' | 'order_not_found' | 'order_not_payable' | 'session_already_has_order'
-  | 'generations_unavailable' | 'effect_not_chosen' | 'effect_fixed' | 'flow_not_generations' | 'legacy_batches_closed' | 'generation_in_progress' | 'generation_not_found' | 'generation_not_ready' | 'product_aspect_unsupported'
+  | 'generations_unavailable' | 'effect_not_chosen' | 'effect_fixed' | 'flow_not_generations' | 'legacy_batches_closed' | 'generation_in_progress' | 'generation_not_found' | 'generation_not_ready' | 'generation_not_accepted' | 'generation_changed' | 'product_aspect_unsupported'
   | 'order_session_mismatch' | 'invalid_refund_request' | 'payment_not_confirmed' | 'session_retained'
 const STATUS: Partial<Record<GiftErrorCode, number>> = {
   image_b64_required: 400, image_too_large: 400, image_not_base64: 400, image_unreadable: 400, age_restricted: 403, unsupported_subject: 422, analysis_unavailable: 503,
@@ -48,7 +49,7 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
   compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
   composition_failed: 502, composition_geometry_mismatch: 409, repair_claim_lost: 409, repair_not_consistent: 409, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
   order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
-  generations_unavailable: 503, effect_not_chosen: 409, effect_fixed: 409, flow_not_generations: 409, legacy_batches_closed: 409, generation_in_progress: 429, generation_not_found: 404, generation_not_ready: 409, product_aspect_unsupported: 409,
+  generations_unavailable: 503, effect_not_chosen: 409, effect_fixed: 409, flow_not_generations: 409, legacy_batches_closed: 409, generation_in_progress: 429, generation_not_found: 404, generation_not_ready: 409, generation_not_accepted: 409, generation_changed: 409, product_aspect_unsupported: 409,
   disclosure_version_required: 400, disclosure_version_mismatch: 409, rate_limited: 429,
   geometry_snapshot_invalid: 409, geometry_snapshot_unavailable: 409, stale_composition: 409, mockup_failed: 502, mockup_renderer_unavailable: 503, mockup_configuration_mismatch: 409,
 }
@@ -245,7 +246,11 @@ export async function setLines(deps: GiftDeps, userId: string, sessionId: string
     if (!p || p.status !== 'launch') throw new GiftError('product_not_available')
     if (requireApprovedScene() && !approvedSceneFor(p, sceneDescriber(deps))) throw new GiftError('product_not_available')       // no approved scene: it could not be shown or approved after payment (presentation.ts)
     if (!Number.isInteger(l.copies) || l.copies < 1 || l.copies > MAX_COPIES) throw new GiftError('invalid_quantity')
-    out.push({ lineId: l.lineId, productId: p.productId, size: p.size, copies: l.copies })   // size is the catalog's, never the client's
+    if (l.generationId !== undefined && l.generationId !== null && (typeof l.generationId !== 'string' || !/^[0-9a-f-]{36}$/i.test(l.generationId))) throw new GiftError('invalid_lines')
+    // A line keeps the generation it was bound to while its product is unchanged (the client need not resend it); a new one replaces it.
+    const kept = rec.lines.find(x => x.lineId === l.lineId && x.productId === p.productId)?.generationId
+    const generationId: string | undefined = l.generationId || kept || undefined
+    out.push({ lineId: l.lineId, productId: p.productId, size: p.size, copies: l.copies, ...(generationId ? { generationId } : {}) })   // size is the catalog's, never the client's
   }
   // A composition belongs to a line AND its product: when a line is removed or its product changes, its reviewed composition (and approval) no longer applies.
   const before = new Map(rec.lines.map(l => [l.lineId, l.productId]))
@@ -253,6 +258,7 @@ export async function setLines(deps: GiftDeps, userId: string, sessionId: string
     if ((c.status !== 'ready' && c.status !== 'approved') || out.find(l => l.lineId === c.line_id)?.productId === before.get(c.line_id)) continue
     await deps.store.patchComposition(c.id, { status: 'superseded', plan: { ...c.plan, supersededReason: 'line_changed' } })
   }
+  await bindGenerationLines(deps, rec, out)                       // generations flow: an accepted generation becomes the line's approved composition (validated before anything is written)
   const t = now(deps)
   const patch = { lines: out, last_activity_at: iso(t), expires_at: extend(rec, t) }
   await deps.store.patchSession(rec.id, userId, patch)
@@ -576,7 +582,8 @@ function orderView(rec: SessionRec, order: Awaited<ReturnType<GiftDeps['store'][
 async function removeObjects(deps: GiftDeps, rec: SessionRec): Promise<void> {
   const all = await deps.store.listBatches(rec.id)
   const comps = await deps.store.listCompositions(rec.id)
-  const paths = [rec.source_path, ...all.flatMap(b => b.previews.flatMap(p => [p.master_path, p.preview_path])), ...comps.flatMap(c => [c.composed_path, c.preview_path, (c.plan as { mockup?: { path?: string } }).mockup?.path])]
+  const gens = rec.flow === 'generations' || rec.collection_preview_id ? await deps.store.listGenerations(rec.id).catch(() => []) : []
+  const paths = [rec.source_path, ...gens.flatMap(g => [g.master_path, g.preview_path]), ...all.flatMap(b => b.previews.flatMap(p => [p.master_path, p.preview_path])), ...comps.flatMap(c => [c.composed_path, c.preview_path, (c.plan as { mockup?: { path?: string } }).mockup?.path])]
     .filter((x): x is string => !!x)
   if (deps.storage.list) { try { paths.push(...await deps.storage.list(STORAGE.productPreviewDir(rec.id))) } catch { /* the preview files are a cache: a listing failure never blocks the session's removal */ } }
   if (paths.length) await deps.storage.remove([...new Set(paths)])         // shared compositions point at the same files: remove each once

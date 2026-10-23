@@ -54,6 +54,8 @@ export interface CompositionRec {
   generation_mode: 'none' | 'photo_regeneration' | 'favorite_reference'; generation_aspect: string | null
   nb21_calls: number; outpaint_calls: number; cost_usd_est: number | null
   created_at: string; approved_at: string | null
+  /** 059: the generation this composition IS (generations flow); null/absent otherwise. */
+  generation_id?: string | null
   /** 052 (operator repair of a geometry defect): 0/absent for every ordinary row; a repair replacement carries 1, 2, ... beside the row it replaces, which is kept for audit. */
   repair_seq?: number
 }
