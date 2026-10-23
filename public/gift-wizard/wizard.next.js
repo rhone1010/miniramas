@@ -67,7 +67,8 @@ function back() { if (busy)
 } const v = history.pop() || { configuration: 'products', products: 'review', cart: 'products', checkout: 'cart', focus: 'review', compare: 'review', review: 'effects', effects: 'photo' }[view]; if (v)
     go(v, false); }
 function primary(label, fn, disabled = false) { const body = document.createElement('div'); body.className = 'context-body'; while ($('right').firstChild)
-    body.appendChild($('right').firstChild); $('right').appendChild(body); $('right').insertAdjacentHTML('beforeend', '<button id="primary" class="primary" ' + (busy || disabled ? 'disabled' : '') + '>' + label + ' →</button>'); $('primary').onclick = fn; }
+    body.appendChild($('right').firstChild); $('right').appendChild(body); $('right').insertAdjacentHTML('beforeend', '<button id="primary" class="primary" ' + (busy || disabled ? 'disabled' : '') + '>' + label + ' →</button>'); $('primary').onclick = fn; if (pivotMode)
+    body.querySelectorAll(':scope > button').forEach(b => $('right').append(b)); }
 function secondary(id, label) { return '<button id="' + id + '" class="secondary">' + label + '</button>'; }
 function photo(url, alt, cls = 'photo') { return '<img class="' + cls + '" src="' + esc(url) + '" alt="' + esc(alt) + '">'; }
 function field(id, label, value, attrs = '') { return '<label class="field"><span>' + label + '</span><input id="' + id + '" value="' + esc(value) + '" ' + attrs + '></label>'; }
@@ -183,6 +184,8 @@ function render() {
         $('back').hidden = true;
     document.querySelectorAll('[data-product-preview]').forEach(b => b.onclick = () => { productPreviews.delete(b.dataset.productPreview); render(); });
     adaptMobileView();
+    if (pivotMode)
+        sharedStageLayout();
     rememberView();
 }
 function renderMobileProgress() {
@@ -649,6 +652,90 @@ function restorePivotReview() {
     }
     catch { }
 }
+function confirmStageAction(title, message, label, action) {
+    const opener = document.activeElement, dialog = document.createElement('dialog');
+    dialog.className = 'cancel-gift-dialog';
+    dialog.setAttribute('aria-labelledby', 'stage-confirm-title');
+    dialog.innerHTML = '<h2 id="stage-confirm-title">' + esc(title) + '</h2><p>' + esc(message) + '</p><div class="actions"><button id="stage-keep">Keep Creating</button><button class="primary" id="stage-confirm">' + esc(label) + '</button></div>';
+    document.body.append(dialog);
+    dialog.querySelector('#stage-keep').onclick = () => dialog.close();
+    dialog.querySelector('#stage-confirm').onclick = () => { dialog.close(); action(); };
+    dialog.addEventListener('close', () => { dialog.remove(); opener?.focus(); }, { once: true });
+    dialog.showModal();
+    dialog.querySelector('#stage-keep').focus();
+}
+function startOverGift() {
+    confirmStageAction('Start Over', journeyDemo ? 'Start a new development walkthrough? The current walkthrough progress will be cleared.' : 'Start a new gift? Your saved gift remains available. This does not cancel a paid order.', 'Start Over', () => {
+        if (serverMode) {
+            rememberView();
+            location.assign('/gift-wizard.next.html?newGift=1' + (live ? '&resumeSessionId=' + encodeURIComponent(live.id) : ''));
+            return;
+        }
+        sessionStorage.removeItem(pivotKey);
+        session.effectIds = [];
+        studioState = { step: 'product', productId: '', size: '', copies: 1, drafts: {} };
+        sourceURL = '';
+        history = [];
+        demoItems = [];
+        demoAccepted = false;
+        session.lines = [];
+        go('photo', false);
+    });
+}
+function fitStage() { if (pivotMode)
+    $('workspace').style.setProperty('--stage-height', Math.max(360, innerHeight - $('workspace').getBoundingClientRect().top) + 'px'); }
+window.addEventListener('resize', fitStage);
+function sharedStageLayout() {
+    const rail = $('left');
+    const disclosure = rail.querySelector('#gift-disclosure');
+    if (disclosure)
+        $('right').append(disclosure);
+    if (view === 'cart') {
+        rail.querySelector('h1').textContent = 'Your gifts';
+        rail.querySelectorAll(':scope > p').forEach(p => p.remove());
+    }
+    const oldGuidance = rail.querySelector('.stage-guidance');
+    if (oldGuidance) {
+        while (oldGuidance.firstChild)
+            rail.insertBefore(oldGuidance.firstChild, oldGuidance);
+        oldGuidance.remove();
+    }
+    if (view !== 'photo') {
+        rail.querySelector('.eyebrow')?.remove();
+        rail.querySelector('.rule')?.remove();
+    }
+    rail.querySelector('.stage-fixture-note')?.remove();
+    if (layoutReview && ['products', 'configuration'].includes(view)) {
+        const note = document.createElement('p');
+        note.className = 'small stage-fixture-note';
+        note.textContent = 'Development walkthrough · sample artwork';
+        rail.append(note);
+    }
+    rail.querySelector('.tagline')?.remove();
+    $('new-gift')?.remove();
+    let start = $('pivot-start');
+    if (!start) {
+        start = document.createElement('button');
+        start.id = 'pivot-start';
+        start.textContent = 'Start Over';
+        rail.append(start);
+    }
+    start.onclick = startOverGift;
+    const nav = document.createElement('div');
+    nav.className = 'stage-navigation';
+    const backButton = $('studio-back') || $('back');
+    if (backButton)
+        nav.append(backButton);
+    nav.append(start);
+    rail.querySelectorAll('.stage-navigation').forEach(n => n.remove());
+    rail.append(nav);
+    const guidance = document.createElement('div');
+    guidance.className = 'stage-guidance';
+    Array.from(rail.childNodes).filter(n => n !== nav).forEach(n => guidance.append(n));
+    rail.insertBefore(guidance, nav);
+    nav.hidden = view === 'photo' && !sourceURL && !live?.session && !history.length;
+    requestAnimationFrame(fitStage);
+}
 function pivotRail(title) {
     rail(title, '');
     $('new-gift')?.remove();
@@ -750,22 +837,27 @@ function generationPicture(g, productId = studioState.productId, size = studioSt
     return photo(g.url, 'Your exact composition', 'gift-feature-image') + '<p class="small" role="status">' + (!source || sceneFailures.has(key) ? 'Product photography is not available for this configuration. Your exact artwork is shown.' : 'Preparing your product photograph…') + '</p>';
 }
 function generationDetails() { const { p, o } = selectedProduct(); return '<h2>' + esc(p?.label || 'Your Gift') + '</h2><p>' + esc(o?.label || '') + '</p><p>' + esc(Object.entries(o?.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><p>' + esc(effects().find(e => e.id === session.effectIds[0])?.label || '') + '</p>'; }
-function changeGenerationSelection() { studioState.step = 'size'; go('products'); }
+function changeGenerationSelection() { go('effects'); }
 function renderProductGeneration() {
     const g = selectedGeneration(), a = live?.session?.generations?.allowance;
     pivotRail('Your<br>Crafted Images');
     $('screen').innerHTML = g?.url ? generationPicture(g) : '<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><h2>' + (g?.status === 'failed' ? 'Crafting did not finish' : 'Crafting Your Image') + '</h2><p>' + (journeyDemo ? 'Development demonstration · no generation request.' : g?.status === 'failed' ? 'Your selections are here. Retry when you are ready.' : 'Your selected effect is being prepared for your gift. This may take a little time.') + '</p></section>';
-    $('right').innerHTML = generationDetails() + (a ? '<p class="small">' + a.freeRemaining + ' / ' + a.freeTotal + ' free generations remaining</p>' : '') + '<div class="actions">' + secondary('generation-retry', 'Retry') + secondary('change-generation', 'Change Selection') + '</div>';
-    primary('Review Composition', () => go('acceptance'), !g || g.status !== 'ready' || !g.url || !g.sha256);
-    $('generation-retry').onclick = () => journeyDemo ? demoCraft() : void craftProduct(g?.status === 'ready');
+    $('right').innerHTML = generationDetails();
+    primary('Review &amp; Approve', () => go('acceptance'), !g || g.status !== 'ready' || !g.url || !g.sha256);
+    $('right').insertAdjacentHTML('beforeend', '<div class="actions">' + secondary('generation-retry', 'Create Another Version') + secondary('change-generation', 'Change Effect or Product') + '</div>');
+    $('generation-retry').onclick = () => confirmStageAction('Create Another Version', journeyDemo ? 'Development demonstration only. No generation allowance is consumed.' : a ? a.freeRemaining + ' / ' + a.freeTotal + ' free generations remaining.' : 'Generation allowance is not available.', 'Create Another Version', () => { if (journeyDemo)
+        demoCraft();
+    else if (a)
+        void craftProduct(g?.status === 'ready'); });
     $('generation-retry').disabled = busy || g?.status === 'generating';
     $('change-generation').onclick = changeGenerationSelection;
     const items = journeyDemo ? demoItems : live?.session?.generations?.items.filter(x => x.status === 'ready') || [];
     if (items.length)
         $('right').insertAdjacentHTML('beforeend', '<section class="saved-compositions"><h3>Saved compositions</h3><div class="composition-history">' + items.filter(x => x.url).map((x, i) => '<button data-generation="' + esc(x.generationId) + '" aria-label="View composition ' + (i + 1) + '" aria-pressed="' + (g?.generationId === x.generationId) + '">' + photo(x.url, 'Composition ' + (i + 1)) + '</button>').join('') + '</div></section>');
     document.querySelectorAll('[data-generation]').forEach(b => b.onclick = () => { selectedGenerationId = b.dataset.generation; render(); });
+    $('right').insertAdjacentHTML('beforeend', a ? '<p class="small">' + a.freeRemaining + ' / ' + a.freeTotal + ' free generations remaining</p>' : journeyDemo ? '<p class="small">Development demonstration · no generation allowance consumed.</p>' : '');
     $('back').disabled = busy;
-    $('back').onclick = changeGenerationSelection;
+    $('back').onclick = () => { studioState.step = 'size'; go('products'); };
 }
 function renderCompositionAcceptance() {
     const g = selectedGeneration();
@@ -848,7 +940,7 @@ function renderPivotProducts() {
     mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
         sizeHeading: 'Available Sizes', detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => { if (!o)
             return photo(p.image, p.label); const url = o ? productPhotography.get(p.id + ':' + o.size) || (journeyDemo && o.imageWidthIn === o.imageHeightIn ? asset(familyPhoto(p)) : null) : null; return url ? photo(url, p.label) : '<p role="status">Product photography unavailable.</p>'; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && (journeyDemo || !!live?.session?.generations?.effectId && ['free', 'paid'].includes(live.session.generations.allowance.next)), onAdd: () => journeyDemo ? demoCraft() : void craftProduct(), busy, addLabel: 'Craft',
-        onChange: s => { studioState = s; if (layoutReview)
+        onChange: s => { studioState = s; requestAnimationFrame(sharedStageLayout); if (layoutReview)
             rememberPivotReview();
         else
             rememberView(); $('left').querySelector('h1').innerHTML = s.step === 'product' ? 'Choose<br>your Gift' : 'Choose<br>your Size'; document.body.dataset.pivotStep = s.step; document.querySelectorAll('.progress li').forEach((el, i) => { if (i === stage())
