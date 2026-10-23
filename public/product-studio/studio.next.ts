@@ -7,7 +7,7 @@ export interface StudioAdapter {
  previewHtml:(product:StudioProduct,option:StudioOption)=>string;
  canAdd:(product:StudioProduct,option:StudioOption)=>boolean;
  onChange:(state:StudioState)=>void;onAdd:(product:StudioProduct,option:StudioOption,copies:number)=>void;onExit:()=>void;
- detailsIntroHtml?:(product:StudioProduct,option:StudioOption)=>string;detailsHtml?:(product:StudioProduct,option:StudioOption|undefined)=>string;sizeHeading?:string;utilityHtml?:string;addLabel?:string;busy?:boolean;
+ detailsIntroHtml?:(product:StudioProduct,option:StudioOption)=>string;detailsHtml?:(product:StudioProduct,option:StudioOption|undefined)=>string;sizeHeading?:string;requireSizeClick?:boolean;utilityHtml?:string;addLabel?:string;busy?:boolean;
  navigationHost?:HTMLElement;configurationHost?:HTMLElement;
 }
 const esc=(s:unknown)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -46,7 +46,7 @@ export function mountStudio(host:HTMLElement,a:StudioAdapter){
    body='<h2 tabindex="-1">'+esc(p.label)+'</h2><p role="status">Not currently available</p>'+(p.unavailableOptions||[]).map(x=>'<p class="small">'+esc(x.label)+' · '+esc(x.reason)+'</p>').join('');
   }else if(s.step==='size'){
    const sizes=p.options.filter((x,i,all)=>aspect(x)===aspect(o)&&all.findIndex(y=>dimensions(y)===dimensions(x))===i);
-   body='<h2 tabindex="-1">'+esc(p.label)+'</h2>'+(a.detailsIntroHtml?a.detailsIntroHtml(p,o):'')+'<h3>Aspect ratio</h3><div class="sizes">'+[...new Set(p.options.map(aspect))].map(x=>'<button data-aspect="'+x+'" aria-pressed="'+(aspect(o)===x)+'">'+x+'</button>').join('')+'</div><h3>'+esc(a.sizeHeading||'Size')+'</h3><div class="sizes">'+sizes.map(x=>'<button data-size="'+esc(x.size)+'" '+(!optionChoices(p,x).some(y=>y.compatible!==false)?'disabled ':'')+'aria-pressed="'+(dimensions(o)===dimensions(x))+'">'+esc(x.label)+'</button>').join('')+'</div>';
+   body='<h2 tabindex="-1">'+esc(p.label)+'</h2>'+(a.detailsIntroHtml?a.detailsIntroHtml(p,o):'')+'<h3>Aspect ratio</h3><div class="sizes">'+[...new Set(p.options.map(aspect))].map(x=>'<button data-aspect="'+x+'" aria-pressed="'+(aspect(o)===x)+'">'+x+'</button>').join('')+'</div><h3>'+esc(a.sizeHeading||'Size')+'</h3><div class="sizes">'+sizes.map(x=>'<button data-size="'+esc(x.size)+'" '+(!optionChoices(p,x).some(y=>y.compatible!==false)?'disabled ':'')+'aria-pressed="'+(!a.requireSizeClick&&dimensions(o)===dimensions(x))+'">'+esc(x.label)+'</button>').join('')+'</div>';
   }else if(s.step==='options'){
    const choices=optionChoices(p,o);
    const keys=[...new Set(choices.flatMap(x=>Object.keys(x.attributes||{})))].filter(k=>new Set(choices.map(x=>x.attributes?.[k])).size>1);

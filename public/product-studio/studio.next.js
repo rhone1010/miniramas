@@ -46,7 +46,7 @@ export function mountStudio(host, a) {
         }
         else if (s.step === 'size') {
             const sizes = p.options.filter((x, i, all) => aspect(x) === aspect(o) && all.findIndex(y => dimensions(y) === dimensions(x)) === i);
-            body = '<h2 tabindex="-1">' + esc(p.label) + '</h2>' + (a.detailsIntroHtml ? a.detailsIntroHtml(p, o) : '') + '<h3>Aspect ratio</h3><div class="sizes">' + [...new Set(p.options.map(aspect))].map(x => '<button data-aspect="' + x + '" aria-pressed="' + (aspect(o) === x) + '">' + x + '</button>').join('') + '</div><h3>' + esc(a.sizeHeading || 'Size') + '</h3><div class="sizes">' + sizes.map(x => '<button data-size="' + esc(x.size) + '" ' + (!optionChoices(p, x).some(y => y.compatible !== false) ? 'disabled ' : '') + 'aria-pressed="' + (dimensions(o) === dimensions(x)) + '">' + esc(x.label) + '</button>').join('') + '</div>';
+            body = '<h2 tabindex="-1">' + esc(p.label) + '</h2>' + (a.detailsIntroHtml ? a.detailsIntroHtml(p, o) : '') + '<h3>Aspect ratio</h3><div class="sizes">' + [...new Set(p.options.map(aspect))].map(x => '<button data-aspect="' + x + '" aria-pressed="' + (aspect(o) === x) + '">' + x + '</button>').join('') + '</div><h3>' + esc(a.sizeHeading || 'Size') + '</h3><div class="sizes">' + sizes.map(x => '<button data-size="' + esc(x.size) + '" ' + (!optionChoices(p, x).some(y => y.compatible !== false) ? 'disabled ' : '') + 'aria-pressed="' + (!a.requireSizeClick && dimensions(o) === dimensions(x)) + '">' + esc(x.label) + '</button>').join('') + '</div>';
         }
         else if (s.step === 'options') {
             const choices = optionChoices(p, o);
