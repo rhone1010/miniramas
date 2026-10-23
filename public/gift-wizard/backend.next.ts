@@ -1,6 +1,6 @@
 import type {AvailabilityView} from './backend-contracts/gift/availability';
 /** Prepared frontend transport only. Authenticated calls only. Final manufacturing release remains blocked. */
-import type {ProductPreviewView,RestoreResponse,SessionView,BatchView,BatchRequest,BatchResponse,SetLinesRequest,GiftCheckoutRequest,GiftCheckoutResponse,OrderConfirmRequest,OrderConfirmResponse,PackCheckoutRequest,PackCheckoutResponse,PackConfirmRequest,PackConfirmResponse,SelectArtworkRequest,RefundRequestBody,RefundRequestResponse,MockupView} from './backend-contracts/gift/types';
+import type {GenerationView,ProductPreviewView,RestoreResponse,SessionView,BatchView,BatchRequest,BatchResponse,SetLinesRequest,GiftCheckoutRequest,GiftCheckoutResponse,OrderConfirmRequest,OrderConfirmResponse,PackCheckoutRequest,PackCheckoutResponse,PackConfirmRequest,PackConfirmResponse,SelectArtworkRequest,RefundRequestBody,RefundRequestResponse,MockupView} from './backend-contracts/gift/types';
 import type {CatalogResponse} from './backend-contracts/print/catalog-types';
 export type Transport=(url:string,init:RequestInit)=>Promise<Response>;
 export class GiftApiError extends Error {constructor(public code:string,public status:number,public details:unknown=null){super(code)}}
@@ -47,7 +47,7 @@ export class GiftBackend {
  }
  async catalog(signal?:AbortSignal){const v=await this.request<CatalogResponse>('GET','/api/v1/print/catalog',undefined,signal);if(v.contractVersion!==1||!Array.isArray(v.products))throw new GiftApiError('invalid_catalog_response',0);return v}
  async availability(id:string,signal?:AbortSignal){const v=await this.request<AvailabilityView>('GET',sessionPath(id)+'/availability',undefined,signal);if(v.contractVersion!==1||v.sessionId!==id||!Array.isArray(v.products)||v.products.some(p=>typeof p.purchasable!=='boolean'||typeof p.productId!=='string'))throw new GiftApiError('invalid_availability_response',0);return v}
- setLines(id:string,b:SetLinesRequest,signal?:AbortSignal){return this.session('PUT',sessionPath(id)+'/lines',{lines:b.lines.map(l=>({lineId:l.lineId,productId:l.productId,copies:l.copies}))},signal)}
+ setLines(id:string,b:{lines:Array<SetLinesRequest["lines"][number]&{generationId?:string}>},signal?:AbortSignal){return this.session('PUT',sessionPath(id)+'/lines',{lines:b.lines.map(l=>({lineId:l.lineId,productId:l.productId,copies:l.copies,...(l.generationId?{generationId:l.generationId}:{})}))},signal)}
  async confirmOrder(b:OrderConfirmRequest,signal?:AbortSignal){const v=await this.request<OrderConfirmResponse>('POST','/api/v1/gift/orders/confirm',{stripeSessionId:b.stripeSessionId},signal);if(typeof v.confirmed!=='boolean'||(v.confirmed&&!v.session))throw new GiftApiError('invalid_confirmation_response',0);if(v.session)assertSession(v.session);return v}
  async batch(id:string,n:number,signal?:AbortSignal){if(!Number.isInteger(n)||n<1)throw new GiftApiError('invalid_batch_index',0);return this.request<BatchView>('GET',sessionPath(id)+'/batches/'+n,undefined,signal)}
  selectArtwork(id:string,b:SelectArtworkRequest,signal?:AbortSignal){return this.session('POST',sessionPath(id)+'/artwork',{previewId:b.previewId},signal)}
@@ -60,6 +60,9 @@ export class GiftBackend {
   if(!v.publishableKey?.startsWith('pk_test_')||!v.stripeSessionId?.startsWith('cs_test_')||!v.clientSecret||!v.disclosure?.version||typeof v.disclosure.text!=='string'||!v.totals||![v.totals.itemsCents,v.totals.shippingCents,v.totals.totalCents].every(n=>Number.isInteger(n)&&n>=0))throw new GiftApiError('test_checkout_required',0);
   return v;
  }
+ chooseEffect(id:string,effectId:string){return this.session('POST',sessionPath(id)+'/effect',{effectId})}
+ async generateProduct(id:string,body:{productId:string;idempotencyKey:string;mode:'reuse_or_generate'|'new'}){const v=await this.request<{generation:GenerationView;session:SessionView}>('POST',sessionPath(id)+'/generations',body);assertSession(v.session);return v}
+ async acceptGeneration(id:string,gid:string){const v=await this.request<{generation:GenerationView;session:SessionView}>('POST',sessionPath(id)+'/generations/'+segment(gid)+'/accept');assertSession(v.session);return v}
  startBatch(id:string,b:BatchRequest):Promise<BatchResponse>{return this.request('POST',sessionPath(id)+'/batches',{idempotencyKey:b.idempotencyKey,effectIds:b.effectIds})}
  retryBatch(id:string,n:number):Promise<BatchResponse>{if(!Number.isInteger(n)||n<1)throw new GiftApiError('invalid_batch_index',0);return this.request('POST',sessionPath(id)+'/batches/'+n+'/retry')}
  async packCheckout(b:PackCheckoutRequest):Promise<PackCheckoutResponse>{

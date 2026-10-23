@@ -5,7 +5,7 @@ export interface Registry {silos:Array<{id:string;label:string}>;effects:Effect[
 export interface SourceAnalysis {status:'supported'|'unsupported';series:Series|null;sourceRef:string;fixture:boolean;reason?:string}
 export interface Geometry {key:string;widthIn:number;heightIn:number;requiredPx:{w:number;h:number}}
 export type CatalogOption=Option&{imageWidthIn:number;imageHeightIn:number;requiredPx:{w:number;h:number};familyNote:string};
-export interface GiftLine {id:string;productId:string;size:string;copies:number}
+export interface GiftLine {id:string;productId:string;size:string;copies:number;generationId?:string}
 export interface Composition {lineId:string;artworkId:string;geometry:Geometry;status:'loading'|'ready'|'failed';previewUrl:string|null;approvalRequired:boolean;approved:boolean;fixture:true;productionAssetId:null}
 export interface BatchRequest {sourceRef:string;series:Series;effectIds:string[];geometries:Geometry[];batchIndex:number;fixture:true}
 export interface GiftSession {sessionId:string;recipient:string;source:SourceAnalysis|null;lines:GiftLine[];effectIds:string[];batches:Preview[][];reviewedBatches:number;favoriteId:string|null;compositions:Composition[];email:string;shipTo:'self'|'recipient';address:Address}

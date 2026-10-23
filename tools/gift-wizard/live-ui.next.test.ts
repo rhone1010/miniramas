@@ -456,7 +456,7 @@ test('offline approval examples use replacement scenes rather than retired payme
 });
 
 test('new-gift mobile progress is gated by prerequisites and does not mutate the session',async()=>{
- const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];
+ const s:any=project('none');s.flow='generations';s.order.orderId=null;s.lines=[];s.geometries=[];
  const {win,dom}=await boot('sessionId=project&mobile=1',s);win.navigate('effects');
  const menu=win.document.getElementById('mobile-progress');assert.equal(menu.querySelectorAll('.mobile-progress-pips span').length,7);
  assert.equal(menu.querySelector('[data-step="3"]').disabled,true);assert.equal(menu.querySelector('[data-step="4"]').disabled,true);assert.equal(menu.querySelector('[data-step="5"]').disabled,true);
@@ -600,13 +600,13 @@ test('live Portrait samples never infer gender from fixture parameters or silent
 });
 
 for(const gender of ['female','male'])test('normal new-gift session uses approved single effect flow: '+gender,async()=>{
- const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.source.subjectGender=gender;
+ const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.source.subjectGender=gender;s.flow='generations';s.generations={effectId:null,items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};s.route=(url:string,init:any)=>{if(url.endsWith('/effect')){s.generations.effectId=JSON.parse(init.body).effectId;return s}return null};
  const {win,dom,calls}=await boot('sessionId=project',s);
  assert.equal(win.document.getElementById('primary').textContent,'Choose This Effect →');
  assert.equal(win.document.querySelector('#screen img').getAttribute('src'),'/gift-wizard/effect-previews/portraits/jade/'+(gender==='female'?'woman':'man')+'.jpg');
- win.document.getElementById('primary').click();assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
+ win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
  win.document.querySelector('[data-feature="canvas"]').click();win.document.querySelector('[data-size]').click();
- assert.equal(win.document.getElementById('primary').disabled,true);assert(!calls.some(x=>/batches|compositions|product-preview/.test(x)));
+ assert.equal(win.document.getElementById('primary').disabled,false);assert(!calls.some(x=>/batches|compositions|product-preview/.test(x)));
  const storage=Object.fromEntries(Object.keys(win.sessionStorage).map(k=>[k,win.sessionStorage.getItem(k)]));dom.window.close();
  const restored=await boot('sessionId=project',{...s,storage});assert.equal(restored.win.document.getElementById('screen').dataset.view,'products');assert(restored.win.document.querySelector('.studio-media img'));restored.dom.window.close();
 });
@@ -644,10 +644,18 @@ test('artwork-only paid review uses server image and disclosure without a produc
  await assert.rejects(()=>api.mockup('project','line','composition'),/approved_scene_required|invalid_mockup_response/);
 });
 test('Gift availability is authoritative over Print Shop artwork-fit selection',async()=>{
- const s:any=project('none');s.lines=[];s.geometries=[];s.source.subjectGender='female';
+ const s:any=project('none');s.lines=[];s.geometries=[];s.source.subjectGender='female';s.flow='generations';
  s.route=(u:string)=>u.endsWith('/availability')?{contractVersion:1,sessionId:'project',products:catalog.products.map(p=>({productId:p.productId,purchasable:p.family==='matted'}))}:null;
- const {win,dom}=await boot('sessionId=project',s);win.document.getElementById('primary').click();
+ const {win,dom}=await boot('sessionId=project',s);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));
  assert.equal(win.document.querySelector('[data-feature="matted"]').disabled,false);
  assert.ok(win.document.querySelector('[data-feature="canvas"]').textContent.includes('Not currently available'));
  dom.window.close();
+});
+
+test('product generation accepts exact identity and binds it to cart without finalizing',async()=>{
+ const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.flow='generations';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};let posts=0,cart:any;
+ const g={generationId:'11111111-1111-4111-8111-111111111111',productId:'canvas:8x8',geometryKey:'a1000',status:'ready',width:1024,height:1024,url:'https://liten.invalid/generated.jpg',sha256:'a'.repeat(64),accepted:false};
+ s.route=(url:string,init:any)=>{if(url.endsWith('/generations')&&init.method==='POST'){posts++;s.generations.items=[g];return {generation:g,session:s}}if(url.endsWith('/accept')){g.accepted=true;return {generation:g,session:s}}if(url.endsWith('/lines')){cart=JSON.parse(init.body);s.lines=cart.lines.map((l:any)=>({...l,size:l.productId.split(':')[1]}));s.artworkPreviewId='anchor';s.geometries=s.lines.map((l:any)=>{const p=catalog.products.find((p:any)=>p.productId===l.productId)!;return {lineId:l.lineId,productId:l.productId,sku:p.sku,requiredPx:p.requirements.finalPx}});return s}return null};
+ const {win,dom,calls}=await boot('sessionId=project',s);
+ try{win.document.querySelector('[data-feature="canvas"]').click();win.document.querySelector('[data-size]').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(posts,1);assert.equal(win.document.querySelector('#screen img').src,g.url);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(g.accepted,true);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(cart.lines[0].generationId,g.generationId);assert.equal(win.document.getElementById('screen').dataset.view,'cart');assert(!calls.some(x=>x.endsWith('/finalize')))}finally{dom.window.close()}
 });

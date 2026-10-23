@@ -90,7 +90,7 @@ export class GiftBackend {
         throw new GiftApiError('invalid_catalog_response', 0); return v; }
     async availability(id, signal) { const v = await this.request('GET', sessionPath(id) + '/availability', undefined, signal); if (v.contractVersion !== 1 || v.sessionId !== id || !Array.isArray(v.products) || v.products.some(p => typeof p.purchasable !== 'boolean' || typeof p.productId !== 'string'))
         throw new GiftApiError('invalid_availability_response', 0); return v; }
-    setLines(id, b, signal) { return this.session('PUT', sessionPath(id) + '/lines', { lines: b.lines.map(l => ({ lineId: l.lineId, productId: l.productId, copies: l.copies })) }, signal); }
+    setLines(id, b, signal) { return this.session('PUT', sessionPath(id) + '/lines', { lines: b.lines.map(l => ({ lineId: l.lineId, productId: l.productId, copies: l.copies, ...(l.generationId ? { generationId: l.generationId } : {}) })) }, signal); }
     async confirmOrder(b, signal) { const v = await this.request('POST', '/api/v1/gift/orders/confirm', { stripeSessionId: b.stripeSessionId }, signal); if (typeof v.confirmed !== 'boolean' || (v.confirmed && !v.session))
         throw new GiftApiError('invalid_confirmation_response', 0); if (v.session)
         assertSession(v.session); return v; }
@@ -109,6 +109,9 @@ export class GiftBackend {
             throw new GiftApiError('test_checkout_required', 0);
         return v;
     }
+    chooseEffect(id, effectId) { return this.session('POST', sessionPath(id) + '/effect', { effectId }); }
+    async generateProduct(id, body) { const v = await this.request('POST', sessionPath(id) + '/generations', body); assertSession(v.session); return v; }
+    async acceptGeneration(id, gid) { const v = await this.request('POST', sessionPath(id) + '/generations/' + segment(gid) + '/accept'); assertSession(v.session); return v; }
     startBatch(id, b) { return this.request('POST', sessionPath(id) + '/batches', { idempotencyKey: b.idempotencyKey, effectIds: b.effectIds }); }
     retryBatch(id, n) { if (!Number.isInteger(n) || n < 1)
         throw new GiftApiError('invalid_batch_index', 0); return this.request('POST', sessionPath(id) + '/batches/' + n + '/retry'); }

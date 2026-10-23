@@ -18,7 +18,7 @@ export type Series = 'portraits' | 'pets' | 'groups'
 export type PreviewStatus = 'pending' | 'generating' | 'ready' | 'failed'
 /** 'collection': the one-preview batch of a session started from My Collection (057): the owned artwork, already finished, nothing to generate. */
 export type SubjectGender = 'female' | 'male' | 'unknown'
-export type BatchKind = 'free' | 'paid' | 'collection'
+export type BatchKind = 'free' | 'paid' | 'collection' | 'generation'
 
 /** What the source photo was identified as. Never a customer question. */
 export interface SourceView {
@@ -40,7 +40,11 @@ export interface SourceView {
 }
 
 /** A product the customer chose BEFORE art exists. productId and size come from the canonical catalog (/api/v1/print/catalog). */
-export interface GiftLine { lineId: string; productId: string; size: string; copies: number }
+export interface GiftLine {
+  lineId: string; productId: string; size: string; copies: number
+  /** Generations flow: the accepted generation (picture) this line is made from. It is the line's approved composition, bound when the cart is set; it cannot change after payment. */
+  generationId?: string
+}
 
 /** The geometry a line will eventually print at, from the catalog. Informational: the server derives it. */
 /**
@@ -73,6 +77,27 @@ export interface LineGeometry {
   adaptationValidation: 'not_applicable' | 'provisional' | 'unvalidated'
 }
 
+/**
+ * How an initial preview was generated, recorded with it (migration 058; absent before it). Truthful, never a block: a preview that did not reach the generator's likeness bar is still delivered,
+ * marked 'below_bar'; one the generator could not score is 'unscored'. The customer's original (the file the model returned) is stored untouched.
+ */
+export interface GenerationRecord {
+  v: 1
+  series: Series
+  effectId: string
+  aspect: string
+  /** NB2 attempts made for this preview (each may be followed by a scoring call). */
+  attempts: number
+  passed: boolean | null
+  quality: 'passed' | 'below_bar' | 'unscored'
+  reason: string | null
+  /** Per-figure likeness scores of the kept attempt, when the generator scored them. */
+  scores: number[] | null
+  /** Whether anything was done to the picture after the model returned it. For initial previews this is always outpaint false. */
+  postProcessing: { outpaint: boolean; skipped: string | null }
+  durationMs: number
+}
+export interface PreviewQuality { status: GenerationRecord['quality']; attempts: number }
 export interface PreviewView {
   previewId: string
   slot: number                        // 1..6 within its batch
@@ -82,7 +107,9 @@ export interface PreviewView {
   url: string | null
   width: number | null
   height: number | null
-  retryable: boolean                  // failed and attempts remain
+  retryable: boolean
+  /** Present once the preview is ready and was generated after migration 058; null otherwise. 'below_bar' is information, not a failure: the preview is complete and usable. */
+  quality: PreviewQuality | null                  // failed and attempts remain
 }
 
 /**
@@ -109,11 +136,62 @@ export type NextBatch =
   | { kind: 'free' }
   | { kind: 'paid'; packAvailable: true }
   | { kind: 'payment_required'; amountCents: 299; currency: 'USD' }
-  | { kind: 'blocked'; reason: 'order_payment_required' | 'order_not_awaiting_artwork' | 'order_refunded' | 'refund_pending' | 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' | 'collection_session' }
+  | { kind: 'blocked'; reason: 'order_payment_required' | 'order_not_awaiting_artwork' | 'order_refunded' | 'refund_pending' | 'previous_batch_incomplete' | 'no_effects_remaining' | 'session_expired' | 'collection_session' | 'generations_flow' }
+
+/**
+ * PRODUCT-FIRST GENERATIONS (migration 059). One effect is chosen per session, then the customer generates a personalized composition FOR A PRODUCT at that product's exact aspect
+ * (1:1, 2:3, ...), looks at it large, and accepts it or tries again. A composition is a whole picture: nothing is extended, mirrored or reframed after the customer accepts it.
+ */
+export interface GenerationView {
+  generationId: string
+  status: 'pending' | 'generating' | 'ready' | 'failed'
+  /** The product the generation was made for, and the picture shape it satisfies (every product with the same geometryKey can use it). */
+  productId: string
+  geometryKey: string
+  /** Pixel size of the delivered picture: EXACTLY the product's aspect. Null until ready. */
+  width: number | null
+  height: number | null
+  /** Watermarked large preview (signed URL, one hour); null until ready. Re-read the session or this generation for a fresh one. */
+  url: string | null
+  /** 'free' counts against the six free generations; 'paid' used a unit of a $2.99 pack. A failed generation counts for nothing. */
+  kind: 'free' | 'paid' | 'correction'
+  accepted: boolean
+  acceptedAt: string | null
+  /** The identity the order will pin (sha256 of the stored clean picture). Present when ready. */
+  sha256: string | null
+  quality: { status: 'passed' | 'below_bar' | 'unscored'; attempts: number } | null
+  /** How the picture reached the exact aspect: 'native' = the model returned it; 'trim' = a sliver (the stated fraction per axis, never more than 3%) was trimmed from the edges. Never an extension. */
+  conform: { method: 'native' | 'trim'; trimFraction: number } | null
+  /** Failed and may be tried again with the same idempotency key (it costs nothing until it is delivered). */
+  retryable: boolean
+  createdAt: string
+}
+export interface GenerationsView {
+  /** The ONE effect chosen for this session (null until chosen) and the anchor preview that stands for it. */
+  effectId: string | null
+  anchorPreviewId: string | null
+  items: GenerationView[]
+  allowance: {
+    freeTotal: number; freeUsed: number; freeRemaining: number
+    freeAvailable: boolean; freeBlockedReason: 'session_limit' | 'photo_limit' | 'daily_limit' | 'lifetime_limit' | null
+    /** Generations left in purchased packs. */
+    paidUnits: number
+    /** What the NEXT generation will be: 'free', 'paid' (from a pack), 'payment_required' (buy a pack: amountCents), or 'blocked' (see blockedReason). */
+    next: 'free' | 'paid' | 'payment_required' | 'blocked'
+    blockedReason: 'effect_not_chosen' | 'generation_in_progress' | 'session_expired' | 'order_refunded' | 'refund_pending' | 'order_not_awaiting_artwork' | null
+    packPriceCents: 299; generationsPerPack: number; currency: 'USD'
+  }
+  inFlight: number
+  maxInFlight: number
+}
 
 export interface SessionView {
   contractVersion: typeof GIFT_CONTRACT_VERSION
   sessionId: string
+  /** 'generations' = product-first journey (this block's `generations`); 'previews' = the six-preview journey (batches). A session never changes flow. Collection sessions are 'previews' but may still use `generations`. */
+  flow: 'previews' | 'generations'
+  /** Present for flow 'generations' and for collection sessions once 059 is applied; null otherwise. */
+  generations: GenerationsView | null
   source: SourceView
   lines: GiftLine[]
   geometries: LineGeometry[]
@@ -387,6 +465,11 @@ export interface RestoreResponse {
  *   not_available        the product is not purchasable or has no mockup template
  * Errors (non-200): 404 session_not_found; 409 artwork_not_selected (choose a favorite first), order_refunded, refund_pending; 502 mockup_failed; 503 mockup_renderer_unavailable.
  * Never a composition, a production file, an approval, a correction or an authorization to buy; no clean (unwatermarked) image is ever returned.
+ */
+/**
+ * What a preview IS, in data. 'scene': a photograph of the product with the customer's artwork in it (physicalProductShown true). 'artwork_only': where no photograph truthfully shows this exact
+ * configuration, the customer's artwork exactly as it will be printed, in the product's shape, with NO product imagery (physicalProductShown false); it carries disclosureCode
+ * 'artwork_only_preview' and a default English disclosure the client may replace with its own copy. Both are valid bases for informed approval; neither authorizes a purchase or is a production file.
  */
 export interface PreviewRepresentation {
   representation: 'scene' | 'artwork_only' | 'calibrated_template'

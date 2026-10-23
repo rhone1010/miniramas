@@ -36,7 +36,7 @@ function effects() { return liveEffects(registry()); }
 function currentArt() { return session.batches.flat().find(p => p.id === artFocus) || session.batches[batchIndex]?.[0]; }
 function favorite() { return session.batches.flat().find(p => p.id === (shoppingFavoriteId || session.favoriteId)); }
 function stage() { if (pivotMode)
-    return view === 'photo' || view === 'payment' ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
+    return view === 'generation' ? 4 : ['cart', 'checkout', 'compositions'].includes(view) ? 6 : view === 'photo' || view === 'payment' ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
 function go(v, record = true) { if (busy)
     return; if (live?.session?.entrance === 'collection' && ['photo', 'effects', 'review', 'focus', 'compare', 'more'].includes(v))
     v = purchased(live.session) ? 'compositions' : 'products'; if (live?.session && purchased(live.session) && ['photo', 'products', 'configuration', 'cart', 'checkout'].includes(v)) {
@@ -133,7 +133,9 @@ function render() {
         el.setAttribute('aria-current', 'step');
     else
         el.removeAttribute('aria-current'); });
-    if (view === 'photo')
+    if (view === 'generation')
+        renderProductGeneration();
+    else if (view === 'photo')
         renderPhoto();
     else if (view === 'products' || view === 'configuration')
         renderProducts();
@@ -477,7 +479,8 @@ function productPreviewReady(p, o) {
     const entry = productPreviews.get(live.id + ':' + favoriteId + ':' + p.id + ':' + o.size), v = entry?.value;
     return !!v && !entry?.failed && (v.status === 'ready' || v.status === 'provisional') && Date.parse(v.urlExpiresAt) > Date.now() + 30000;
 }
-function cartPreviewsReady() { return session.lines.every(l => { const { product, option } = giftOption(l, products); return productPreviewReady(product, option); }); }
+function cartPreviewsReady() { if (live?.session?.flow === 'generations')
+    return session.lines.every(l => live.session.generations?.items.some(g => g.generationId === l.generationId && g.status === 'ready' && g.accepted)); return session.lines.every(l => { const { product, option } = giftOption(l, products); return productPreviewReady(product, option); }); }
 function configurationPreview(p, o, artworkReference = false) {
     if (!live?.session?.artworkPreviewId)
         return photo(asset(p.image), p.label, 'gift-feature-image') + '<p class="small">Product photograph. Product-specific artwork will be prepared after payment.</p>';
@@ -543,13 +546,13 @@ function renderProducts() {
     if ($('view-cart'))
         $('view-cart').onclick = () => go('cart');
 }
-function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + (live && !purchased(live.session) ? '<p class="small">Product-specific artwork will be prepared after payment.</p>' : '') + '<div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
+function lineMarkup(l, edit = true) { const { product: p, option: o } = giftOption(l, products); return '<div class="cart-line">' + '<div class="cart-thumbnail">' + (live?.session && purchased(live.session) ? mockup(l) : live?.session?.flow === 'generations' ? generationLineImage(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div class="cart-details"><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · ' + money(o.retailCents * l.copies) + '</p><p class="small">' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>' + (live && live.session?.flow !== 'generations' && !purchased(live.session) ? '<p class="small">Product-specific artwork will be prepared after payment.</p>' : '') + '<div class="row"><span>Quantity ' + l.copies + '</span>' + (edit ? '<button data-qty="' + l.id + '" data-delta="-1" aria-label="Decrease ' + esc(p.label) + ' quantity" ' + (l.copies === 1 ? 'disabled' : '') + '>−</button><button data-qty="' + l.id + '" data-delta="1" aria-label="Increase ' + esc(p.label) + ' quantity" ' + (l.copies === 20 ? 'disabled' : '') + '>+</button><button data-edit="' + l.id + '">Edit</button><button data-remove="' + l.id + '">Remove</button>' : '') + '</div></div></div>'; }
 async function persistCart(lines) {
     if (busy)
         return;
     for (const l of lines) {
         const old = session.lines.find(x => x.id === l.id), { product, option } = giftOption(l, products);
-        if ((!old || old.productId !== l.productId || old.size !== l.size || l.copies > old.copies) && !productPreviewReady(product, option)) {
+        if (live?.session?.flow !== 'generations' && (!old || old.productId !== l.productId || old.size !== l.size || l.copies > old.copies) && !productPreviewReady(product, option)) {
             render();
             return;
         }
@@ -561,7 +564,7 @@ async function persistCart(lines) {
         return;
     }
     await serverAction(async () => {
-        const result = await live.api.setLines(live.id, { lines: lines.map(l => ({ lineId: l.id, productId: l.productId + ':' + l.size, copies: l.copies })) });
+        const result = await live.api.setLines(live.id, { lines: lines.map(l => ({ lineId: l.id, productId: l.productId + ':' + l.size, copies: l.copies, ...(l.generationId ? { generationId: l.generationId } : {}) })) });
         if (result.lines.length !== lines.length || lines.some(l => !result.lines.some(r => r.lineId === l.id && r.productId === l.productId + ':' + l.size && r.copies === l.copies)))
             throw new GiftApiError('invalid_cart_response', 0);
         editId = null;
@@ -635,6 +638,92 @@ function pivotRail(title) {
     catch { } session.effectIds = []; studioState = { step: 'product', productId: '', size: '', copies: 1, drafts: {} }; sourceURL = ''; history = []; go('photo', false); };
     $('left').insertBefore(start, $('back'));
 }
+let selectedGenerationId = '';
+let productGenerationPending = false, productGenerationTimer;
+function selectedGeneration() { return live?.session?.generations?.items.find(g => g.generationId === selectedGenerationId) || live?.session?.generations?.items.at(-1); }
+function generationLineImage(l) { const g = live?.session?.generations?.items.find(g => g.generationId === l.generationId); return g?.url ? photo(g.url, 'Personalized artwork') : '<p role="status">This product preview could not load.</p>'; }
+function productIntentKey() { return 'liten-gift-generation:' + live.id + ':' + live.session.generations.effectId + ':' + studioState.productId + ':' + studioState.size; }
+async function craftProduct(retry = false) {
+    if (!live || busy || productGenerationPending || live.session?.flow !== 'generations')
+        return;
+    const owner = live, key = productIntentKey();
+    let intent;
+    try {
+        intent = retry ? crypto.randomUUID() : localStorage.getItem(key) || crypto.randomUUID();
+        localStorage.setItem(key, intent);
+    }
+    catch {
+        error('request_failed');
+        return;
+    }
+    productGenerationPending = true;
+    busy = true;
+    view = 'generation';
+    render();
+    try {
+        const r = await owner.api.generateProduct(owner.id, { productId: studioState.productId + ':' + studioState.size, idempotencyKey: intent, mode: retry ? 'new' : 'reuse_or_generate' });
+        if (live !== owner)
+            return;
+        owner.accept(r.session);
+        applyServer(r.session);
+        selectedGenerationId = r.generation.generationId;
+    }
+    catch (e) {
+        productGenerationPending = false;
+        busy = false;
+        render();
+        error(e instanceof Error ? e.message : 'request_failed');
+        return;
+    }
+    finally {
+        productGenerationPending = false;
+        busy = false;
+    }
+    render();
+    scheduleProductGenerationRead();
+}
+function scheduleProductGenerationRead() { clearTimeout(productGenerationTimer); if (!live || !['pending', 'generating'].includes(selectedGeneration()?.status || ''))
+    return; productGenerationTimer = setTimeout(() => void readProductGeneration(), 5000); }
+async function readProductGeneration() { const owner = live; if (!owner || productGenerationPending)
+    return; try {
+    const s = await owner.api.restore(owner.id);
+    if (live !== owner)
+        return;
+    owner.accept(s);
+    applyServer(s);
+    render();
+}
+catch (e) {
+    error(e instanceof Error ? e.message : 'request_failed');
+}
+finally {
+    scheduleProductGenerationRead();
+} }
+function renderProductGeneration() {
+    const g = selectedGeneration(), a = live?.session?.generations?.allowance;
+    rail('Personalized<br>Review', '');
+    $('screen').innerHTML = g?.url ? photo(g.url, 'Personalized artwork', 'gift-feature-image') : '<section role="status"><h2>' + ((productGenerationPending || g?.status === 'generating' || g?.status === 'pending') ? 'Preparing Your Masterpiece' : 'Didn’t finish') + '</h2></section>';
+    $('right').innerHTML = '<h2>Approve Composition</h2>' + (a ? '<p>' + a.freeRemaining + ' / ' + a.freeTotal + ' free generations remaining</p>' : '') + secondary('generation-retry', 'Try again') + (g?.accepted ? '<p>Approved</p>' : '');
+    primary(g?.accepted ? 'Add to Cart' : 'Accept', () => void acceptProductGeneration(), !g || g.status !== 'ready' || !g.url || !g.sha256);
+    $('generation-retry').onclick = () => void craftProduct(g?.status === 'ready');
+    $('generation-retry').disabled = busy || !!g && ['pending', 'generating'].includes(g.status);
+    const items = live?.session?.generations?.items.filter(x => x.status === 'ready') || [];
+    if (items.length)
+        $('right').insertAdjacentHTML('beforeend', '<div class="actions">' + items.map((x, i) => '<button data-generation="' + esc(x.generationId) + '" aria-pressed="' + (g?.generationId === x.generationId) + '">' + (i + 1) + '</button>').join('') + '</div>');
+    document.querySelectorAll('[data-generation]').forEach(b => b.onclick = () => { selectedGenerationId = b.dataset.generation; render(); });
+    $('back').onclick = () => go('products');
+}
+async function acceptProductGeneration() {
+    const g = selectedGeneration();
+    if (!live || busy || g?.status !== 'ready' || !g.url || !g.sha256)
+        return;
+    if (!g.accepted) {
+        await serverAction(async () => { const r = await live.api.acceptGeneration(live.id, g.generationId); return r.session; }, 'generation');
+        return;
+    }
+    const productId = studioState.productId + ':' + studioState.size;
+    await persistCart([...session.lines, { id: crypto.randomUUID(), productId: studioState.productId, size: studioState.size, copies: studioState.copies, generationId: g.generationId }]);
+}
 function renderPivotEffects() {
     pivotRail('Choose<br>an Effect');
     const all = effects(), silos = registry().silos.filter(x => all.some(e => e.category === x.id));
@@ -650,7 +739,10 @@ function renderPivotEffects() {
     $('right').innerHTML = '<h2>' + esc(focused.label) + '</h2>' + effectPhoto(focused.id, focused.label, 'context-image');
     document.querySelectorAll('[data-silo]').forEach(b => b.onclick = () => { silo = b.dataset.silo; render(); });
     document.querySelectorAll('[data-effect]').forEach(b => b.onclick = () => { effectFocus = b.dataset.effect; session.effectIds = [effectFocus]; render(); });
-    primary('Choose This Effect', () => { session.effectIds = [effectFocus]; studioState.step = 'product'; go('products'); });
+    primary('Choose This Effect', () => { session.effectIds = [effectFocus]; studioState.step = 'product'; if (live?.session?.flow === 'generations')
+        void serverAction(() => live.api.chooseEffect(live.id, effectFocus), 'products');
+    else
+        go('products'); });
 }
 function renderPivotProducts() {
     pivotRail(studioState.step === 'product' ? 'Choose<br>your Gift' : 'Choose<br>your Size');
@@ -660,7 +752,7 @@ function renderPivotProducts() {
     const choices = [...products].sort((a, b) => familyOrder.indexOf(a.id) - familyOrder.indexOf(b.id)).map(p => ({ ...p, unavailableOptions: unavailableCatalogOptions.get(p.id), image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => giftCompositionEligibility(p, o, pivotSubjectCount()).allowed) }));
     mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
         sizeHeading: 'Available Sizes', detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => { if (!o)
-            return photo(p.image, p.label); const url = o ? productPhotography.get(p.id + ':' + o.size) : null; return url ? photo(url, p.label) : '<p role="status">Product photography unavailable.</p>'; }, previewHtml: p => photo(p.image, p.label), canAdd: () => false, onAdd: () => { }, addLabel: 'Craft',
+            return photo(p.image, p.label); const url = o ? productPhotography.get(p.id + ':' + o.size) : null; return url ? photo(url, p.label) : '<p role="status">Product photography unavailable.</p>'; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && !!live?.session?.generations?.effectId && ['free', 'paid'].includes(live.session.generations.allowance.next), onAdd: () => void craftProduct(), busy, addLabel: 'Craft',
         onChange: s => { studioState = s; if (layoutReview)
             rememberPivotReview();
         else
@@ -1012,7 +1104,7 @@ function renderCheckout() {
     document.querySelectorAll('#screen .address input').forEach(input => { input.placeholder = input.closest('label').querySelector('span').textContent; if (input.id !== 'line2' && input.id !== 'state')
         input.required = true; });
     $('countryCode').setAttribute('aria-description', 'Two-letter country code');
-    $('right').innerHTML = '<div data-order-summary><h2>Order summary</h2>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item"><div>' + (live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '<br>' + money(o.retailCents * l.copies) + '</p></div></div>'; }).join('') + '<dl><dt>Products</dt><dd>' + money(productSubtotal(session, products)) + '</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>' + secondary('edit-gifts', 'Edit gifts');
+    $('right').innerHTML = '<div data-order-summary><h2>Order summary</h2>' + session.lines.map(l => { const { product: p, option: o } = giftOption(l, products); return '<div class="summary-item"><div>' + (live?.session?.flow === 'generations' ? generationLineImage(l) : live ? configurationPreview(p, o, true) : photo(asset(p.image), p.label)) + '</div><div><h3>' + esc(p.label) + '</h3><p>' + esc(o.label) + ' · Quantity ' + l.copies + '<br>' + money(o.retailCents * l.copies) + '</p></div></div>'; }).join('') + '<dl><dt>Products</dt><dd>' + money(productSubtotal(session, products)) + '</dd><dt>Shipping</dt><dd>Not quoted</dd><dt>Tax</dt><dd>Not quoted</dd><dt>Total</dt><dd>Not yet available</dd></dl></div>' + secondary('edit-gifts', 'Edit gifts');
     for (const key of ['email', ...Object.keys(session.address)])
         $(key).oninput = e => { const v = e.target.value; if (key === 'email')
             session.email = v;
@@ -1086,9 +1178,23 @@ function restoreView(s) {
     }
     if (s.entrance === 'collection' && !purchased(s))
         view = 'products';
+    if (s.flow === 'generations' && !purchased(s)) {
+        const latest = s.generations?.items.at(-1);
+        if (latest) {
+            selectedGenerationId = latest.generationId;
+            const split = latest.productId.lastIndexOf(':');
+            studioState.productId = latest.productId.slice(0, split);
+            studioState.size = latest.productId.slice(split + 1);
+            studioState.step = 'review';
+            view = 'generation';
+            scheduleProductGenerationRead();
+        }
+        else if (s.generations?.effectId)
+            view = 'products';
+    }
     if (!hint)
         return;
-    session.effectIds = Array.isArray(hint.effectIds) ? hint.effectIds.filter((id) => typeof id === 'string' && effects().some(e => e.id === id) && !s.usedEffectIds.includes(id)).slice(0, 6) : [];
+    session.effectIds = s.flow === 'generations' ? session.effectIds : Array.isArray(hint.effectIds) ? hint.effectIds.filter((id) => typeof id === 'string' && effects().some(e => e.id === id) && !s.usedEffectIds.includes(id)).slice(0, 6) : [];
     if (recipientOptions.includes(hint.recipient))
         session.recipient = hint.recipient;
     if (registry().silos.some(x => x.id === hint.silo))
@@ -1118,14 +1224,14 @@ function restoreView(s) {
         copies = Number.isInteger(hint.copies) && hint.copies >= 1 && hint.copies <= 20 ? hint.copies : 1;
         editId = session.lines.some(l => l.id === hint.editId) ? hint.editId : null;
     }
-    const allowed = ['photo', 'effects', 'review', 'focus', 'compare', 'more', 'products', 'configuration', 'cart', 'checkout', 'compositions'];
+    const allowed = ['generation', 'photo', 'effects', 'review', 'focus', 'compare', 'more', 'products', 'configuration', 'cart', 'checkout', 'compositions'];
     history = Array.isArray(hint.history) ? hint.history.filter((v) => allowed.includes(v)) : [];
     if (generationBatch)
         view = 'review';
-    else if (allowed.includes(hint.view) && (!pivotMode || ['photo', 'effects', 'products'].includes(hint.view)))
+    else if (allowed.includes(hint.view) && (!pivotMode || ['photo', 'effects', 'products', 'generation', 'cart', 'checkout'].includes(hint.view)))
         go(hint.view, false);
 }
-window.addEventListener('pagehide', () => { rememberView(); clearTimeout(generationTimer); });
+window.addEventListener('pagehide', () => { rememberView(); clearTimeout(generationTimer); clearTimeout(productGenerationTimer); });
 window.addEventListener('pageshow', e => { if (e.persisted && serverMode) {
     view = 'payment';
     void retryRestoration();
@@ -1381,7 +1487,7 @@ async function syncCatalog() {
     products = products.map(p => ({ ...p, available: catalog.products.some(c => c.family === p.id && allowed(c.productId, c.selectable)), options: catalog.products.filter(c => c.family === p.id && c.status === 'launch' && c.retailCents !== null).map(c => ({ sku: c.sku, size: c.size, family: c.family, label: c.label, retailCents: c.retailCents, attributes: c.attributes, compatible: allowed(c.productId, c.selectable), imageWidthIn: c.requirements.picturePx.w / c.requirements.ppi, imageHeightIn: c.requirements.picturePx.h / c.requirements.ppi, requiredPx: c.requirements.finalPx, familyNote: c.note })) }));
 }
 function applyServer(s) {
-    pivotMode = s.entrance !== 'collection' && s.order.state === 'none' && !s.batches.length && !s.lines.length && !s.artworkPreviewId;
+    pivotMode = s.flow === 'generations' && !purchased(s);
     sourceURL = s.source.photoUrl || (session.sessionId === s.sessionId ? sourceURL : '');
     const lines = s.lines.map(l => {
         const split = l.productId.lastIndexOf(':'), family = l.productId.slice(0, split);
@@ -1389,14 +1495,14 @@ function applyServer(s) {
         const g = s.geometries.find(g => g.lineId === l.lineId);
         if (!p || !o || !g || g.productId !== l.productId || g.sku !== o.sku || g.requiredPx.w !== o.requiredPx.w || g.requiredPx.h !== o.requiredPx.h)
             throw new GiftApiError('purchased_configuration_mismatch', 0);
-        return { id: l.lineId, productId: family, size: l.size, copies: l.copies };
+        return { id: l.lineId, productId: family, size: l.size, copies: l.copies, generationId: l.generationId };
     });
     session.sessionId = s.sessionId;
     session.source = { status: 'supported', series: s.source.series, sourceRef: s.source.sourceRef, fixture: false };
     session.lines = lines;
     session.favoriteId = s.artworkPreviewId;
     shoppingFavoriteId = null;
-    session.effectIds = session.effectIds.filter(id => !s.usedEffectIds.includes(id));
+    session.effectIds = s.flow === 'generations' ? (s.generations?.effectId ? [s.generations.effectId] : []) : session.effectIds.filter(id => !s.usedEffectIds.includes(id));
     session.batches = s.batches.filter(b => b.previews.some(p => p.status === 'ready' && p.url)).map(b => b.previews.filter(p => p.status === 'ready' && p.url && p.width && p.height).map(p => ({ id: p.previewId, url: p.url, label: effects().find(e => e.id === p.effectId)?.label || p.effectId, width: p.width, height: p.height, watermark: 'baked', fixture: false })));
     const retained = session.batches.findIndex(b => b.some(p => p.id === artFocus));
     const selected = session.batches.findIndex(b => b.some(p => p.id === s.artworkPreviewId));
