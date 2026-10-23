@@ -706,7 +706,7 @@ function renderProductGeneration() {
     $('right').innerHTML = '<h2>Approve Composition</h2>' + (a ? '<p>' + a.freeRemaining + ' / ' + a.freeTotal + ' free generations remaining</p>' : '') + secondary('generation-retry', 'Try again') + (g?.accepted ? '<p>Approved</p>' : '');
     primary(g?.accepted ? 'Add to Cart' : 'Accept', () => void acceptProductGeneration(), !g || g.status !== 'ready' || !g.url || !g.sha256);
     $('generation-retry').onclick = () => void craftProduct(g?.status === 'ready');
-    $('generation-retry').disabled = busy || !!g && ['pending', 'generating'].includes(g.status);
+    $('generation-retry').disabled = busy || g?.status === 'generating';
     const items = live?.session?.generations?.items.filter(x => x.status === 'ready') || [];
     if (items.length)
         $('right').insertAdjacentHTML('beforeend', '<div class="actions">' + items.map((x, i) => '<button data-generation="' + esc(x.generationId) + '" aria-pressed="' + (g?.generationId === x.generationId) + '">' + (i + 1) + '</button>').join('') + '</div>');

@@ -292,7 +292,7 @@ function renderProductGeneration(){
  $('screen').innerHTML=g?.url?photo(g.url,'Personalized artwork','gift-feature-image'):'<section role="status"><h2>'+((productGenerationPending||g?.status==='generating'||g?.status==='pending')?'Preparing Your Masterpiece':'Didn’t finish')+'</h2></section>';
  $('right').innerHTML='<h2>Approve Composition</h2>'+(a?'<p>'+a.freeRemaining+' / '+a.freeTotal+' free generations remaining</p>':'')+secondary('generation-retry','Try again')+(g?.accepted?'<p>Approved</p>':'');
  primary(g?.accepted?'Add to Cart':'Accept',()=>void acceptProductGeneration(),!g||g.status!=='ready'||!g.url||!g.sha256);
- $('generation-retry').onclick=()=>void craftProduct(g?.status==='ready');($('generation-retry') as HTMLButtonElement).disabled=busy||!!g&&['pending','generating'].includes(g.status);
+ $('generation-retry').onclick=()=>void craftProduct(g?.status==='ready');($('generation-retry') as HTMLButtonElement).disabled=busy||g?.status==='generating';
  const items=live?.session?.generations?.items.filter(x=>x.status==='ready')||[];
  if(items.length)$('right').insertAdjacentHTML('beforeend','<div class="actions">'+items.map((x,i)=>'<button data-generation="'+esc(x.generationId)+'" aria-pressed="'+(g?.generationId===x.generationId)+'">'+(i+1)+'</button>').join('')+'</div>');
  document.querySelectorAll<HTMLButtonElement>('[data-generation]').forEach(b=>b.onclick=()=>{selectedGenerationId=b.dataset.generation!;render()});
