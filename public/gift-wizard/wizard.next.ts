@@ -296,7 +296,7 @@ function renderProductGeneration(){
  const items=live?.session?.generations?.items.filter(x=>x.status==='ready')||[];
  if(items.length)$('right').insertAdjacentHTML('beforeend','<div class="actions">'+items.map((x,i)=>'<button data-generation="'+esc(x.generationId)+'" aria-pressed="'+(g?.generationId===x.generationId)+'">'+(i+1)+'</button>').join('')+'</div>');
  document.querySelectorAll<HTMLButtonElement>('[data-generation]').forEach(b=>b.onclick=()=>{selectedGenerationId=b.dataset.generation!;render()});
- $('back').onclick=()=>go('products');
+ ($('back') as HTMLButtonElement).disabled=busy;$('back').onclick=()=>go('products');
 }
 async function acceptProductGeneration(){
  const g=selectedGeneration();if(!live||busy||g?.status!=='ready'||!g.url||!g.sha256)return;

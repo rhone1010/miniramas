@@ -711,6 +711,7 @@ function renderProductGeneration() {
     if (items.length)
         $('right').insertAdjacentHTML('beforeend', '<div class="actions">' + items.map((x, i) => '<button data-generation="' + esc(x.generationId) + '" aria-pressed="' + (g?.generationId === x.generationId) + '">' + (i + 1) + '</button>').join('') + '</div>');
     document.querySelectorAll('[data-generation]').forEach(b => b.onclick = () => { selectedGenerationId = b.dataset.generation; render(); });
+    $('back').disabled = busy;
     $('back').onclick = () => go('products');
 }
 async function acceptProductGeneration() {
