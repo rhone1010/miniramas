@@ -13,7 +13,7 @@ import sharp from 'sharp'
 import { createHash } from 'node:crypto'
 import { allProducts, type CanonicalProduct } from '../print/catalog'
 import { generationAspectFor, supportsFavoriteReference } from './aspects'
-import { geometryKeyFor } from './composition-plan'
+import { MUG } from '../print/production-profiles'
 import { liveEffectIds } from './effects'
 import { MAX_CONFORM_CROP, STORAGE } from './policy'
 import { GiftError, fromStoreError, generationViewOf, getSessionView, owned, type GiftDeps } from './service'
@@ -33,9 +33,17 @@ export async function chooseEffect(deps: GiftDeps, userId: string, sessionId: st
   return getSessionView(deps, userId, rec.id)
 }
 
+/** The shape of the picture a generation for this product must have: the product's picture area, except the mug, whose picture is the full-wrap band (2670 x 1034), not the old square panel. */
+export function generationShapeOf(p: CanonicalProduct): { w: number; h: number } {
+  return p.family === 'mug' ? { w: MUG.fullWrap.printable.w, h: MUG.fullWrap.printable.h } : p.requirements.picturePx
+}
+export const generationAspectOf = (p: CanonicalProduct): number => { const s = generationShapeOf(p); return Math.round((s.w / s.h) * 1e6) / 1e6 }
+/** Same shape = same composition = shared among products: 'a667' is 2:3, 'a1000' square, 'a2582' the mug's full wrap. */
+export const geometryKeyOf = (p: CanonicalProduct): string => 'a' + Math.round(generationAspectOf(p) * 1000)
+
 /** The product's picture shape as the smallest whole-number ratio (2400 x 3600 -> 2 x 3), the grid an exact picture lands on. */
 export function gridOf(p: CanonicalProduct): { w: number; h: number } {
-  const { w, h } = p.requirements.picturePx
+  const { w, h } = generationShapeOf(p)
   const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
   const d = gcd(w, h) || 1
   return { w: w / d, h: h / d }
@@ -50,10 +58,10 @@ const purchasable = (p: CanonicalProduct) => p.status === 'launch' && p.retailCe
  */
 export function generationTargetFor(p: CanonicalProduct, series: SessionRec['series'], peopleCount: number | null): { geometryKey: string; targetAspect: number; aspect: string } | null {
   if (!series) return null
-  const target = p.requirements.pictureAspect
+  const target = generationAspectOf(p)
   const gen = generationAspectFor(series, peopleCount, target)
-  if (!gen || gen.extensionFraction > MAX_CONFORM_CROP + 1e-9) return null
-  return { geometryKey: geometryKeyFor(p), targetAspect: target, aspect: gen.aspect }
+  if (!gen || 1 - 1 / (1 + gen.extensionFraction) > MAX_CONFORM_CROP + 1e-9) return null          // what must be trimmed (not the extension ratio) is bounded
+  return { geometryKey: geometryKeyOf(p), targetAspect: target, aspect: gen.aspect }
 }
 
 /**
@@ -72,7 +80,7 @@ export function conformTo(width: number, height: number, target: number, grid?: 
     w = Math.min(width, Math.max(1, w)); h = Math.min(height, Math.max(1, h))
     const trimFraction = Math.round(Math.max((width - w) / width, (height - h) / height) * 1e5) / 1e5
     if (trimFraction > MAX_CONFORM_CROP + 1e-9) return null
-    const units = Math.max(1, Math.ceil(Math.min(w / grid.w, h / grid.h) - 1e-9))
+    const units = Math.max(1, Math.round(Math.min(w / grid.w, h / grid.h)))          // the NEAREST exact size: never a large enlargement at generation time (the print preparation upscales after approval)
     const crop = { left: Math.floor((width - w) / 2), top: Math.floor((height - h) / 2), width: w, height: h }
     return { method: w === width && h === height && units * grid.w === w ? 'native' : 'trim', crop, trimFraction, ...(units * grid.w !== w || units * grid.h !== h ? { resize: { width: units * grid.w, height: units * grid.h } } : {}) }
   }
@@ -154,7 +162,7 @@ async function renderGeneration(deps: GiftDeps, rec: SessionRec, g: GenerationRe
     const raw = Buffer.from(out.imageB64, 'base64')
     const md = await sharp(raw).metadata()
     if (!md.width || !md.height) throw new Error('master_unreadable')
-    const fit = conformTo(md.width, md.height, p.requirements.pictureAspect, gridOf(p))
+    const fit = conformTo(md.width, md.height, generationAspectOf(p), gridOf(p))
     if (!fit) throw new Error('aspect_mismatch')
     const img = sharp(raw).removeAlpha()
     const cropped = fit.method === 'trim' ? img.extract(fit.crop) : img
@@ -165,7 +173,7 @@ async function renderGeneration(deps: GiftDeps, rec: SessionRec, g: GenerationRe
     await deps.storage.put(masterPath, png.data, 'image/png'); files.push(masterPath)
     await deps.storage.put(previewPath, marked, 'image/jpeg'); files.push(previewPath)
     const record = {
-      ...(out.generation ?? {}), productId: p.productId, geometryKey: g.geometry_key, requestedAspect: g.aspect, targetAspect: p.requirements.pictureAspect, durationMs: now(deps) - t0,
+      ...(out.generation ?? {}), productId: p.productId, geometryKey: g.geometry_key, requestedAspect: g.aspect, targetAspect: generationAspectOf(p), durationMs: now(deps) - t0,
       conform: { method: fit.method, trimFraction: fit.trimFraction, crop: fit.crop, ...(fit.resize ? { resampledTo: fit.resize } : {}), from: { width: md.width, height: md.height } }, referenced: !!referenceB64,
     }
     const stored = await deps.store.completeGeneration(g.id, g.user_id, { master_path: masterPath, preview_path: previewPath, width: png.info.width, height: png.info.height, sha256: sha, record })
@@ -217,7 +225,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
     if (g.status !== 'ready' || !g.master_path || !g.preview_path || !g.sha256) throw new GiftError('generation_not_ready')
     if (!g.accepted_at) throw new GiftError('generation_not_accepted')
     if (g.effect_id !== anchor.effect_id) throw new GiftError('stale_composition')
-    if (g.geometry_key !== geometryKeyFor(p)) throw new GiftError('composition_geometry_mismatch')
+    if (g.geometry_key !== geometryKeyOf(p)) throw new GiftError('composition_geometry_mismatch')
     const live = comps.filter(c => c.line_id === l.lineId && c.preview_id === rec.artwork_preview_id && (c.status === 'ready' || c.status === 'approved'))
     plans.push({ line: l, g, keep: live.find(c => c.generation_id === g.id && c.status === 'approved') ?? null })
   }
@@ -231,7 +239,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
       geometry_key: g.geometry_key, method: 'generated', source_composition_id: null, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
       nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
       plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: (g.generation as { targetAspect?: number } | null)?.targetAspect ?? null, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId },
+              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId, ...(line.productId.startsWith('mug:') ? { layout: 'mug_full_wrap' } : {}) },
       ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
     })
     await deps.store.patchComposition(row.id, { approved_at: at })
@@ -262,7 +270,7 @@ export async function correctGenerationLine(deps: GiftDeps, userId: string, rec:
     geometry_key: g.geometry_key, method: 'generated', source_composition_id: current.id, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
     nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
     plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: p.requirements.pictureAspect, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku },
+            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? { layout: 'mug_full_wrap' } : {}) },
     ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
   })
 }

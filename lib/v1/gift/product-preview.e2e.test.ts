@@ -29,7 +29,7 @@ describe('pre-checkout preview, real renderers', () => {
     await selectArtwork(deps, U1, v.sessionId, b.batch.previews[0].previewId)
     const canvas = await getProductPreview(deps, U1, v.sessionId, 'canvas:8x8'), premium = await getProductPreview(deps, U1, v.sessionId, 'premium:12x12'), fine = await getProductPreview(deps, U1, v.sessionId, 'framed:12x12'), portrait = await getProductPreview(deps, U1, v.sessionId, 'fine_art:12x18')
     expect(canvas).toMatchObject({ status: 'ready', renderer: 'scene', sceneId: 'gallery-canvas-square', watermarked: true })
-    expect(premium).toMatchObject({ status: 'ready', renderer: 'scene', sceneId: 'premium-square', representation: 'scene', physicalProductShown: true, previewBasis: 'in_situ_mockup', watermarked: true })
+    expect(premium).toMatchObject({ status: 'ready', renderer: 'scene', sceneId: 'fine-art-square', representation: 'scene', physicalProductShown: true, previewBasis: 'in_situ_mockup', watermarked: true })
     expect(fine).toMatchObject({ status: 'ready', renderer: 'artwork', representation: 'artwork_only', physicalProductShown: false, previewBasis: 'product_shaped_artwork', disclosureCode: 'artwork_only_preview', watermarked: true })
     expect(portrait).toMatchObject({ status: 'adaptation_required' })
     expect(store.compositions).toHaveLength(0); expect(store.orders.size).toBe(0)

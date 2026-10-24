@@ -28,6 +28,7 @@ import { planFor } from './composition-plan'
 import { allProducts, getProductBySku, type CanonicalProduct } from '../print/catalog'
 import { aspectCompatibility } from '../print/geometry'
 import { STORAGE } from './policy'
+import { generationShapeOf, geometryKeyOf } from './generations'
 import { noScenePresentation, representationFields } from './presentation'
 import { GIFT_CONTRACT_VERSION, type ProductPreviewView, type SceneRefusalView } from './types'
 
@@ -73,7 +74,7 @@ export async function productShapedPicture(master: Buffer, product: CanonicalPro
   return { picture, fit: 'resample' }
 }
 
-export async function getProductPreview(deps: GiftDeps, userId: string, sessionId: string, productIdRaw: unknown, opts: { provisional?: boolean } = {}): Promise<ProductPreviewView> {
+export async function getProductPreview(deps: GiftDeps, userId: string, sessionId: string, productIdRaw: unknown, opts: { provisional?: boolean; generationId?: string | null } = {}): Promise<ProductPreviewView> {
   const rec = await owned(deps, userId, sessionId)
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
@@ -88,12 +89,24 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   if (!product || (legacyCalibrated && !templateId)) return { ...base, status: 'not_available', reason: product ? 'no_mockup_template' : 'product_not_available', sku: product?.sku ?? null }
 
   const batches = await deps.store.listBatches(rec.id)
-  const fav = batches.flatMap(b => b.previews).find(p => p.id === rec.artwork_preview_id)
-  if (!fav || fav.status !== 'ready' || !fav.master_path || !fav.width || !fav.height) throw new GiftError('artwork_not_selected')
+  const found = batches.flatMap(b => b.previews).find(p => p.id === rec.artwork_preview_id)
+  if (!found || found.status !== 'ready' || !found.master_path || !found.width || !found.height) throw new GiftError('artwork_not_selected')
+  let fav = found as typeof found & { master_path: string; width: number; height: number }
+  // PRODUCT-FIRST: the customer's personalized composition for THIS product (a delivered generation of the current effect and of the product's shape) IS the picture shown. It is already the exact
+  // shape, so nothing is adapted, extended or regenerated; the scene (or the exact product-shaped picture) is built from it, and the same generation id, size and sha256 are what is accepted and bought.
+  let generation: Awaited<ReturnType<GiftDeps['store']['getGeneration']>> = null
+  if (opts.generationId) {
+    generation = await deps.store.getGeneration(rec.id, opts.generationId).catch(() => null)
+    if (!generation) throw new GiftError('generation_not_found')
+    if (generation.status !== 'ready' || !generation.master_path || !generation.width || !generation.height || !generation.sha256) throw new GiftError('generation_not_ready')
+    if (generation.effect_id !== fav.effect_id) throw new GiftError('stale_composition')
+    if (generation.geometry_key !== geometryKeyOf(product)) throw new GiftError('composition_geometry_mismatch')
+    fav = { ...fav, id: generation.id, master_path: generation.master_path, width: generation.width, height: generation.height }
+  }
 
-  const { w: pw, h: ph } = product.requirements.picturePx, pictureAspect = pw / ph, favoriteAspect = fav.width / fav.height
+  const { w: pw, h: ph } = generation ? generationShapeOf(product) : product.requirements.picturePx, pictureAspect = pw / ph, favoriteAspect = fav.width / fav.height
   const { extension } = aspectCompatibility(fav.width, fav.height, pw, ph)
-  const far = extension > FREE_BAND
+  const far = !generation && extension > FREE_BAND
   const plan = far && rec.series ? planFor(product, { series: rec.series, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }) : null
   const provisional = far && opts.provisional === true
   if (far && !provisional) {
@@ -109,7 +122,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const calibratedRevision = legacyCalibrated && templateId ? await deps.mockup.revision(templateId) : 'artwork-v1'
   const useScene = !!(scenes && choice?.scene && sceneRevision)
   const identity = sha(JSON.stringify({
-    v: 1, contract: MOCKUP_CONTRACT_VERSION, sessionId: rec.id, favoriteId: fav.id, master: fav.master_path, sku: product.sku, productId: product.productId, finalPx: product.requirements.finalPx, picturePx: product.requirements.picturePx,
+    v: 1, contract: MOCKUP_CONTRACT_VERSION, sessionId: rec.id, favoriteId: fav.id, generationSha256: generation?.sha256 ?? null, master: fav.master_path, sku: product.sku, productId: product.productId, finalPx: product.requirements.finalPx, picturePx: product.requirements.picturePx,
     attributes: Object.fromEntries(Object.entries(product.attributes).sort()), renderer: useScene ? { scene: choice!.scene!.sceneId, revision: sceneRevision, representation: SCENE_REPRESENTATION_VERSION } : legacyCalibrated ? { template: templateId, revision: calibratedRevision } : { artwork: 'v1' }, variant: provisional ? 'provisional-contain-1:' + PROVISIONAL_SURROUND : 'watermarked',
   }))
   const path = `${STORAGE.productPreviewDir(rec.id)}${product.productId.replace(/[^\w-]/g, '_')}-${identity.slice(0, 16)}.jpg`
@@ -131,7 +144,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
 
   const masterBytes = await deps.storage.get(fav.master_path)                             // CLEAN master: memory only, never returned, never stored next to the preview
   if (!masterBytes) throw new GiftError('generation_unavailable')
-  const shaped = provisional ? { picture: (await containedPicture(masterBytes, product)).picture, fit: 'exact' as const } : await productShapedPicture(masterBytes, product)
+  const shaped = generation ? { picture: await sharp(masterBytes).png().toBuffer(), fit: 'exact' as const } : provisional ? { picture: (await containedPicture(masterBytes, product)).picture, fit: 'exact' as const } : await productShapedPicture(masterBytes, product)
   const flat = await mockupArtwork(shaped.picture, product)
   let png: Buffer | null = null, width = 0, height = 0, renderer: 'scene' | 'calibrated' | 'artwork' = legacyCalibrated ? 'calibrated' : 'artwork', sceneId: string | null = null
   if (useScene) {
@@ -139,7 +152,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
     try {
       const rep = await prepareSceneArtwork(flat, scenes!.describe(choice!.scene!.sceneId))
       stage = 'scene_render'
-      const out = await scenes!.render({ sceneId: choice!.scene!.sceneId, productFamily: product.family, artworkId: fav.id, artwork: rep.bytes })
+      const out = await scenes!.render({ sceneId: choice!.scene!.sceneId, productFamily: choice!.scene!.sceneFamily, artworkId: fav.id, artwork: rep.bytes })
       const cat = getProductBySku(product.sku)
       if (!cat || cat.requirements.finalPx.w !== product.requirements.finalPx.w || cat.requirements.finalPx.h !== product.requirements.finalPx.h) throw new GiftError('mockup_configuration_mismatch')
       if (out.templateRevision !== sceneRevision) throw new Error('scene_revision_changed_during_render')

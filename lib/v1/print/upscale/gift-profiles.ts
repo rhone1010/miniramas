@@ -8,7 +8,7 @@
 import sharp from 'sharp'
 import { preparePanelComposition } from '../asset-pipeline'
 import { compositionPlan } from '../geometry'
-import { buildCardSpread, buildMugWrap, cardQaRegion, mugQaRegion } from '../product-layout'
+import { buildCardSpread, buildMugFullWrap, buildMugWrap, cardQaRegion, isMugFullWrapShape, mugFullWrapQaRegion, mugQaRegion } from '../product-layout'
 import { CARD, MUG } from '../production-profiles'
 import { validateOutput, type Dim } from './target'
 import type { ArtworkProfile } from './profiles'
@@ -45,5 +45,16 @@ function layoutProfile(id: string, panel: Dim, spread: Dim, build: (picture: Buf
   }
 }
 
-export const mugWrapProfile = layoutProfile('mug_wrap', { ...MUG.panel }, { ...MUG.wrap }, p => buildMugWrap(p, 1), mugQaRegion)
+const mugPanelProfile = layoutProfile('mug_wrap', { ...MUG.panel }, { ...MUG.wrap }, p => buildMugWrap(p, 1), mugQaRegion)
+const mugFullWrapProfile = layoutProfile('mug_wrap', { w: MUG.fullWrap.printable.w, h: MUG.fullWrap.printable.h }, { ...MUG.wrap }, p => buildMugFullWrap(p, 1), mugFullWrapQaRegion)
+/**
+ * The mug has two layouts, told apart by the shape of the picture the customer approved: the square FACE PANEL (compositions made before 2026-10-24, kept exactly as they were) and the FULL WRAP
+ * (the product-first journey). The shape decides, so an existing paid order never changes layout.
+ */
+export const mugWrapProfile: ArtworkProfile = {
+  id: 'mug_wrap',
+  async prepare(i) { const m = await sharp(i.source).metadata(); return (isMugFullWrapShape(m.width ?? 0, m.height ?? 0) ? mugFullWrapProfile : mugPanelProfile).prepare(i) },
+  finish(i) { return (isMugFullWrapShape(i.job.input_w ?? 0, i.job.input_h ?? 0) ? mugFullWrapProfile : mugPanelProfile).finish(i) },
+  qaRegion(i) { return (isMugFullWrapShape(i.job.input_w ?? 0, i.job.input_h ?? 0) ? mugFullWrapProfile : mugPanelProfile).qaRegion(i) },
+}
 export const cardSpreadProfile = layoutProfile('card_spread', { w: CARD.frontTrim.w, h: CARD.frontTrim.h }, { ...CARD.spread }, p => buildCardSpread(p, 1), cardQaRegion)

@@ -202,13 +202,13 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
   const choice = scenes ? resolveScene(product, id => scenes.describe(id), event => logSceneDiagnostic(product.sku, event)) : null
   const sceneRefusal: SceneRefusalView | null = choice?.scene ? null : { reason: choice?.reason ?? (scenesEnabled() ? 'scene_renderer_absent' : 'feature_disabled'), ...(choice && !choice.scene && choice.detail ? choice.detail : {}) }
   if (sceneRefusal) logSceneDiagnostic(product.sku, { stage: 'selection', reason: sceneRefusal.reason, ...(sceneRefusal.sceneId ? { sceneId: sceneRefusal.sceneId, openingAspect: sceneRefusal.openingAspect, productAspect: sceneRefusal.productAspect, extension: sceneRefusal.extension } : {}) })
-  let sceneCand: { sceneId: string; revision: string; representationId: string; templateId: string; identityKey: string } | null = null
+  let sceneCand: { sceneId: string; sceneFamily: string; revision: string; representationId: string; templateId: string; identityKey: string } | null = null
   if (scenes && choice?.scene) {
     try {
       const revision = await scenes.revision(choice.scene.sceneId)
       const representationId = sceneRepresentationId({ artworkSha256: sourceHash, sceneId: choice.scene.sceneId, sceneRevision: revision, compositionId: comp.id, attempt: comp.attempt, favoriteId: comp.preview_id })
       const sceneTemplateId = 'scene:' + choice.scene.sceneId
-      sceneCand = { sceneId: choice.scene.sceneId, revision, representationId, templateId: sceneTemplateId,
+      sceneCand = { sceneId: choice.scene.sceneId, sceneFamily: choice.scene.sceneFamily, revision, representationId, templateId: sceneTemplateId,
         identityKey: mockupIdentityKey({ ...identityBase, templateId: sceneTemplateId, templateRevision: revision, scene: { sceneId: choice.scene.sceneId, revision, representationId } }) }
     } catch (e) { logSceneDiagnostic(product.sku, { sceneId: choice.scene.sceneId, stage: 'revision', reason: 'scene_revision_unavailable', ...sceneErrorDiagnostic(e) }) }
   }
@@ -255,7 +255,7 @@ export async function getLineMockup(deps: GiftDeps, userId: string, sessionId: s
       sceneStage = 'scene_representation'
       const rep = await prepareSceneArtwork(flat, scenes.describe(sceneCand.sceneId))
       sceneStage = 'scene_render'
-      const out = await scenes.render({ sceneId: sceneCand.sceneId, productFamily: product.family, artworkId: comp.id, artwork: rep.bytes })
+      const out = await scenes.render({ sceneId: sceneCand.sceneId, productFamily: sceneCand.sceneFamily, artworkId: comp.id, artwork: rep.bytes })
       // The scene renderer deliberately does not echo a physical configuration: the frozen purchase is validated here, independently, against the catalog's own entry for that SKU.
       if (!catalogEntry || !configurationMatches(catalogEntry.sku, catalogEntry.requirements.finalPx)) throw new GiftError('mockup_configuration_mismatch')
       if (out.templateRevision !== sceneCand.revision) throw new Error('scene_revision_changed_during_render')                // the files changed under a running render: never store a mixed result

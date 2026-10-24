@@ -35,6 +35,32 @@ export async function buildMugWrap(picture: Buffer, scale = 1): Promise<Buffer> 
   return sharp(soft).composite(panels.map((input, i) => ({ input, left: rects[i].x, top: rects[i].y }))).png().toBuffer()
 }
 
+/** The shape of the full-wrap picture: the printable band of the lab file (2670 x 1034). */
+export const MUG_FULL_WRAP_ASPECT = MUG.fullWrap.printable.w / MUG.fullWrap.printable.h
+export const isMugFullWrapShape = (w: number, h: number): boolean => w > 0 && h > 0 && Math.abs(w / h / MUG_FULL_WRAP_ASPECT - 1) <= SHAPE_TOLERANCE
+
+/**
+ * The genuine full wrap: the ONE picture the customer reviewed, whole, across the full width of the lab file inside the 1/8 inch unprinted band at rim and base, rolled so its subjects sit on the face a
+ * right-handed mug shows. Nothing is repeated, mirrored, blurred, cropped or stretched (a picture of another shape is refused). `scale` 1 is the 2670 x 1110 lab file; 0.5 is the mockup size.
+ * The lab file is built from the unrolled-for-viewing picture; a mockup rolls THIS file again to put the visible face in the middle, but the beauty crop is never the print file.
+ */
+export async function buildMugFullWrap(picture: Buffer, scale = 1): Promise<Buffer> {
+  const f = MUG.fullWrap, W = Math.round(MUG.wrap.w * scale), H = Math.round(MUG.wrap.h * scale)
+  const pw = W, ph = Math.round(f.printable.h * scale), top = Math.round(f.printable.y * scale), roll = Math.round(f.rollPx * scale)
+  const m = await sharp(picture).metadata()
+  if (!isMugFullWrapShape(m.width ?? 0, m.height ?? 0)) throw new Error('mug_picture_shape_mismatch')
+  const band = await sharp(picture).resize(pw, ph, { fit: 'fill', kernel: 'lanczos3' }).png().toBuffer()
+  const rolled = roll ? await sharp({ create: { width: pw, height: ph, channels: 3, background: '#ffffff' } }).composite([
+    { input: await sharp(band).extract({ left: pw - roll, top: 0, width: roll, height: ph }).png().toBuffer(), left: 0, top: 0 },
+    { input: await sharp(band).extract({ left: 0, top: 0, width: pw - roll, height: ph }).png().toBuffer(), left: roll, top: 0 }]).png().toBuffer() : band
+  return sharp({ create: { width: W, height: H, channels: 3, background: '#ffffff' } }).composite([{ input: rolled, left: 0, top }]).png().toBuffer()
+}
+/** The picture part of a full-wrap lab file (the printable band), for inspection. */
+export async function mugFullWrapQaRegion(final: Buffer): Promise<Buffer> {
+  const r = MUG.fullWrap.printable
+  return sharp(final).extract({ left: r.x, top: r.y, width: r.w, height: r.h }).jpeg({ quality: 95 }).toBuffer()
+}
+
 /**
  * The full card spread: white paper everywhere except the front panel, which carries the picture whole at 5:7 and, outside the trim on the right, top and
  * bottom, a mirror of the picture's own edge as bleed. `scale` 1 is the 6118 x 2161 lab file.
@@ -63,7 +89,8 @@ export async function cardQaRegion(final: Buffer): Promise<Buffer> {
  */
 export async function mockupInputFor(family: 'mug' | 'card', picture: Buffer): Promise<Buffer> {
   if (family === 'mug') {
-    const wrap = await buildMugWrap(picture, MUG.mockupScale), W = Math.round(MUG.wrap.w * MUG.mockupScale), H = Math.round(MUG.wrap.h * MUG.mockupScale)
+    const pm = await sharp(picture).metadata()
+    const wrap = isMugFullWrapShape(pm.width ?? 0, pm.height ?? 0) ? await buildMugFullWrap(picture, MUG.mockupScale) : await buildMugWrap(picture, MUG.mockupScale), W = Math.round(MUG.wrap.w * MUG.mockupScale), H = Math.round(MUG.wrap.h * MUG.mockupScale)
     const shift = (((Math.round(W / 2 - MUG.mockupFaceCenterX * MUG.mockupScale)) % W) + W) % W        // roll the wrap sideways (it is a circle): the right-handed face lands in the middle
     if (!shift) return wrap
     const tail = await sharp(wrap).extract({ left: W - shift, top: 0, width: shift, height: H }).png().toBuffer()

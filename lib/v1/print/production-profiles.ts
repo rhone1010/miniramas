@@ -34,6 +34,16 @@ export const MUG = {
   panel: { w: 910, h: 910 },
   /** Distance from the top of the file to the top of the panel. (liten_policy: a conservative margin, because top/bottom coverage is unverified for this SKU) */
   panelTop: 100,
+  /**
+   * THE FULL-WRAP COMPOSITION (2026-10-24, the product-first mug): ONE picture across the whole wrap, no panel, no repetition, no mirror, no wash.
+   *   printable     the part of the lab file that carries picture: the full width, inside an unprinted band of about 1/8 inch (0.125 in x 300 dpi = 37.5 px, 38 px) at the rim and at the base.
+   *                 (liten_policy: the owner's request. It sits INSIDE Prodigi's printable area, 2670 x 1110 (prodigi_api), so it never asks for more than the lab prints; the mug is white
+   *                 ceramic, so a white band is "unprinted". Prodigi guarantees top-to-bottom coverage only for H-MUG-W; the band is the margin that makes that question not matter.)
+   *   subjectX      where the picture's centre (its subjects) lands in the FILE: the middle of the face a right-handed mug shows (prodigi_template, 2069). The picture is rolled by `rollPx`
+   *                 (a circle: the part that would pass the right edge continues at the left edge), so nothing is cut, mirrored or invented.
+   *   The picture's own two edges meet at x = rollPx (behind the mug for a right-handed viewer, 180 degrees from the visible face). The handle seam stays at the file's edges, as Prodigi's template requires.
+   */
+  fullWrap: { unprintedMarginIn: 0.125, marginPx: 38, printable: { x: 0, y: 38, w: 2670, h: 1034 }, subjectX: 2069, rollPx: 734 },
   /** The scale a mockup wrap is built at. 1/2 keeps 2670:1110 exact (1335 x 555). */
   mockupScale: 0.5,
   /** The mockup template shows the mug with the handle on the RIGHT, so the face it shows is the one at x = 2069. The wrap is rolled so that face is in the middle of the file (where the cylindrical mapping looks). */
