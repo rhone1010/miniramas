@@ -71,6 +71,8 @@ const nextConfig = {
       './public/gift-wizard/mockup-scenes/inventory.next.json',
       './public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - art bw.png',
       './public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - background bw.png',
+      './public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - frame bw.png',
+      './public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - matte bw.png',
       './public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape.png',
       './public/gift-wizard/mockup-scenes/matted-frame-landscape/scene.next.json',
       './public/gift-wizard/mockup-scenes/matted-frame-portrait/matted frame portrait art bw.png',

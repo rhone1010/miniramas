@@ -308,28 +308,38 @@
     },
     {
       "path": "public/gift-wizard/mockup-scenes/inventory.next.json",
-      "bytes": 4424,
-      "sha256": "c96ce2e53ac7748db4077be5f7084c16e4931f92e6045f976094075018fbc0ce"
+      "bytes": 4426,
+      "sha256": "f219a6e6570cfec291d4ceac58018bb51dfdad6a0005bc71fe685ddddf0595fb"
     },
     {
       "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - art bw.png",
-      "bytes": 36490,
-      "sha256": "b4360aa1c31a2e575d895804a571ab0d49e937d6b1c1bed501124d4448884e0d"
+      "bytes": 8696,
+      "sha256": "be914911acca1d847d564d333b2bf7601eacf201cefd2a22b3b7c88c1b39f4c2"
     },
     {
       "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - background bw.png",
-      "bytes": 36496,
-      "sha256": "eea1879759ebf73e926a99746273d0bf9183e26f3f959da15673dc3eeb8e09ce"
+      "bytes": 10146,
+      "sha256": "e0b0ff2237cecd286a4f66984d9c74343216e30d3211169a84cd88c503f8f558"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - frame bw.png",
+      "bytes": 9154,
+      "sha256": "ad5b1c9d31f4a13cbc615d52985bae8cb3c43b6e4b45cc8f51e1986925ab4cd9"
+    },
+    {
+      "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape - matte bw.png",
+      "bytes": 9073,
+      "sha256": "0905eae18d8312759a4149e0a7c55481e66e42ed61e790b25987d4e033746e78"
     },
     {
       "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/matted frame landscape.png",
-      "bytes": 1859108,
-      "sha256": "17281c7f2a96157c015b6685accdb1e18ed7ed85858cf4fe67b0c32fb6edd899"
+      "bytes": 1330548,
+      "sha256": "730e5e659d40705641ae77ed253cf8f2b5282898af1e3972daf8fbacff63a7c9"
     },
     {
       "path": "public/gift-wizard/mockup-scenes/matted-frame-landscape/scene.next.json",
-      "bytes": 1623,
-      "sha256": "1f09bef992a8e374bbf0c965dd12c7d0abb50ab701c7d010627d2244d6f025f8"
+      "bytes": 2521,
+      "sha256": "fab751f9f8b0022e8680162ad49aaa5dfb990e6b7e99df7ba9423f1832f44f48"
     },
     {
       "path": "public/gift-wizard/mockup-scenes/matted-frame-portrait/matted frame portrait art bw.png",

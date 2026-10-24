@@ -1,0 +1,9 @@
+Matted-frame landscape replacement — 2026-10-24
+
+All five owner-supplied PNGs copied byte-for-byte from H:/liteneco art files/litenco product image alphas 3-assets. Replaces the old mislabeled canvas master and masks. New frameMask and matteMask references are included in the scene manifest and serverless trace. Source dimensions: 1254 x 1254 for every file.
+
+The scene is now family matted. CC-owned lib/v1/gift/scenes.ts still describes this ID as canvas; no backend routing changed. Do not assign it to a canvas SKU. Before assigning a matted SKU, verify physical opening geometry and finish against that SKU.
+
+Artwork-mask plane: x=189..1067, y=316..919; aspect 878/603 = 1.456053. Relative deviation from 3:2 is 2.9298%, exceeding existing 2% tolerance. Supplied white-mask overlaps: art/background 439 pixels; art/matte 1482; frame/matte 2029. No masks or photography were altered to hide these issues. Lower-right detail inset has zero artwork-mask coverage. Existing compositor check: zero changed channels outside artwork mask and zero changed channels in inset interior x640..1199,y850..1199.
+
+Asset inclusion is complete. Activation for a specific purchasable configuration remains subject to geometry and mask-edge review; no availability or customer order was changed.

@@ -1,7 +1,7 @@
 {
   "sourceArchive": "litenco product image alphas 3-assets (2).zip; earlier premium portrait retained pending compatible revision",
   "masters": 19,
-  "masks": 47,
+  "masks": 49,
   "scenes": [
     {
       "id": "fine-art-square",
@@ -28,9 +28,9 @@
     },
     {
       "id": "matted-frame-landscape",
-      "family": "canvas",
+      "family": "matted",
       "status": "clean-replacement-review",
-      "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+      "sourceRevision": "Owner-supplied corrected matted frame landscape photography and four masks, 2026-10-24"
     },
     {
       "id": "gallery-canvas-square",

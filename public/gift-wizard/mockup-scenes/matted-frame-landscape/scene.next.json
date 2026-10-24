@@ -1,6 +1,6 @@
 {
   "id": "matted-frame-landscape",
-  "family": "canvas",
+  "family": "matted",
   "dimensions": [
     1254,
     1254
@@ -9,51 +9,75 @@
   "artworkMask": "matted frame landscape - art bw.png",
   "cornersPixels": [
     [
-      100,
-      223
+      189,
+      316
     ],
     [
-      1152,
-      223
+      1067,
+      316
     ],
     [
-      1152,
-      1015
+      1067,
+      919
     ],
     [
-      100,
-      1015
+      189,
+      919
     ]
   ],
   "maskBounds": {
-    "x0": 100,
-    "y0": 223,
-    "x1": 1152,
-    "y1": 1015
+    "x0": 189,
+    "y0": 316,
+    "x1": 1067,
+    "y1": 919
   },
   "assets": [
     {
       "file": "matted frame landscape.png",
-      "sha256": "17281c7f2a96157c015b6685accdb1e18ed7ed85858cf4fe67b0c32fb6edd899",
-      "bytes": 1859108
+      "sha256": "730e5e659d40705641ae77ed253cf8f2b5282898af1e3972daf8fbacff63a7c9",
+      "bytes": 1330548
     },
     {
       "file": "matted frame landscape - art bw.png",
-      "sha256": "b4360aa1c31a2e575d895804a571ab0d49e937d6b1c1bed501124d4448884e0d",
-      "bytes": 36490
+      "sha256": "be914911acca1d847d564d333b2bf7601eacf201cefd2a22b3b7c88c1b39f4c2",
+      "bytes": 8696
     },
     {
       "file": "matted frame landscape - background bw.png",
-      "sha256": "eea1879759ebf73e926a99746273d0bf9183e26f3f959da15673dc3eeb8e09ce",
-      "bytes": 36496
+      "sha256": "e0b0ff2237cecd286a4f66984d9c74343216e30d3211169a84cd88c503f8f558",
+      "bytes": 10146
+    },
+    {
+      "file": "matted frame landscape - frame bw.png",
+      "sha256": "ad5b1c9d31f4a13cbc615d52985bae8cb3c43b6e4b45cc8f51e1986925ab4cd9",
+      "bytes": 9154
+    },
+    {
+      "file": "matted frame landscape - matte bw.png",
+      "sha256": "0905eae18d8312759a4149e0a7c55481e66e42ed61e790b25987d4e033746e78",
+      "bytes": 9073
     }
   ],
   "status": "clean-replacement-review",
   "lighting": "Clean replacement authorized: no original artwork colour, lighting or texture multiplied into new artwork. Protected photography retained unchanged.",
   "fixedInset": "Protected by the supplied artwork mask; no second mapping.",
   "productionPrintFile": false,
-  "productDescription": "Rectangular wrapped canvas (original filename mislabeled; owner confirmed)",
-  "catalogRole": "alternate-landscape-canvas",
+  "productDescription": "Landscape matted frame with natural wood finish and fixed material-detail inset",
+  "catalogRole": "landscape-matted-frame",
   "backgroundMask": "matted frame landscape - background bw.png",
-  "sourceRevision": "litenco product image alphas 3-assets (2).zip, latest supplied revisions, 2026-10-20"
+  "sourceRevision": "Owner-supplied corrected matted frame landscape photography and four masks, 2026-10-24",
+  "frameMask": "matted frame landscape - frame bw.png",
+  "matteMask": "matted frame landscape - matte bw.png",
+  "geometryReview": {
+    "artworkAspect": 1.4560530679933665,
+    "threeByTwoDeviation": 0.029297954671088977,
+    "tolerance": 0.02,
+    "compatibleWithThreeByTwo": false,
+    "maskOverlapsPixels": {
+      "artBackground": 439,
+      "artMatte": 1482,
+      "frameMatte": 2029
+    },
+    "note": "Preserved supplied pixels unchanged. No new SKU assignment; opening ratio and mask-edge alignment require confirmation before activation."
+  }
 }
