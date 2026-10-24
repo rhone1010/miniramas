@@ -21,7 +21,7 @@ function fixtureProductPreview(s:any,url:string){
  return {contractVersion:1,status:'ready',sessionId:s.sessionId,productId,sku:o.sku,favoriteId:s.artworkPreviewId,renderer:'scene',sceneId:({fine_art:'fine-art-square',framed:'classic-framed',canvas:'gallery-canvas-square'} as any)[productId.split(':')[0]],fit:'exact',url:'https://liten.invalid/product.jpg',urlExpiresAt:'2099-01-01',width:1254,height:1254,watermarked:true,productionPrintFile:false,purchaseAuthorization:false};
 }
 async function boot(query:string,response:any=project(),status=200){
- const dom=new JSDOM(fs.readFileSync('public/gift-wizard.next.html','utf8'),{url:'https://liten.invalid/gift-wizard.next.html?'+query,runScripts:'outside-only'});
+ const dom=new JSDOM(fs.readFileSync('public/gift-wizard.next.html','utf8'),{url:'https://liten.invalid/gift-wizard.next.html?'+query,runScripts:'outside-only',pretendToBeVisual:true});
  const win=dom.window as any,calls:string[]=[];
  win.matchMedia=()=>({matches:query.includes('mobile=1'),addEventListener(){}});win.ResizeObserver=class{observe(){}disconnect(){}};win.scrollTo=()=>{};win.structuredClone=structuredClone;win.AbortController=AbortController;win.Response=Response;
  win.require=(name:string)=>name.includes('gift-composition-policy')?compositionPolicy:name.includes('studio.next')?studio:name.includes('contracts.next')?contracts:name.includes('backend-state')?state:name.includes('backend.next')?backend:live;
