@@ -659,3 +659,15 @@ test('Gift orientation membership exposes released canvas as landscape only',asy
  const {win,dom}=await boot('sessionId=project',s);
  try{win.document.querySelector('[data-feature="framed_canvas"]').click();assert.ok(win.document.querySelector('[data-aspect="Landscape"]'));assert.equal(win.document.querySelector('[data-aspect="Portrait"]'),null);win.document.querySelector('[data-aspect="Landscape"]').click();const size=win.document.querySelector('[data-size="8x12"]');assert.equal(size.textContent,'12 × 8″ landscape');assert.equal(size.disabled,false);size.click();assert.match(win.document.querySelector('main').textContent,/\$89\.00/);assert.equal(win.document.getElementById('primary').disabled,false)}finally{dom.window.close()}
 });
+
+
+test('Gift wrap and spread products use product availability rather than wall orientation lists',async()=>{
+ for(const family of ['mug','card']){
+ const s:any=project('none');s.lines=[];s.geometries=[];s.flow='generations';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};
+ const offered=catalog.products.find(p=>p.family===family)!;assert.ok(offered);
+ s.catalog={...catalog,products:catalog.products.map(p=>p.productId===offered.productId?{...p,status:'launch',retailCents:1999}:p)};
+ s.route=(u:string)=>u.endsWith('/availability')?{contractVersion:1,sessionId:'project',products:s.catalog.products.map((p:any)=>({productId:p.productId,purchasable:p.productId===offered.productId,generation:{supported:true},configuration:{skuOrientation:family==='mug'?'wrap':'spread'}})),orientations:{square:{supported:false,productIds:[]},portrait:{supported:false,productIds:[]},landscape:{supported:false,productIds:[]}}}:null;
+ const {win,dom}=await boot('sessionId=project',s);
+ try{win.document.querySelector('[data-feature="'+family+'"]').click();const size=win.document.querySelector('[data-size]');assert.ok(size,family+' size must be present');assert.equal(size.disabled,false);size.click();assert.equal(win.document.getElementById('primary').disabled,false)}finally{dom.window.close()}
+ }
+});

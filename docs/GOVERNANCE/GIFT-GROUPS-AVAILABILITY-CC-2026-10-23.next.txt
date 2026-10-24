@@ -1,0 +1,13 @@
+CC backend handoff — actual Gift availability blocker, 2026-10-23
+
+Affected protected Preview: https://miniramas-e7i5jz4py-litenco.vercel.app
+Session: a88fdf89-cbf2-447c-a72a-d992566427ac
+Actual authenticated GET session response: flow=generations; source.series=groups; source.peopleCount=11; masterAspect=3:2; effectId=nesting_dolls; no generation items, no order, no lines.
+
+Actual GET availability: all standard square/portrait products, mug and card have purchasable=false, disabledReason=no_bounded_adaptation, blockers=[], generation.supported=false, generation.reason=no_ratio_within_bound_for_series. Only framed_canvas:8x12 is purchasable (landscape 12x8). Thus catalog launch status is NOT sufficient to make these products usable for this session.
+
+Cause: lib/v1/gift/aspects.ts routeAspects imports the original Groups groupsFormatAllowed. lib/v1/groups/groups-effects.ts restricts count >9 to 4:3, 3:2, 16:9. Both planFor and generationTargetFor inherit that restriction. This contradicts Rich's approved Gift Shop rule: four or more people may select square or landscape. Do not change original Groups series behavior. Correct the Gift product-composition route/validation coherently, including the underlying internal generation handler; do not simply mark unsupported requests purchasable. Preserve legacy paid sessions and approvals. Verify actual availability and generation target for 11 people without initiating paid generation.
+
+Frontend correction prepared separately: configuration.skuOrientation wrap/spread products must not be tested against wall-art square/portrait/landscape productIds lists. They still require purchasable and generation.supported. Wall products retain exact orientation membership checks.
+
+Actual browser: framed_canvas:8x12 can be selected and enables Craft at $89. The center displays Product photography unavailable. No Craft request or order/approval mutation was made. All other seven families remain unavailable for this actual session until the server restriction is resolved. Do not describe this as an end-to-end success.
