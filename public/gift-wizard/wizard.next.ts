@@ -2,6 +2,7 @@ import {productScene} from './product-scene.next.js';
 import {giftCompositionEligibility} from '../product-studio/gift-composition-policy.next.js';
 import {mountStudio,familyPhoto,type StudioState} from '../product-studio/studio.next.js';
 import {LiveGift,purchased,canCraft} from './live.next.js';
+import type {ProductAvailability} from './backend-contracts/gift/availability';
 import type {GenerationView,ProductPreviewView,SessionView} from './backend-contracts/gift/types';
 import {RequestSlot} from './backend-state.next.js';
 import {GiftBackend,GiftApiError,isApprovedScene} from './backend.next.js';
@@ -18,6 +19,7 @@ let studioState:StudioState={step:'product',productId:'',size:'',copies:1,drafts
 let session=newSession(),view:View='photo',history:View[]=[],products:Product[]=[],fixtures:Preview[]=[],registries={} as Record<Series,Registry>,manifest:any,originalPortraitManifest:any;
 let shoppingFavoriteId:string|null=null;
 const productPhotography=new Map<string,string>();
+const productAvailability=new Map<string,ProductAvailability>();
 const unavailableCatalogOptions=new Map<string,{label:string;reason:string}[]>();
 let featuredProduct='';
 let catalogSamples:Partial<Record<Series,Record<string,{desktop:string;mobile:string;placeholder:boolean;templateId?:string}>>>={};
@@ -379,7 +381,7 @@ function renderPivotEffects(){
 function renderPivotProducts(){
  pivotRail(studioState.step==='product'?'Choose<br>your Gift':'Choose<br>your Size');$('right').innerHTML='';$('back').hidden=true;
  const familyOrder=['fine_art','premium','framed','mug','matted','canvas','framed_canvas','card'];
- const choices=[...products].sort((a,b)=>familyOrder.indexOf(a.id)-familyOrder.indexOf(b.id)).map(p=>({...p,unavailableOptions:unavailableCatalogOptions.get(p.id),image:familyPhoto({id:p.id,image:asset(p.image)}),options:(p.options as CatalogOption[]).filter(o=>giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
+ const choices=[...products].sort((a,b)=>familyOrder.indexOf(a.id)-familyOrder.indexOf(b.id)).map(p=>({...p,unavailableOptions:unavailableCatalogOptions.get(p.id),image:familyPhoto({id:p.id,image:asset(p.image)}),options:(p.options as CatalogOption[]).filter(o=>productAvailability.has(p.id+':'+o.size)||giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
  mountStudio($('screen'),{products:choices,state:studioState,navigationHost:$('left'),configurationHost:$('right'),
   sizeHeading:'Choose a Size to Continue',requireSizeClick:true,detailsIntroHtml:(p,o)=>'<h3>Your Product</h3>'+((o as CatalogOption).familyNote?'<div class="product-guidance"><p>'+esc((o as CatalogOption).familyNote)+'</p></div>':''),detailsHtml:(p,o)=>{if(!o)return photo(p.image,p.label);const url=o?productPhotography.get(p.id+':'+o.size)||(journeyDemo&&o.imageWidthIn===o.imageHeightIn?asset(familyPhoto(p)):null):null;return url?photo(url,p.label):'<p role="status">Product photography unavailable.</p>'},previewHtml:p=>photo(p.image,p.label),canAdd:(p,o)=>p.available&&o.compatible!==false&&(journeyDemo||!!live?.session?.generations?.effectId&&['free','paid'].includes(live.session.generations.allowance.next)),onAdd:()=>journeyDemo?demoCraft():void craftProduct(),busy,addLabel:'Craft',
   onChange:s=>{studioState=s;requestAnimationFrame(sharedStageLayout);if(layoutReview)rememberPivotReview();else rememberView();$('left').querySelector('h1')!.innerHTML=s.step==='product'?'Choose<br>your Gift':'Choose<br>your Size';document.body.dataset.pivotStep=s.step;document.querySelectorAll('.progress li').forEach((el,i)=>{if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});if(mobileLayout.matches){$('mobile-progress')?.remove();renderMobileProgress()}},
@@ -691,6 +693,7 @@ async function syncCatalog(){
  const api=live?.api||new GiftBackend((url,init)=>fetch(url,init));
  const catalog=await api.catalog();
  const availability=live?await api.availability(live.id):null;
+ productAvailability.clear();for(const p of availability?.products||[])productAvailability.set(p.productId,p);
  unavailableCatalogOptions.clear();
  for(const p of catalog.products.filter(p=>p.status!=='launch'||p.retailCents===null)){const list=unavailableCatalogOptions.get(p.family)||[];list.push({label:p.label,reason:(p.disabledReason||'retail_price_pending').replace(/_/g,' ')});unavailableCatalogOptions.set(p.family,list)}
  productPhotography.clear();
@@ -699,7 +702,7 @@ async function syncCatalog(){
  }
 
  const allowed=(id:string,fallback:boolean)=>availability?availability.products.find(p=>p.productId===id)?.purchasable===true:fallback;
- products=products.map(p=>({...p,available:catalog.products.some(c=>c.family===p.id&&allowed(c.productId,c.selectable)),options:catalog.products.filter(c=>c.family===p.id&&c.status==='launch'&&c.retailCents!==null).map(c=>({sku:c.sku,size:c.size,family:c.family,label:c.label,retailCents:c.retailCents!,attributes:c.attributes,compatible:allowed(c.productId,c.selectable),imageWidthIn:c.requirements.picturePx.w/c.requirements.ppi,imageHeightIn:c.requirements.picturePx.h/c.requirements.ppi,requiredPx:c.requirements.finalPx,familyNote:c.note}))}));
+ products=products.map(p=>({...p,available:catalog.products.some(c=>c.family===p.id&&allowed(c.productId,c.selectable)),options:catalog.products.filter(c=>c.family===p.id&&c.status==='launch'&&c.retailCents!==null).map(c=>({sku:c.sku,size:c.size,family:c.family,label:c.label,retailCents:c.retailCents!,attributes:c.attributes,compatible:allowed(c.productId,c.selectable)&&(live?.session?.flow!=='generations'||productAvailability.get(c.productId)?.generation?.supported!==false),imageWidthIn:c.requirements.picturePx.w/c.requirements.ppi,imageHeightIn:c.requirements.picturePx.h/c.requirements.ppi,requiredPx:c.requirements.finalPx,familyNote:productAvailability.get(c.productId)?.generation?.supported===false?productAvailability.get(c.productId)!.generation.reason.replace(/_/g,' '):c.note}))}));
 }
 
 function applyServer(s:SessionView){

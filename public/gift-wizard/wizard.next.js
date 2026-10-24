@@ -14,6 +14,7 @@ let studioState = { step: 'product', productId: '', size: '', copies: 1, drafts:
 let session = newSession(), view = 'photo', history = [], products = [], fixtures = [], registries = {}, manifest, originalPortraitManifest;
 let shoppingFavoriteId = null;
 const productPhotography = new Map();
+const productAvailability = new Map();
 const unavailableCatalogOptions = new Map();
 let featuredProduct = '';
 let catalogSamples = {};
@@ -937,7 +938,7 @@ function renderPivotProducts() {
     $('right').innerHTML = '';
     $('back').hidden = true;
     const familyOrder = ['fine_art', 'premium', 'framed', 'mug', 'matted', 'canvas', 'framed_canvas', 'card'];
-    const choices = [...products].sort((a, b) => familyOrder.indexOf(a.id) - familyOrder.indexOf(b.id)).map(p => ({ ...p, unavailableOptions: unavailableCatalogOptions.get(p.id), image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => giftCompositionEligibility(p, o, pivotSubjectCount()).allowed) }));
+    const choices = [...products].sort((a, b) => familyOrder.indexOf(a.id) - familyOrder.indexOf(b.id)).map(p => ({ ...p, unavailableOptions: unavailableCatalogOptions.get(p.id), image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => productAvailability.has(p.id + ':' + o.size) || giftCompositionEligibility(p, o, pivotSubjectCount()).allowed) }));
     mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
         sizeHeading: 'Choose a Size to Continue', requireSizeClick: true, detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => { if (!o)
             return photo(p.image, p.label); const url = o ? productPhotography.get(p.id + ':' + o.size) || (journeyDemo && o.imageWidthIn === o.imageHeightIn ? asset(familyPhoto(p)) : null) : null; return url ? photo(url, p.label) : '<p role="status">Product photography unavailable.</p>'; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && (journeyDemo || !!live?.session?.generations?.effectId && ['free', 'paid'].includes(live.session.generations.allowance.next)), onAdd: () => journeyDemo ? demoCraft() : void craftProduct(), busy, addLabel: 'Craft',
@@ -1669,6 +1670,9 @@ async function syncCatalog() {
     const api = live?.api || new GiftBackend((url, init) => fetch(url, init));
     const catalog = await api.catalog();
     const availability = live ? await api.availability(live.id) : null;
+    productAvailability.clear();
+    for (const p of availability?.products || [])
+        productAvailability.set(p.productId, p);
     unavailableCatalogOptions.clear();
     for (const p of catalog.products.filter(p => p.status !== 'launch' || p.retailCents === null)) {
         const list = unavailableCatalogOptions.get(p.family) || [];
@@ -1691,7 +1695,7 @@ async function syncCatalog() {
         catch { } }));
     }
     const allowed = (id, fallback) => availability ? availability.products.find(p => p.productId === id)?.purchasable === true : fallback;
-    products = products.map(p => ({ ...p, available: catalog.products.some(c => c.family === p.id && allowed(c.productId, c.selectable)), options: catalog.products.filter(c => c.family === p.id && c.status === 'launch' && c.retailCents !== null).map(c => ({ sku: c.sku, size: c.size, family: c.family, label: c.label, retailCents: c.retailCents, attributes: c.attributes, compatible: allowed(c.productId, c.selectable), imageWidthIn: c.requirements.picturePx.w / c.requirements.ppi, imageHeightIn: c.requirements.picturePx.h / c.requirements.ppi, requiredPx: c.requirements.finalPx, familyNote: c.note })) }));
+    products = products.map(p => ({ ...p, available: catalog.products.some(c => c.family === p.id && allowed(c.productId, c.selectable)), options: catalog.products.filter(c => c.family === p.id && c.status === 'launch' && c.retailCents !== null).map(c => ({ sku: c.sku, size: c.size, family: c.family, label: c.label, retailCents: c.retailCents, attributes: c.attributes, compatible: allowed(c.productId, c.selectable) && (live?.session?.flow !== 'generations' || productAvailability.get(c.productId)?.generation?.supported !== false), imageWidthIn: c.requirements.picturePx.w / c.requirements.ppi, imageHeightIn: c.requirements.picturePx.h / c.requirements.ppi, requiredPx: c.requirements.finalPx, familyNote: productAvailability.get(c.productId)?.generation?.supported === false ? productAvailability.get(c.productId).generation.reason.replace(/_/g, ' ') : c.note })) }));
 }
 function applyServer(s) {
     pivotMode = s.flow === 'generations' && !purchased(s);
