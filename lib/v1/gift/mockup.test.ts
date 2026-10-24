@@ -255,8 +255,8 @@ describe('templates: only the approved, purchasable products have one', () => {
     expect(templateFor(getProduct('mug:11oz')!)).toBe('ceramic-mug'); expect(templateFor(getProduct('card:7x5')!)).toBe('greeting-card')
     for (const p of allProducts().filter(x => x.status === 'disabled' && !['mug:11oz', 'card:7x5'].includes(x.productId))) expect(templateFor(p), p.productId).toBeNull()
   })
-  it('the mug and the card stay disabled and unpriced until the owner approves a price', () => {
-    for (const p of allProducts().filter(x => x.kind === 'mug' || x.kind === 'greeting_card')) { expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull() }
+  it('the mug and the 7x5 card are launched at their approved prices; the other card variants stay disabled and unpriced', () => {
+    for (const p of allProducts().filter(x => x.kind === 'mug' || x.kind === 'greeting_card')) { if (p.productId === 'mug:11oz' || p.productId === 'card:7x5') { expect(p.status).toBe('launch'); expect(p.retailCents).toBe(p.productId === 'mug:11oz' ? 1999 : 799) } else { expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull() } }
   })
 })
 

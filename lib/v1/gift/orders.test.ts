@@ -537,7 +537,7 @@ describe('purchase eligibility is separate from mockup photography', () => {
   })
   it('only a product that cannot be bought at all is refused: not launched, or no approved price', async () => {
     const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'x', productId: 'canvas:12x12', copies: 1 }])
-    for (const id of ['matted:12x18', 'framed_canvas:8x12', 'mug:11oz', 'card:7x5', 'bogus:1x1']) await expect(setLines(r.gift, U1, sid, [{ lineId: 'x', productId: id, copies: 1 }]), id).rejects.toMatchObject({ code: 'product_not_available' })
+    for (const id of ['framed_canvas:8x12', 'card:7x5-gloss', 'bogus:1x1']) await expect(setLines(r.gift, U1, sid, [{ lineId: 'x', productId: id, copies: 1 }]), id).rejects.toMatchObject({ code: 'product_not_available' })
   })
   it('strict mode (GIFT_REQUIRE_APPROVED_SCENE=1): a gift with no approved scene is refused at checkout before any quote or Stripe call; a scene-backed one is not', async () => {
     const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'framed:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])
@@ -551,7 +551,7 @@ describe('purchase eligibility is separate from mockup photography', () => {
   it('the coverage is the square gallery canvases, plus the square fine art prints once their photograph has a square opening (the owner decides what to do about the rest)', async () => {
     const { launchCoverage } = await import('./presentation'); const { realSceneRenderer } = await import('./mockup-real')
     const cov = launchCoverage(id => realSceneRenderer.describe(id)), opening = realSceneRenderer.describe('fine-art-square').inputAspect
-    const expected = ['canvas:8x8', 'canvas:12x12', 'canvas:16x16', 'canvas:20x20', 'premium:8x8', 'premium:12x12', 'premium:16x16', 'premium:20x20', 'fine_art:8x12', 'fine_art:12x18', 'fine_art:16x24', 'fine_art:20x30', ...(Math.max(opening, 1 / opening) - 1 <= 0.02 + 1e-10 ? ['fine_art:8x8', 'fine_art:12x12', 'fine_art:16x16', 'fine_art:20x20'] : [])]
+    const expected = ['mug:11oz', 'card:7x5', 'canvas:8x8', 'canvas:12x12', 'canvas:16x16', 'canvas:20x20', 'premium:8x8', 'premium:12x12', 'premium:16x16', 'premium:20x20', 'fine_art:8x12', 'fine_art:12x18', 'fine_art:16x24', 'fine_art:20x30', ...(Math.max(opening, 1 / opening) - 1 <= 0.02 + 1e-10 ? ['fine_art:8x8', 'fine_art:12x12', 'fine_art:16x16', 'fine_art:20x20'] : [])]
     expect(cov.filter(c => c.scene).map(c => c.productId).sort()).toEqual(expected.sort()); expect(cov.filter(c => !c.scene).length).toBe(cov.length - expected.length)
   })
 })

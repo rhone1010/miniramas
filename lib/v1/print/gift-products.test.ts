@@ -71,13 +71,14 @@ describe('the catalog agrees with Prodigi for every SKU', () => {
 })
 
 describe('launch gates', () => {
-  it('what is sold: only the Matted Frame and Framed Canvas SQUARES (approved prices, launched family); rectangles, the mug and the card wait on a price; framed canvas 8x12 on its Prodigi hold', () => {
-    expect(GIFT_ENABLED_FAMILIES).toEqual(['matted', 'framed_canvas']); expect(GIFT_MOCKUP_READY).toEqual([])
+  it('what is sold: every Matted Frame, every Framed Canvas except 8x12 (Prodigi hold), the Mug and the Card, all priced', () => {
+    expect(GIFT_ENABLED_FAMILIES).toEqual(['matted', 'framed_canvas', 'mug', 'card']); expect(GIFT_MOCKUP_READY).toEqual([])
     for (const f of GIFT_PRODUCT_FAMILIES) for (const e of Object.values(SKU_MAP[f] ?? {}) as any[]) if (e.retailApproved === false) expect(e.retailCents).toBe(0)
     const gift = allProducts().filter(p => ['matted', 'framed_canvas', 'mug', 'card'].includes(p.family))
-    expect(gift.filter(p => p.status === 'launch').map(p => p.productId).sort()).toEqual(['framed_canvas:12x12', 'framed_canvas:16x16', 'framed_canvas:20x20', 'framed_canvas:8x8', 'matted:12x12', 'matted:16x16', 'matted:20x20', 'matted:8x8'])
-    expect(gift.filter(p => p.status === 'launch').every(p => p.retailCents! > 0 && p.requirements.pictureAspect === 1)).toBe(true)
-    expect(gift.filter(p => p.status !== 'launch').every(p => p.retailCents === null && !!p.disabledReason)).toBe(true)
+    const sold = gift.filter(p => p.status === 'launch').map(p => p.productId).sort()
+    expect(sold).toEqual([...['8x8', '12x12', '16x16', '20x20', '8x12', '12x18', '16x24', '20x30'].map(s => 'matted:' + s), ...['8x8', '12x12', '16x16', '20x20', '12x18', '16x24', '20x30'].map(s => 'framed_canvas:' + s), 'mug:11oz', 'card:7x5'].sort())
+    expect(gift.filter(p => p.status === 'launch').every(p => p.retailCents! > 0)).toBe(true)
+    expect(gift.filter(p => p.status !== 'launch').map(p => p.productId).filter(id => !id.startsWith('card:')).sort()).toEqual(['framed_canvas:8x12'])
   })
   it('a family can only be marked mockup-ready if the renderer can actually pick its template', () => {
     for (const f of GIFT_MOCKUP_READY) for (const p of allProducts().filter(x => x.family === f)) expect(templateFor(p), p.productId).not.toBeNull()

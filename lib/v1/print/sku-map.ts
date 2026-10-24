@@ -464,6 +464,20 @@ SKU_MAP.mug['11oz'] = giftSku('mug', '11oz', { sku: 'GLOBAL-MUG-W', description:
 // Card: one flat file holding two 10 x 7 in sheets (outer, inner); the self-send SKU. The inner sheet stays blank. The front panel is the right half of the first sheet.
 SKU_MAP.card['7x5'] = giftSku('card', '7x5', { sku: 'GLOBAL-GRE-MOH-7X5-BLA', description: '7 x 5 in Mohawk 324gsm greeting card (self send)', label: 'Greeting Card 7 × 5″ (Mohawk)', imageWidthIn: 5, imageHeightIn: 7, requiredPx: { w: 6118, h: 2161 }, attributes: {} })
 
+// RETAIL PRICES (owner decision 2026-10-23: competitive market prices, Prodigi cost as the base). Framed items follow the pattern of the approved squares: Prodigi's sandbox item cost x about 2.5,
+// to the nearest whole dollar ending in 9 (matted 8x12 $40 -> $99, 12x18 $50 -> $129, 16x24 $60 -> $149, 20x30 $70 -> $179; framed canvas 8x12 $34 -> $89, 12x18 $48 -> $119, 16x24 $64 -> $159,
+// 20x30 $87 -> $219). The mug and the card are priced at typical market price for a personalized photo mug and greeting card ($19.99, $7.99) because cost x 2.5 would undercut it. Shipping is never in
+// these prices: it is quoted live by Prodigi and charged at cost.
+const GIFT_RETAIL_CENTS: Record<string, number> = {
+  'matted:8x12': 9900, 'matted:12x18': 12900, 'matted:16x24': 14900, 'matted:20x30': 17900,
+  'framed_canvas:8x12': 8900, 'framed_canvas:12x18': 11900, 'framed_canvas:16x24': 15900, 'framed_canvas:20x30': 21900,
+  'mug:11oz': 1999, 'card:7x5': 799,
+}
+for (const f of ['matted', 'framed_canvas', 'mug', 'card'] as PrintFinish[]) for (const [size, e] of Object.entries(SKU_MAP[f] ?? {}) as Array<[string, SkuEntry]>) {
+  const cents = GIFT_RETAIL_CENTS[`${f}:${size}`]
+  if (cents && e.retailApproved === false) { e.retailCents = cents; delete e.retailApproved }
+}
+
 /** The Gift Shop families that are not Print Shop products. */
 export const GIFT_PRODUCT_FAMILIES: PrintFinish[] = ['matted', 'framed_canvas', 'mug', 'card']
 

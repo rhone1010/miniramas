@@ -34,9 +34,8 @@ describe('availability: exact blockers and configuration for the four families',
     }
     // Matted Frame and Framed Canvas squares are on sale (approved prices, launched family); everything else lists exactly what is still open
     for (const id of ['matted:8x8', 'matted:20x20', 'framed_canvas:8x8', 'framed_canvas:20x20']) expect(by(id), id).toMatchObject({ purchasable: true, blockers: [], disabledReason: null })
-    expect(by('matted:12x18').blockers).toEqual(['retail_price_pending']); expect(by('framed_canvas:12x18').blockers).toEqual(['retail_price_pending'])
-    expect(by('framed_canvas:8x12').blockers).toEqual(['orientation_unverified', 'retail_price_pending'])
-    expect(by('mug:11oz').blockers).toEqual(['retail_price_pending', 'family_not_launched']); expect(by('card:7x5').blockers).toEqual(['retail_price_pending', 'family_not_launched']); expect(by('mug:11oz').configuration).toMatchObject({ artworkProfile: 'mug_wrap', skuOrientation: 'wrap', picturePx: { w: 910, h: 910 }, finalPx: { w: 2670, h: 1110 } })
+    for (const id of ['matted:8x12', 'matted:12x18', 'matted:16x24', 'matted:20x30', 'framed_canvas:12x18', 'framed_canvas:16x24', 'framed_canvas:20x30', 'mug:11oz', 'card:7x5']) expect(by(id), id).toMatchObject({ purchasable: true, blockers: [] })
+    expect(by('framed_canvas:8x12')).toMatchObject({ purchasable: false, blockers: ['orientation_unverified'] }); expect(by('mug:11oz').configuration).toMatchObject({ artworkProfile: 'mug_wrap', skuOrientation: 'wrap', picturePx: { w: 910, h: 910 }, finalPx: { w: 2670, h: 1110 } })
     expect(by('card:7x5').configuration).toMatchObject({ artworkProfile: 'card_spread', skuOrientation: 'spread', picturePx: { w: 1500, h: 2100 } })
     expect(by('matted:8x12').configuration.fixedAttributes).toEqual({ color: 'black' }); expect(by('framed_canvas:12x18').configuration.fixedAttributes).toEqual({ color: 'black', wrap: 'MirrorWrap' })
     expect(by('card:7x5-gloss')).toMatchObject({ blockers: ['not_a_launch_candidate'], generation: { supported: false, reason: 'not_a_launch_candidate' } })
@@ -57,9 +56,9 @@ describe('availability: exact blockers and configuration for the four families',
     expect(['matted:12x18', 'matted:16x24'].map(id => (g(id) as any).supported)).toEqual([false, false])                       // 16% and 11% from the nearest Groups format: beyond the 10% bound
     expect(g('matted:12x18')).toMatchObject({ reason: 'no_ratio_within_bound_for_series' })
   })
-  it('not for sale means refused with product_not_available: no generation is spent on them', async () => {
+  it('what is not for sale is refused with product_not_available: no generation is spent on it', async () => {
     const deps = rig(); const v = await createSession(deps, { userId: U1, imageB64: await photo() }); await chooseEffect(deps, U1, v.sessionId, liveEffectIds('portraits')[0])
-    for (const id of ['mug:11oz', 'matted:12x18', 'framed_canvas:12x18', 'card:7x5']) await expect(startGeneration(deps, U1, v.sessionId, { productId: id, idempotencyKey: 'key-' + id.replace(/\W/g, '') + '-1' })).rejects.toMatchObject({ code: 'product_not_available' })
+    for (const id of ['framed_canvas:8x12', 'card:7x5-gloss', 'nope:1x1']) await expect(startGeneration(deps, U1, v.sessionId, { productId: id, idempotencyKey: 'key-' + id.replace(/\W/g, '') + '-1' })).rejects.toMatchObject({ code: 'product_not_available' })
     expect(deps.generate).not.toHaveBeenCalled()
   })
 })

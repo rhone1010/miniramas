@@ -88,8 +88,8 @@ describe('the 21:9 mug mapping (mug and cards stay disabled)', () => {
     // scaling to the WIDTH instead would need 1144 px of height in a 1110 px area: that is a crop, so it is not used
     expect(Math.round(2670 / (21 / 9))).toBe(1144)
   })
-  it('the mug and every card remain disabled and unselectable', () => {
-    for (const p of allProducts().filter(x => x.kind === 'mug' || x.kind === 'greeting_card')) { expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull() }
+  it('the mug and the 7x5 card are launched (Gift Shop only: never selectable in the Print Shop); every other card stays disabled', () => {
+    for (const p of allProducts().filter(x => x.kind === 'mug' || x.kind === 'greeting_card')) { if (p.productId === 'mug:11oz' || p.productId === 'card:7x5') expect(p.status).toBe('launch'); else { expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull() } }
   })
 })
 

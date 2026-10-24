@@ -2,19 +2,15 @@
 
 Backend only, committed locally. Source of truth for the Studio: `GET /api/v1/gift/sessions/{id}/availability`. Photography is NEVER a blocker (previews are the generated picture, or a scene where one truthfully exists).
 
-## What is on sale now
-8 products added: **Matted Frame 8x8, 12x12, 16x16, 20x20** and **Framed Canvas 8x8, 12x12, 16x16, 20x20** (GLOBAL-CFPM-* and GLOBAL-FRA-CAN-*). Prices are the retail prices already in the SKU map for those squares (matted $94 at 8x8 etc.; read `retailCents`). Verified against the Prodigi sandbox today (product + quote, read-only): all 8 Ok. `GIFT_ENABLED_FAMILIES = ['matted','framed_canvas']`. The Print Shop is unchanged: its catalog marks them `selectable:false` and its checkout still refuses them.
+## What is on sale now (owner decision 2026-10-23: launch all, market-competitive prices, conservative margins accepted)
+**Matted Frame:** 8x8 $94, 12x12 $109, 16x16 $129, 20x20 $149, 8x12 $99, 12x18 $129, 16x24 $149, 20x30 $179. **Framed Canvas:** 8x8 $79, 12x12 $99, 16x16 $129, 20x20 $169, 12x18 $119, 16x24 $159, 20x30 $219. **Photo Mug 11oz $19.99. Greeting Card 7x5 $7.99.** (`retailCents` is authoritative; shipping is never included: Prodigi quotes it live, charged at cost.) Framed items follow the approved squares' pattern (Prodigi cost x about 2.5, to a whole dollar ending in 9); mug and card are typical market prices. All 17 returned Ok on the Prodigi sandbox (product + quote). The Print Shop is unchanged (its catalog marks Gift-only families `selectable:false`; its checkout still refuses them). The mug and the card have approved scene photography; the rest are previewed as the exact product-shaped picture with the disclosure.
+**Sandbox asset check (owner-authorized, test pattern files, cancelled; `scripts/prodigi-sandbox-asset-check.ts`):** Prodigi accepted the exact print-file size for framed canvas 8x12 and 12x18, the mug, the card and matted 12x18 with no issues; assets downloaded; the card order was fully prepared and allocated to the US lab, the mug to the UK lab (Royal Mail; one sandbox mug order went into production and could not be cancelled: sandbox, no print, no charge).
 
-## What is not, and exactly why (`products[].blockers`, every open item, in clearing order)
-| Product | Blockers | Meaning |
+## What is not on sale, and exactly why
+| Product | Blocker | Meaning |
 |---|---|---|
-| matted:8x12, 12x18, 16x24, 20x30 | `retail_price_pending` | no approved retail price (placeholder 0): owner decision |
-| framed_canvas:12x18, 16x24, 20x30 | `retail_price_pending` | same |
-| framed_canvas:8x12 | `orientation_unverified`, `retail_price_pending` | Prodigi lists the SKU 8 wide x 12 tall but its print area is 3654 x 2454 (landscape; the 12x18 is 3654 x 5454). Only Prodigi can say which is right; no sandbox order is permitted here |
-| mug:11oz | `retail_price_pending`, `family_not_launched` | price ($5.63 wholesale + $6.55 UK shipping) and launch decision; top/bottom coverage of GLOBAL-MUG-W is unverified |
-| card:7x5 | `retail_price_pending`, `family_not_launched` | price and launch decision (shipping $6.45 exceeds the card) |
+| framed_canvas:8x12 | `orientation_unverified` | Prodigi lists it 8 wide x 12 tall but its print area is 3654 x 2454 (landscape; the 12x18 is 3654 x 5454). The sandbox accepts both a portrait and a landscape file without complaint and does not report which way it lays them out, so it cannot settle this. Price is set ($89); only Prodigi's written answer (or dropping the size) remains. The other 16 Matted/Framed Canvas sizes are unaffected |
 | card:7x5-gloss, 6x4-gloss(+direct), 6x6-gloss, 7x5-mohawk-direct | `not_a_launch_candidate` | other card variants, deliberately never offered |
-To sell any of them: approve the price (`retailCents`, remove `retailApproved:false` in `sku-map.ts`) and, for the mug and card, add the family to `GIFT_ENABLED_FAMILIES`. No other code change is needed: generation, preview, composition and print preparation are done and tested for all of them.
 
 ## Contract additions per product in `AvailabilityView.products[]` (additive)
 ```

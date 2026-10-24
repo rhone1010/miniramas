@@ -39,9 +39,9 @@ describe('product families, orientations, sizes and finishes from the existing c
 
 describe('approved-scene availability per configuration (the same resolver the preview and the payment gate use)', () => {
   const cov = launchCoverage(describeReal), scene = (id: string) => cov.find(c => c.productId === id)!.scene
-  it('is exactly: every fine art size, premium and canvas squares; nothing else', () => {
+  it('is exactly: every fine art size, premium and canvas squares, the mug and the card; nothing else', () => {
     const withScene = cov.filter(c => c.scene).map(c => c.productId).sort()
-    expect(withScene).toEqual(['canvas:12x12', 'canvas:16x16', 'canvas:20x20', 'canvas:8x8', 'fine_art:12x12', 'fine_art:12x18', 'fine_art:16x16', 'fine_art:16x24', 'fine_art:20x20', 'fine_art:20x30', 'fine_art:8x12', 'fine_art:8x8', 'premium:12x12', 'premium:16x16', 'premium:20x20', 'premium:8x8'])
+    expect(withScene).toEqual(['canvas:12x12', 'canvas:16x16', 'canvas:20x20', 'canvas:8x8', 'card:7x5', 'fine_art:12x12', 'fine_art:12x18', 'fine_art:16x16', 'fine_art:16x24', 'fine_art:20x20', 'fine_art:20x30', 'fine_art:8x12', 'fine_art:8x8', 'mug:11oz', 'premium:12x12', 'premium:16x16', 'premium:20x20', 'premium:8x8'])
     for (const id of ['framed:8x8', 'framed:12x18', 'premium:12x18', 'canvas:12x18']) expect(scene(id), id).toBeFalsy()
   })
   it('a scene is only ever used for the same family and the same orientation as the purchased configuration, within 2% of its shape', () => {

@@ -103,7 +103,7 @@ describe('product selection', () => {
   })
   it('refuses unapproved products: framed canvas, matted rectangles, mug, cards, unknown ids', async () => {
     const { r, view } = await newSession(rig(), U1, false)
-    for (const id of ['framed_canvas:8x12', 'matted:12x18', 'mug:11oz-white', 'card:7x5-mohawk', 'nope:1x1']) {
+    for (const id of ['framed_canvas:8x12', 'mug:11oz-white', 'card:7x5-mohawk', 'card:7x5-gloss', 'nope:1x1']) {
       await expect(setLines(r.deps, U1, view.sessionId, [{ lineId: 'a', productId: id, copies: 1 }])).rejects.toMatchObject({ code: 'product_not_available' })
     }
     expect(allProducts().filter(p => p.status === 'launch').length).toBeGreaterThan(0)

@@ -63,14 +63,14 @@ describe('existing Print Shop behaviour and pricing are preserved', () => {
 })
 
 describe('nothing unapproved is enabled', () => {
-  it('framed-canvas and matted rectangles stay disabled, with no price, pending retail approval', () => {
+  it('framed-canvas and matted rectangles are launched with their prices; only framed canvas 8x12 stays held (orientation_unverified)', () => {
     const rects = allProducts().filter(x => (x.family === 'framed_canvas' || x.family === 'matted') && ['8x12', '12x18', '16x24', '20x30'].includes(x.size))
     expect(rects.length).toBe(8)
-    for (const p of rects) { expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull(); expect(p.disabledReason).toBe(p.productId === 'framed_canvas:8x12' ? 'orientation_unverified' : 'retail_price_pending') }
+    for (const p of rects) { expect(p.retailCents).toBeGreaterThan(0); if (p.productId === 'framed_canvas:8x12') { expect(p.status).toBe('disabled'); expect(p.disabledReason).toBe('orientation_unverified') } else { expect(p.status).toBe('launch'); expect(p.disabledReason).toBeNull() } }
   })
-  it('the mug and the 7x5 Mohawk card are built, visible, priced at nothing until approved, and disabled; each has its own artwork profile', () => {
-    for (const [id, profile] of [['mug:11oz', 'mug_wrap'], ['card:7x5', 'card_spread']] as const) {
-      const p = getProduct(id)!; expect(p.status).toBe('disabled'); expect(p.retailCents).toBeNull(); expect(p.disabledReason).toBe('retail_price_pending'); expect(p.artworkProfile).toBe(profile)
+  it('the mug and the 7x5 Mohawk card are launched at $19.99 and $7.99; each has its own artwork profile', () => {
+    for (const [id, profile, cents] of [['mug:11oz', 'mug_wrap', 1999], ['card:7x5', 'card_spread', 799]] as const) {
+      const p = getProduct(id)!; expect(p.status).toBe('launch'); expect(p.retailCents).toBe(cents); expect(p.disabledReason).toBeNull(); expect(p.artworkProfile).toBe(profile)
     }
     expect(getProduct('mug:11oz')!.requirements.finalPx).toEqual({ w: 2670, h: 1110 }); expect(getProduct('mug:11oz')!.requirements.picturePx).toEqual({ w: 910, h: 910 })
     expect(getProduct('card:7x5')!.requirements.finalPx).toEqual({ w: 6118, h: 2161 }); expect(getProduct('card:7x5')!.requirements.picturePx).toEqual({ w: 1500, h: 2100 })
