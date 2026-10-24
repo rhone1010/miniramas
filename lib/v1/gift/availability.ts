@@ -12,6 +12,7 @@ import { ratioOf } from './aspects'
 import type { Series } from './types'
 import { planFor } from './composition-plan'
 import { GIFT_ENABLED_FAMILIES, GIFT_PRODUCT_HOLDS } from '../print/gift-enablement'
+import { resolveBeautyScene } from './beauty-scenes'
 import { generationAspectOf, generationShapeOf, generationTargetFor } from './generations'
 import { GiftError, owned, type GiftDeps } from './service'
 import { approvedSceneFor, noScenePresentation, representationFields, type PreviewBasis } from './presentation'
@@ -60,6 +61,8 @@ export interface ProductAvailability {
   blockers: string[]
   /** The product-first generation for THIS product and the series of this session: the ratio asked of NB2.1, how much of the picture is trimmed to reach the exact shape (fraction per axis), or why it cannot. */
   generation: { supported: true; requestedAspect: string; trimFraction: number; geometryKey: string } | { supported: false; reason: 'no_ratio_within_bound_for_series' | 'not_a_launch_candidate' }
+  /** Which display-only beauty photograph may show this configuration (finish, orientation and opening all match), the artwork input it needs, or why none (lib/v1/gift/beauty-scenes.ts). */
+  beauty: import('./beauty-scenes').BeautyRouting
   /** The manufacturing configuration the backend sends to Prodigi. Fixed by LITEN, not customer-selectable; `unexposed` lists what Prodigi offers that is deliberately not offered. */
   configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number
     /** The shape of the picture a GENERATION for this product has (equals picturePx except the mug: the full-wrap band 2670 x 1034, with the 1/8 inch unprinted rim and base inside the 2670 x 1110 lab file). */
@@ -116,6 +119,7 @@ export async function getProductAvailability(deps: GiftDeps, userId: string, ses
       preview: { representation: rep.representation === 'scene' ? 'scene' : 'artwork_only', sceneId, previewBasis: rep.previewBasis, physicalProductShown: rep.physicalProductShown, disclosureCode: rep.disclosureCode, disclosure: rep.disclosure },
       approval: { possible: purchasable && !!plan, basis: rep.previewBasis },
       blockers: blockersOf(p),
+      beauty: resolveBeautyScene(p),
       generation: genOf(p, rec.series, rec.analysis.peopleCount ?? null),
       configuration: { artworkProfile: p.artworkProfile, skuOrientation: p.requirements.skuOrientation, fixedAttributes: p.attributes, unexposed: p.unexposedOptions, picturePx: p.requirements.picturePx, finalPx: p.requirements.finalPx, pictureAspect: p.requirements.pictureAspect, generationPicturePx: generationShapeOf(p), generationAspect: generationAspectOf(p), layout: p.family === 'mug' ? 'mug_full_wrap' : p.family === 'card' ? 'card_spread' : 'flat' },
     }

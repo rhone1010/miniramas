@@ -29,6 +29,7 @@ import { allProducts, getProductBySku, type CanonicalProduct } from '../print/ca
 import { aspectCompatibility } from '../print/geometry'
 import { STORAGE } from './policy'
 import { generationShapeOf, geometryKeyOf } from './generations'
+import { resolveBeautyScene } from './beauty-scenes'
 import { noScenePresentation, representationFields } from './presentation'
 import { GIFT_CONTRACT_VERSION, type ProductPreviewView, type SceneRefusalView } from './types'
 
@@ -135,11 +136,22 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
           provisional: { ...pick(representationFields(r.renderer)), exactArtworkShown: true, cropped: false, distorted: false, surround: 'neutral', bars: bars!, favoriteAspect: Math.round(favoriteAspect * 1e4) / 1e4, pictureAspect: Math.round(pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4, finalComposition: plan?.method ?? null } }
       : { ...base, status: 'ready', sku: product.sku, renderer: r.renderer, ...representationFields(r.renderer), sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta, sceneRefusal: r.renderer === 'scene' ? null : sceneRefusal }
 
+  // The beauty input (product-first requests only): what the browser composites into the display-only beauty photograph. Stored beside the preview under the same identity.
+  const beauty = generation ? resolveBeautyScene(product) : undefined
+  const inputPath = `${STORAGE.productPreviewDir(rec.id)}${product.productId.replace(/[^\w-]/g, '_')}-input-${identity.slice(0, 16)}.jpg`
+  const signInput = async (w: number, h: number) => {
+    if (!generation || !beauty?.sceneId) return null
+    const url = await deps.storage.signedUrl(inputPath, MOCKUP_URL_SECONDS); if (!url) return null
+    return { kind: beauty.input.kind, url, urlExpiresAt: new Date((deps.clock ?? Date.now)() + MOCKUP_URL_SECONDS * 1000).toISOString(), width: w, height: h, aspect: beauty.input.aspect, generationId: generation.id, sha256: generation.sha256! }
+  }
+  const withBeauty = async (v: ProductPreviewView, input: { w: number; h: number } | null): Promise<ProductPreviewView> => (generation ? { ...(v as any), beauty, beautyInput: input ? await signInput(input.w, input.h) : null } : v)
   const hit = await sign()
   if (hit) {                                                                              // an unchanged identity re-signs the stored file and renders nothing
     const stored = await deps.storage.get(path)
     const m = stored ? await sharp(stored).metadata() : null
-    if (m?.width && m.height) return ready({ renderer: useScene ? 'scene' : legacyCalibrated ? 'calibrated' : 'artwork', sceneId: useScene ? choice!.scene!.sceneId : null, width: m.width, height: m.height, fit: useScene ? choice!.scene!.fit : 'exact', cached: true }, hit)
+    const storedInput = generation && beauty?.sceneId ? await deps.storage.get(inputPath) : null
+    const im = storedInput ? await sharp(storedInput).metadata() : null
+    if (m?.width && m.height && (!generation || !beauty?.sceneId || (im?.width && im.height))) return withBeauty(ready({ renderer: useScene ? 'scene' : legacyCalibrated ? 'calibrated' : 'artwork', sceneId: useScene ? choice!.scene!.sceneId : null, width: m.width, height: m.height, fit: useScene ? choice!.scene!.fit : 'exact', cached: true }, hit), im?.width && im.height ? { w: im.width, h: im.height } : null)
   }
 
   const masterBytes = await deps.storage.get(fav.master_path)                             // CLEAN master: memory only, never returned, never stored next to the preview
@@ -178,5 +190,12 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   await deps.storage.put(path, marked, 'image/jpeg')
   const signed = await sign()
   if (!signed) throw new GiftError('mockup_failed')
-  return ready({ renderer, sceneId, width, height, fit: shaped.fit, cached: false }, signed)
+  let inputSize: { w: number; h: number } | null = null
+  if (generation && beauty?.sceneId) {
+    const im = await sharp(flat).metadata(); inputSize = { w: im.width!, h: im.height! }
+    let markedInput: Buffer
+    try { markedInput = await deps.watermark(flat.toString('base64')) } catch { throw new GiftError('mockup_failed') }
+    await deps.storage.put(inputPath, markedInput, 'image/jpeg')
+  }
+  return withBeauty(ready({ renderer, sceneId, width, height, fit: shaped.fit, cached: false }, signed), inputSize)
 }

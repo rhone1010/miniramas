@@ -485,6 +485,13 @@ export type ProductPreviewView =
       renderer: 'scene' | 'artwork' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'; sceneRefusal?: SceneRefusalView | null
       url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
       watermarked: true; productionPrintFile: false; purchaseAuthorization: false
+      /**
+       * Present only for a request with `generationId` (the product-first journey). `beauty` says which display-only beauty photograph (public/gift-wizard/beauty-scenes) may show THIS configuration and
+       * why not otherwise; `beautyInput` is the exact artwork the browser must composite into that photograph's mask: the customer's generation for this product (flat products, the card), or for the mug the
+       * 2670:1110 full-wrap VIEW (rolled so the primary face is in the middle). Watermarked, signed, never the print file, never a rendered photograph, never the mug's raw 2670 x 1034 band.
+       */
+      beauty?: import('./beauty-scenes').BeautyRouting
+      beautyInput?: { kind: 'generation_picture' | 'mug_full_wrap_view'; url: string; urlExpiresAt: string; width: number; height: number; aspect: number; generationId: string; sha256: string } | null
     } & PreviewRepresentation
   | {
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'adaptation_required'; reason: 'shape_needs_composition'; sessionId: string; productId: string; sku: string; favoriteId: string

@@ -43,7 +43,7 @@ describe('the catalog agrees with Prodigi for every SKU', () => {
   it('each SKU is in the catalog with the chosen attributes, every one a value Prodigi lists, and exactly the REQUIRED attributes (nothing silently chosen)', () => {
     for (const sku of SKUS) {
       const p = getProductBySku(sku)!, rec = record.products[sku]; expect(p, sku).toBeTruthy()
-      expect(p.attributes, sku).toEqual(rec.quoteWithChosenAttributes.attributes)
+      expect(p.attributes, sku).toEqual(['matted', 'framed_canvas'].includes(rec.family) ? { ...rec.quoteWithChosenAttributes.attributes, color: 'natural' } : rec.quoteWithChosenAttributes.attributes)          // 2026-10-24: sold in the finish the approved photographs show (natural oak); the record's chosen attributes were black
       expect(Object.keys(p.attributes).sort(), sku).toEqual(rec.family === 'mug' ? ['color', 'size'] : [...REQUIRED[rec.family]].sort())
       for (const [k, v] of Object.entries(p.attributes)) expect(rec.attributeOptions[k], `${sku} ${k}`).toContain(v)
     }
@@ -101,7 +101,7 @@ describe('what the fulfilment path sends to Prodigi for each of the 18 SKUs (the
     await storage.put(`${job.id}/final.jpg`, FILE, 'image/jpeg'); Object.assign(store.jobs.get(job.id)!, { status: 'approved', final_path: `${job.id}/final.jpg`, final_sha256: sha(FILE) })
     await prepareAndPlacePrint(order, true)
     const sent = s.place.mock.calls[0][0].items[0]
-    expect(sent).toMatchObject({ sku: p.sku, copies: 1, attributes: record.products[sku].quoteWithChosenAttributes.attributes, sizing: 'fitPrintArea' }); expect(sent.assets).toEqual([{ printArea: 'default', url: expect.any(String) }])
+    expect(sent).toMatchObject({ sku: p.sku, copies: 1, attributes: ['matted', 'framed_canvas'].includes(record.products[sku].family) ? { ...record.products[sku].quoteWithChosenAttributes.attributes, color: 'natural' } : record.products[sku].quoteWithChosenAttributes.attributes, sizing: 'fitPrintArea' }); expect(sent.assets).toEqual([{ printArea: 'default', url: expect.any(String) }])
     expect(getSku(p.size as PrintSize, p.family as PrintFinish).requiredPx).toEqual(record.products[sku].printAreaForChosenAttributes)
   })
   it('an order for a sold SKU is never placed as a different product', async () => {

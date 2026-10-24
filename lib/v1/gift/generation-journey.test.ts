@@ -199,6 +199,11 @@ describe('beauty scenes and the mug full wrap stay tied to the same composition 
     expect(pr.generation.generationId).toBe(fa.generationId); expect(pr.reused).toBe(true); expect(r.calls).toHaveLength(1)          // separate SKU and price, one composition
     const view = await getProductPreview(r.gift, U1, sid, 'premium:12x18', { generationId: fa.generationId })
     expect(view).toMatchObject({ status: 'ready', renderer: 'scene', sceneId: 'fine-art-portrait' })
+    // the display-only beauty scene for this configuration, and the exact artwork the browser composites into it (the generation itself, watermarked)
+    expect((view as any).beauty).toMatchObject({ sceneId: 'beauty-fine_art_print_portrait', family: 'fine_art', displayOnly: true, productionPrintFile: false })
+    const bi = (view as any).beautyInput; expect(bi).toMatchObject({ kind: 'generation_picture', generationId: fa.generationId, sha256: fa.sha256, width: fa.width, height: fa.height }); expect(bi.url).toMatch(/\/product-previews\/premium_12x18-input-/)
+    const storedIn = r.files.get(bi.url.replace('https://signed.test/', ''))!; expect(await sharp(storedIn).metadata()).toMatchObject({ format: 'jpeg', width: fa.width, height: fa.height })
+    const again = await getProductPreview(r.gift, U1, sid, 'premium:12x18', { generationId: fa.generationId }); expect((again as any).cached).toBe(true); expect((again as any).beautyInput.url).toBe(bi.url)
     expect(sceneRender).toHaveBeenCalledWith(expect.objectContaining({ sceneId: 'fine-art-portrait', productFamily: 'fine_art' }))
     const shown = sceneRender.mock.calls[0][0].artwork; expect((await sharp(shown).metadata()).width! / (await sharp(shown).metadata()).height!).toBeCloseTo(2 / 3, 2)      // the generation's own shape, nothing adapted
     await expect(getProductPreview(r.gift, U1, sid, 'canvas:12x12', { generationId: fa.generationId })).rejects.toMatchObject({ code: 'composition_geometry_mismatch' })
@@ -222,6 +227,9 @@ describe('beauty scenes and the mug full wrap stay tied to the same composition 
     expect(g.conform!.trimFraction).toBeGreaterThan(0.09); expect(g.conform!.trimFraction).toBeLessThan(0.1)
     const view = await getProductPreview(r.gift, U1, sid, 'mug:11oz', { generationId: g.generationId })
     expect(view).toMatchObject({ status: 'ready', renderer: 'scene', sceneId: 'ceramic-mug' })
+    expect((view as any).beauty).toMatchObject({ sceneId: 'beauty-mug', input: { kind: 'mug_full_wrap_view' } })
+    const mi = (view as any).beautyInput; expect(mi).toMatchObject({ kind: 'mug_full_wrap_view', generationId: g.generationId, sha256: g.sha256, width: 1335, height: 555 })          // the 2670:1110 wrap view, not the raw 2670 x 1034 band and not a rendered photograph
+    expect(await sharp(r.files.get(mi.url.replace('https://signed.test/', ''))!).metadata()).toMatchObject({ width: 1335, height: 555 })
     const given = sceneRender.mock.calls[0][0].artwork, gm = await sharp(given).metadata()
     expect([gm.width, gm.height]).toEqual([1335, 555])                                                                  // the rolled full wrap the scene maps onto the cylinder (a VIEW, not the print file)
     await acceptGeneration(r.gift, U1, sid, g.generationId)
