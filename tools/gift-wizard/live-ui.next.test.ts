@@ -664,3 +664,13 @@ test('generations restore retains delivered identity without POST and legacy ses
  const {win,dom,calls}=await boot('sessionId=project',s);try{assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/ready.jpg');assert.equal(win.document.getElementById('primary').textContent,'Review & Approve →');assert.equal(win.document.getElementById('back').disabled,false);assert(!calls.some(x=>x.endsWith('/generations')||x.endsWith('/accept')))}finally{dom.window.close()}
  const legacy:any=project('none');legacy.flow='previews';legacy.lines=[];legacy.geometries=[];const old=await boot('sessionId=project',legacy);try{assert.equal(old.win.document.body.classList.contains('gift-pivot'),false);assert(!old.calls.some(x=>x.endsWith('/effect')||x.endsWith('/generations')))}finally{old.dom.window.close()}
 });
+
+test('Gift orientation membership exposes released canvas as landscape only',async()=>{
+ const s:any=project('none');s.lines=[];s.geometries=[];s.flow='generations';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};
+ const released={...catalog.products.find(p=>p.productId==='framed_canvas:8x12')!,status:'launch',selectable:true,label:'12 × 8″ landscape',retailCents:8900,requirements:{picturePx:{w:3600,h:2400},ppi:300,finalPx:{w:3654,h:2454}}};
+ const updated={...catalog,products:catalog.products.map(p=>p.productId===released.productId?released:p)};
+ const availability={contractVersion:1,sessionId:'project',products:updated.products.map(p=>({productId:p.productId,purchasable:p.family==='framed_canvas',generation:{supported:true}})),orientations:{square:{supported:true,reason:null,productIds:['framed_canvas:8x8']},portrait:{supported:true,reason:null,productIds:['fine_art:12x18']},landscape:{supported:true,reason:null,productIds:[released.productId]}}};
+ s.route=(u:string)=>u.endsWith('/catalog')?updated:u.endsWith('/availability')?availability:null;
+ const {win,dom}=await boot('sessionId=project',s);
+ try{win.document.querySelector('[data-feature="framed_canvas"]').click();assert.ok(win.document.querySelector('[data-aspect="Landscape"]'));assert.equal(win.document.querySelector('[data-aspect="Portrait"]'),null);win.document.querySelector('[data-aspect="Landscape"]').click();const size=win.document.querySelector('[data-size="8x12"]');assert.equal(size.textContent,'12 × 8″ landscape');assert.equal(size.disabled,false);size.click();assert.match(win.document.querySelector('main').textContent,/\$89\.00/);assert.equal(win.document.getElementById('primary').disabled,false)}finally{dom.window.close()}
+});

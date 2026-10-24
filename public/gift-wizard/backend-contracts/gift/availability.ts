@@ -53,6 +53,6 @@ export interface AvailabilityView {
   /** The shape the selected artwork was made in. */
   masterAspect: string
   products: ProductAvailability[]
-  orientations: Record<'square' | 'portrait' | 'landscape', { supported: boolean; reason: string | null }>
+  orientations: Record<'square' | 'portrait' | 'landscape', { supported: boolean; reason: string | null; productIds: string[] }>
 }
 
