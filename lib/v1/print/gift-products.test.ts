@@ -64,21 +64,21 @@ describe('the catalog agrees with Prodigi for every SKU', () => {
     expect(w('GLOBAL-CFPM-16X24').finalPx).toEqual({ w: 3618, h: 6018 }); expect(w('GLOBAL-CFPM-20X30').finalPx).toEqual({ w: 4800, h: 7800 })
     for (const s of ['8X12', '12X18', '16X24', '20X30']) { expect(w('GLOBAL-CFPM-' + s).skuOrientation).toBe('portrait'); expect(w('GLOBAL-CFPM-' + s).picturePx).toEqual(w('GLOBAL-CFPM-' + s).finalPx) }
   })
-  it('framed canvas 8x12 is the one open orientation question: held, and the only product anywhere with a product-level hold', () => {
-    expect(Object.keys(GIFT_PRODUCT_HOLDS)).toEqual(['framed_canvas:8x12']); expect(getProductBySku('GLOBAL-FRA-CAN-8X12')!.disabledReason).toBe('orientation_unverified')
+  it('framed canvas 8x12 is released: presented as the landscape 12 x 8 its Prodigi print area describes, and no product has a hold', () => {
+    expect(Object.keys(GIFT_PRODUCT_HOLDS)).toEqual([]); expect(getProductBySku('GLOBAL-FRA-CAN-8X12')).toMatchObject({ status: 'launch', disabledReason: null, label: '12 × 8″ landscape' })
     expect(record.products['GLOBAL-FRA-CAN-8X12'].productDimensions).toMatchObject({ width: 8, height: 12 }); expect(record.products['GLOBAL-FRA-CAN-8X12'].printAreaForChosenAttributes).toEqual({ w: 3654, h: 2454 })
   })
 })
 
 describe('launch gates', () => {
-  it('what is sold: every Matted Frame, every Framed Canvas except 8x12 (Prodigi hold), the Mug and the Card, all priced', () => {
+  it('what is sold: every Matted Frame, every Framed Canvas, the Mug and the Card, all priced', () => {
     expect(GIFT_ENABLED_FAMILIES).toEqual(['matted', 'framed_canvas', 'mug', 'card']); expect(GIFT_MOCKUP_READY).toEqual([])
     for (const f of GIFT_PRODUCT_FAMILIES) for (const e of Object.values(SKU_MAP[f] ?? {}) as any[]) if (e.retailApproved === false) expect(e.retailCents).toBe(0)
     const gift = allProducts().filter(p => ['matted', 'framed_canvas', 'mug', 'card'].includes(p.family))
     const sold = gift.filter(p => p.status === 'launch').map(p => p.productId).sort()
-    expect(sold).toEqual([...['8x8', '12x12', '16x16', '20x20', '8x12', '12x18', '16x24', '20x30'].map(s => 'matted:' + s), ...['8x8', '12x12', '16x16', '20x20', '12x18', '16x24', '20x30'].map(s => 'framed_canvas:' + s), 'mug:11oz', 'card:7x5'].sort())
+    expect(sold).toEqual([...['8x8', '12x12', '16x16', '20x20', '8x12', '12x18', '16x24', '20x30'].map(s => 'matted:' + s), ...['8x8', '12x12', '16x16', '20x20', '8x12', '12x18', '16x24', '20x30'].map(s => 'framed_canvas:' + s), 'mug:11oz', 'card:7x5'].sort())
     expect(gift.filter(p => p.status === 'launch').every(p => p.retailCents! > 0)).toBe(true)
-    expect(gift.filter(p => p.status !== 'launch').map(p => p.productId).filter(id => !id.startsWith('card:')).sort()).toEqual(['framed_canvas:8x12'])
+    expect(gift.filter(p => p.status !== 'launch').every(p => p.productId.startsWith('card:'))).toBe(true)          // only the other card variants
   })
   it('a family can only be marked mockup-ready if the renderer can actually pick its template', () => {
     for (const f of GIFT_MOCKUP_READY) for (const p of allProducts().filter(x => x.family === f)) expect(templateFor(p), p.productId).not.toBeNull()

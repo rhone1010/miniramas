@@ -108,7 +108,7 @@ describe('pre-checkout product preview', () => {
 
   it('a product that is not launched (framed canvas 8x12 on hold, the other card variants) stays not_available: a preview never enables a product', async () => {
     const r = rig(); const { sid } = await withFavorite(r)
-    for (const id of ['framed_canvas:8x12', 'card:7x5-gloss']) expect(await getProductPreview(r.deps, U1, sid, id), id).toMatchObject({ status: 'not_available' })
+    for (const id of ['card:7x5-gloss', 'card:7x5-gloss']) expect(await getProductPreview(r.deps, U1, sid, id), id).toMatchObject({ status: 'not_available' })
     expect(r.sceneRender).not.toHaveBeenCalled(); expect(previewFiles(r)).toHaveLength(0)
   })
 
@@ -224,7 +224,7 @@ describe('provisional preview for a favorite whose shape is not the product\'s (
 
   it('unlaunched products stay not_available with the flag, and the owner check still applies', async () => {
     const r = rig(); const { sid } = await withFavorite(r)
-    expect(await getProductPreview(r.deps, U1, sid, 'framed_canvas:8x12', { provisional: true })).toMatchObject({ status: 'not_available' })
+    expect(await getProductPreview(r.deps, U1, sid, 'card:7x5-gloss', { provisional: true })).toMatchObject({ status: 'not_available' })
     await expect(getProductPreview(r.deps, U2, sid, 'fine_art:12x18', { provisional: true })).rejects.toMatchObject({ code: 'session_not_found' })
   })
 

@@ -24,9 +24,9 @@ export const GIFT_ENABLED_FAMILIES: ProductFamily[] = ['matted', 'framed_canvas'
 /** @deprecated No longer an eligibility condition (see above). Kept only as the record of which families have a calibrated legacy template. */
 export const GIFT_MOCKUP_READY: ProductFamily[] = []
 
-/** Product-level holds: a verified Prodigi fact that is still open for one product (the rest of its family is unaffected). */
-export const GIFT_PRODUCT_HOLDS: Record<string, DisabledReason> = {
-  // Prodigi's own data disagrees with itself: the SKU is listed 8 wide x 12 tall, but its print area is 3654 x 2454 (landscape). Every other framed-canvas
-  // rectangle is consistent. Order geometry cannot be proven without a sandbox order, which is not permitted here: Prodigi must confirm which is right.
-  'framed_canvas:8x12': 'orientation_unverified',
-}
+/**
+ * Product-level holds: a verified Prodigi fact that is still open for one product (the rest of its family is unaffected). None today.
+ * framed_canvas:8x12 was held until 2026-10-23: Prodigi lists the SKU 8 wide x 12 tall but its print area is 3654 x 2454. A canvas is the same object either way, so it is now PRESENTED as the
+ * landscape 12 x 8 its print area describes (picture 3:2, file exactly the print area, accepted by the Prodigi sandbox); a portrait 8 x 12 presentation is not offered.
+ */
+export const GIFT_PRODUCT_HOLDS: Record<string, DisabledReason> = {}

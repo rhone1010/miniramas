@@ -45,10 +45,10 @@ afterEach(() => { for (const [k, n] of [['a', 'GIFT_NO_SCENE_PRESENTATION'], ['b
 describe('availability: three separate answers per product', () => {
   it('every launch product is purchasable for any artwork; shape and photography never decide it; the disabled ones say why', async () => {
     const r = rig(); const sid = await withFavorite(r); const a = await getProductAvailability(r.deps, U1, sid)
-    const launch = allProducts().filter(p => p.status === 'launch'); expect(launch).toHaveLength(49)          // 32 Print Shop products + 8 Matted Frame, 7 Framed Canvas (8x12 is on hold), the Mug and the Card
+    const launch = allProducts().filter(p => p.status === 'launch'); expect(launch).toHaveLength(50)          // 32 Print Shop products + 8 Matted Frame, 8 Framed Canvas (8x12 as the landscape 12 x 8), the Mug and the Card
     for (const p of launch) { const x = a.products.find(y => y.productId === p.productId)!; expect(x, p.productId).toMatchObject({ purchasable: true, disabledReason: null, approval: { possible: true } }); expect(x.adaptation, p.productId).not.toBeNull() }
-    for (const id of ['framed_canvas:8x12', 'card:7x5-gloss']) expect(a.products.find(y => y.productId === id)).toMatchObject({ purchasable: false, adaptation: null, approval: { possible: false } })
-    expect(a.products.find(y => y.productId === 'framed_canvas:8x12')!.disabledReason).toBe('orientation_unverified')
+    for (const id of ['card:7x5-gloss', 'card:6x6-gloss']) expect(a.products.find(y => y.productId === id)).toMatchObject({ purchasable: false, adaptation: null, approval: { possible: false } })
+    expect(a.products.find(y => y.productId === 'card:7x5-gloss')!.disabledReason).toBe('not_a_launch_candidate')
   })
   it('the preview basis is data: a scene where a photograph truthfully shows the configuration, otherwise the product-shaped artwork with a disclosure; neither changes purchasability', async () => {
     const r = rig(); const sid = await withFavorite(r); const a = await getProductAvailability(r.deps, U1, sid); const by = (id: string) => a.products.find(p => p.productId === id)!
@@ -64,10 +64,12 @@ describe('availability: three separate answers per product', () => {
     const g = rig('groups', 5); const gs = await withFavorite(g); const ga = await getProductAvailability(g.deps, U1, gs); const gb = (id: string) => ga.products.find(p => p.productId === id)!
     expect(gb('fine_art:12x18').adaptation).toMatchObject({ method: 'generated', generationAspect: '2:3' }); expect(gb('fine_art:12x12').adaptation).toMatchObject({ method: 'generated', generationAspect: '1:1' })
   })
-  it('orientation support is reported as data: square and portrait are supported; landscape is not (no verified Prodigi landscape SKU)', async () => {
+  it('orientation support is reported as data: square and portrait everywhere; landscape for exactly one product, the framed canvas 12 x 8 (Prodigi has no other landscape SKU)', async () => {
     const r = rig(); const sid = await withFavorite(r); const a = await getProductAvailability(r.deps, U1, sid)
-    expect(a.orientations).toEqual({ square: { supported: true, reason: null }, portrait: { supported: true, reason: null }, landscape: { supported: false, reason: 'no_landscape_sku_verified_with_prodigi' } })
-    expect(a.products.filter(p => p.purchasable).some(p => p.orientation === 'landscape')).toBe(false)
+    expect(a.orientations.square).toMatchObject({ supported: true, reason: null }); expect(a.orientations.portrait).toMatchObject({ supported: true, reason: null })
+    expect(a.orientations.landscape).toEqual({ supported: true, reason: null, productIds: ['framed_canvas:8x12'] })
+    expect(a.products.filter(p => p.purchasable && p.orientation === 'landscape').map(p => p.productId)).toEqual(['framed_canvas:8x12'])
+    const lf = a.products.find(p => p.productId === 'framed_canvas:8x12')!; expect(lf).toMatchObject({ label: '12 × 8″ landscape', blockers: [], generation: { supported: true, requestedAspect: '3:2', trimFraction: 0 }, configuration: { skuOrientation: 'landscape', picturePx: { w: 3600, h: 2400 }, finalPx: { w: 3654, h: 2454 }, pictureAspect: 1.5 } })
   })
 })
 
@@ -85,7 +87,7 @@ describe('pre-checkout preview without a photograph: the exact product-shaped ar
     expect(await getProductPreview(r.deps, U1, sid, 'framed:12x18')).toMatchObject({ status: 'adaptation_required', reason: 'shape_needs_composition', method: 'generated' })
     const p: any = await getProductPreview(r.deps, U1, sid, 'framed:12x18', { provisional: true }); expect(p).toMatchObject({ status: 'provisional', renderer: 'artwork', provisional: { representation: 'artwork_only', physicalProductShown: false, finalComposition: 'generated' } })
     expect(await getProductPreview(r.deps, U1, sid, 'canvas:12x12')).toMatchObject({ status: 'ready', renderer: 'scene', representation: 'scene' })
-    expect(await getProductPreview(r.deps, U1, sid, 'framed_canvas:8x12')).toMatchObject({ status: 'not_available', reason: 'product_not_available' })
+    expect(await getProductPreview(r.deps, U1, sid, 'card:7x5-gloss')).toMatchObject({ status: 'not_available', reason: 'product_not_available' })
   })
 })
 

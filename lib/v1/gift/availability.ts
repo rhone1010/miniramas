@@ -71,7 +71,8 @@ export interface AvailabilityView {
   /** The shape the selected artwork was made in. */
   masterAspect: string
   products: ProductAvailability[]
-  orientations: Record<'square' | 'portrait' | 'landscape', { supported: boolean; reason: string | null }>
+  /** Per orientation: whether any purchasable product has it, and which (a product is offered in an orientation only if it is in `productIds`). */
+  orientations: Record<'square' | 'portrait' | 'landscape', { supported: boolean; reason: string | null; productIds: string[] }>
 }
 
 /** Every open condition, not just the first (the catalog's disabledReason is the first). */
@@ -117,12 +118,13 @@ export async function getProductAvailability(deps: GiftDeps, userId: string, ses
       configuration: { artworkProfile: p.artworkProfile, skuOrientation: p.requirements.skuOrientation, fixedAttributes: p.attributes, unexposed: p.unexposedOptions, picturePx: p.requirements.picturePx, finalPx: p.requirements.finalPx, pictureAspect: p.requirements.pictureAspect },
     }
   })
+  const orient = (o: 'square' | 'portrait' | 'landscape') => { const ids = products.filter(x => x.purchasable && x.configuration.skuOrientation === o).map(x => x.productId); return { supported: ids.length > 0, reason: ids.length ? null : `no_${o}_sku_verified_with_prodigi`, productIds: ids } }
   return {
     contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id, favoriteId: rec.artwork_preview_id, masterAspect: rec.master_aspect ?? '',
     products,
     orientations: {
-      square: { supported: true, reason: null }, portrait: { supported: true, reason: null },
-      landscape: { supported: false, reason: 'no_landscape_sku_verified_with_prodigi' },        // no landscape SKU exists in Prodigi's catalog (checked in the sandbox), and a turned portrait file is unverified
+      square: orient('square'), portrait: orient('portrait'),
+      landscape: orient('landscape'),        // Prodigi has one landscape-defined wall SKU, the framed canvas 12 x 8; no other family has one (and turning a portrait SKU's file is unverified)
     },
   }
 }

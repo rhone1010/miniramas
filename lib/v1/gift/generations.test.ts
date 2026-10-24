@@ -154,7 +154,7 @@ describe('idempotency, reuse and retry', () => {
     const t = await ready()
     await expect(startGeneration(t.deps, U1, t.sessionId, { productId: 'fine_art:12x18', idempotencyKey: 'short' })).rejects.toMatchObject({ code: 'invalid_idempotency_key' })
     await expect(startGeneration(t.deps, U1, t.sessionId, { productId: 'nope', idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'product_not_available' })
-    await expect(startGeneration(t.deps, U1, t.sessionId, { productId: 'framed_canvas:8x12', idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'product_not_available' })
+    await expect(startGeneration(t.deps, U1, t.sessionId, { productId: 'card:7x5-gloss', idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'product_not_available' })
     await expect(startGeneration(t.deps, U2, t.sessionId, { productId: 'fine_art:12x18', idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'session_not_found' })
     await expect(startGeneration(t.deps, U1, t.sessionId, { productId: 'fine_art:12x18', idempotencyKey: key(1), mode: 'x' })).rejects.toBeInstanceOf(GiftError)
     expect(t.calls).toHaveLength(0)

@@ -63,10 +63,10 @@ describe('existing Print Shop behaviour and pricing are preserved', () => {
 })
 
 describe('nothing unapproved is enabled', () => {
-  it('framed-canvas and matted rectangles are launched with their prices; only framed canvas 8x12 stays held (orientation_unverified)', () => {
+  it('framed-canvas and matted rectangles are launched with their prices; framed canvas 8x12 is presented as the landscape 12 x 8', () => {
     const rects = allProducts().filter(x => (x.family === 'framed_canvas' || x.family === 'matted') && ['8x12', '12x18', '16x24', '20x30'].includes(x.size))
     expect(rects.length).toBe(8)
-    for (const p of rects) { expect(p.retailCents).toBeGreaterThan(0); if (p.productId === 'framed_canvas:8x12') { expect(p.status).toBe('disabled'); expect(p.disabledReason).toBe('orientation_unverified') } else { expect(p.status).toBe('launch'); expect(p.disabledReason).toBeNull() } }
+    for (const p of rects) { expect(p.retailCents).toBeGreaterThan(0); { expect(p.status).toBe('launch'); expect(p.disabledReason).toBeNull() } }
   })
   it('the mug and the 7x5 Mohawk card are launched at $19.99 and $7.99; each has its own artwork profile', () => {
     for (const [id, profile, cents] of [['mug:11oz', 'mug_wrap', 1999], ['card:7x5', 'card_spread', 799]] as const) {
