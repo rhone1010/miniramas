@@ -43,7 +43,7 @@ export interface ProductAvailability {
   /** The product-first generation for THIS product and the series of this session: the ratio asked of NB2.1, how much of the picture is trimmed to reach the exact shape (fraction per axis), or why it cannot. */
   generation: { supported: true; requestedAspect: string; trimFraction: number; geometryKey: string } | { supported: false; reason: 'no_ratio_within_bound_for_series' | 'not_a_launch_candidate' }
   /** The manufacturing configuration the backend sends to Prodigi. Fixed by LITEN, not customer-selectable; `unexposed` lists what Prodigi offers that is deliberately not offered. */
-  configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number }
+  configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number; generationPicturePx: { w: number; h: number }; generationAspect: number; layout: 'flat' | 'mug_full_wrap' | 'card_spread' }
 }
 
 export interface AvailabilityView {

@@ -25,3 +25,14 @@ Verification
 
 Release status
 Frontend staged for integration. No claim of backend/full-wrap checkout verification. Do not present this as a completed deployed customer journey until CC dependencies are integrated and actual Preview responses are verified.
+
+CC 0b8c1f8d integration follow-up
+- Merged backend commit unchanged into frontend integration branch.
+- Real unpaid generation sessions now request product-preview with generationId (never provisional=1). The response is validated against session, product, anchor and SKU, cached by generation ID/hash/product and refreshed before URL expiry.
+- Review/Accept wait for the matching ready preview. Same server representation is used in review, approval, cart and checkout. Paid/legacy path preserved.
+- Premium explicitly accepts the backend's shared fine-art-square and fine-art-portrait scenes.
+- Local live UI suite passed 112 checks; after adding preview readiness gating, the affected generation/cart/restoration checks plus exact-generation query/shared-photo check passed.
+- Not yet verified against deployed Preview: backend is local only. No deployment or paid generation performed.
+- Important outstanding mismatch: CC contract references old public/gift-wizard/mockup-scenes scene IDs/geometry. It does not route the 17 new beauty-scenes assets. New production scene registration/renderer inputs must be reconciled before this is a finished beauty-photo release.
+- CC's mug raw generation is 2670:1034 band; mockupInputFor adds margins and produces the 2670:1110 wrap view. The display-only new mug mask expects the latter; do not feed raw band or a rendered photograph to it as artwork.
+- No decision made or spending authorized for the optional 4:1 left-handed seam treatment. Existing customer/manufacturing records unchanged.

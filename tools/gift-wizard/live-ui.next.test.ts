@@ -639,20 +639,20 @@ test('Gift availability is authoritative over Print Shop artwork-fit selection',
 });
 
 test('product generation accepts exact identity and binds it to cart without finalizing',async()=>{
- const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.flow='generations';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};let posts=0,cart:any;
+ const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.flow='generations';s.artworkPreviewId='anchor';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};let posts=0,cart:any;
  const g={generationId:'11111111-1111-4111-8111-111111111111',productId:'canvas:8x8',geometryKey:'a1000',status:'ready',width:1024,height:1024,url:'https://liten.invalid/generated.jpg',sha256:'a'.repeat(64),accepted:false};
  s.route=(url:string,init:any)=>{if(url.endsWith('/generations')&&init.method==='POST'){posts++;s.generations.items=[g];return {generation:g,session:s}}if(url.endsWith('/accept')){g.accepted=true;return {generation:g,session:s}}if(url.endsWith('/lines')){cart=JSON.parse(init.body);s.lines=cart.lines.map((l:any)=>({...l,size:l.productId.split(':')[1]}));s.artworkPreviewId='anchor';s.geometries=s.lines.map((l:any)=>{const p=catalog.products.find((p:any)=>p.productId===l.productId)!;return {lineId:l.lineId,productId:l.productId,sku:p.sku,requiredPx:p.requirements.finalPx}});return s}return null};
  const {win,dom,calls}=await boot('sessionId=project',s);
- try{win.document.querySelector('[data-feature="canvas"]').click();win.document.querySelector('[data-size]').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(posts,1);assert.equal(win.document.querySelector('#screen img').src,g.url);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(g.accepted,false);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(g.accepted,true);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(cart.lines[0].generationId,g.generationId);assert.equal(win.document.getElementById('screen').dataset.view,'cart');assert(!calls.some(x=>x.endsWith('/finalize')))}finally{dom.window.close()}
+ try{win.document.querySelector('[data-feature="canvas"]').click();win.document.querySelector('[data-size]').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(posts,1);assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/product.jpg');assert(calls.some(x=>x.includes('generationId='+g.generationId)));assert(!calls.some(x=>x.includes('generationId=')&&x.includes('provisional=1')));win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(g.accepted,false);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(g.accepted,true);win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,30));assert.equal(cart.lines[0].generationId,g.generationId);assert.equal(win.document.getElementById('screen').dataset.view,'cart');assert(!calls.some(x=>x.endsWith('/finalize')))}finally{dom.window.close()}
 });
 test('generations restore retains delivered identity without POST and legacy sessions remain legacy',async()=>{
- const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.flow='generations';s.generations={effectId:'jade',items:[{generationId:'ready',productId:'canvas:8x8',status:'ready',width:1024,height:1024,sha256:'a'.repeat(64),url:'https://liten.invalid/ready.jpg',accepted:false}],allowance:{freeTotal:6,freeRemaining:5,next:'free'}};
- const {win,dom,calls}=await boot('sessionId=project',s);try{assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/ready.jpg');assert.equal(win.document.getElementById('primary').textContent,'Review & Approve →');assert.equal(win.document.getElementById('back').disabled,false);assert(!calls.some(x=>x.endsWith('/generations')||x.endsWith('/accept')))}finally{dom.window.close()}
+ const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.flow='generations';s.artworkPreviewId='anchor';s.generations={effectId:'jade',items:[{generationId:'ready',productId:'canvas:8x8',status:'ready',width:1024,height:1024,sha256:'a'.repeat(64),url:'https://liten.invalid/ready.jpg',accepted:false}],allowance:{freeTotal:6,freeRemaining:5,next:'free'}};
+ const {win,dom,calls}=await boot('sessionId=project',s);try{await new Promise(r=>setTimeout(r,30));assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/product.jpg');assert(calls.some(x=>x.includes('generationId=ready')));assert.equal(win.document.getElementById('primary').textContent,'Review & Approve →');assert.equal(win.document.getElementById('back').disabled,false);assert(!calls.some(x=>x.endsWith('/generations')||x.endsWith('/accept')))}finally{dom.window.close()}
  const legacy:any=project('none');legacy.flow='previews';legacy.lines=[];legacy.geometries=[];const old=await boot('sessionId=project',legacy);try{assert.equal(old.win.document.body.classList.contains('gift-pivot'),false);assert(!old.calls.some(x=>x.endsWith('/effect')||x.endsWith('/generations')))}finally{old.dom.window.close()}
 });
 
 test('Gift orientation membership exposes released canvas as landscape only',async()=>{
- const s:any=project('none');s.lines=[];s.geometries=[];s.flow='generations';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};
+ const s:any=project('none');s.lines=[];s.geometries=[];s.flow='generations';s.artworkPreviewId='anchor';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};
  const released={...catalog.products.find(p=>p.productId==='framed_canvas:8x12')!,status:'launch',selectable:true,label:'12 × 8″ landscape',retailCents:8900,requirements:{picturePx:{w:3600,h:2400},ppi:300,finalPx:{w:3654,h:2454}}};
  const updated={...catalog,products:catalog.products.map(p=>p.productId===released.productId?released:p)};
  const availability={contractVersion:1,sessionId:'project',products:updated.products.map(p=>({productId:p.productId,purchasable:p.family==='framed_canvas',generation:{supported:true}})),orientations:{square:{supported:true,reason:null,productIds:['framed_canvas:8x8']},portrait:{supported:true,reason:null,productIds:['fine_art:12x18']},landscape:{supported:true,reason:null,productIds:[released.productId]}}};
@@ -664,7 +664,7 @@ test('Gift orientation membership exposes released canvas as landscape only',asy
 
 test('Gift wrap and spread products use product availability rather than wall orientation lists',async()=>{
  for(const family of ['mug','card']){
- const s:any=project('none');s.lines=[];s.geometries=[];s.flow='generations';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};
+ const s:any=project('none');s.lines=[];s.geometries=[];s.flow='generations';s.artworkPreviewId='anchor';s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};
  const offered=catalog.products.find(p=>p.family===family)!;assert.ok(offered);
  s.catalog={...catalog,products:catalog.products.map(p=>p.productId===offered.productId?{...p,status:'launch',retailCents:1999}:p)};
  s.route=(u:string)=>u.endsWith('/availability')?{contractVersion:1,sessionId:'project',products:s.catalog.products.map((p:any)=>({productId:p.productId,purchasable:p.productId===offered.productId,generation:{supported:true},configuration:{skuOrientation:family==='mug'?'wrap':'spread'}})),orientations:{square:{supported:false,productIds:[]},portrait:{supported:false,productIds:[]},landscape:{supported:false,productIds:[]}}}:null;
@@ -682,4 +682,12 @@ test('paid gifts are read-only from Account and absent from unpaid draft list',a
 });
 test('draft deletion transport handles 204 and preserves server rejection',async()=>{
  let request:any;const api=new backend.GiftBackend(async(u,i)=>{request={u,i};return new Response(null,{status:204})});await api.deleteDraft('draft');assert.equal(request.i.method,'DELETE');assert.equal(request.u,'/api/v1/gift/sessions/draft');const blocked=new backend.GiftBackend(async()=>new Response(JSON.stringify({error:'session_retained'}),{status:409}));await assert.rejects(()=>blocked.deleteDraft('paid'),/session_retained/);
+});
+
+test('generation previews request exact identity without provisional adaptation and allow shared Fine Art photography',async()=>{
+ let request='';const v:any={contractVersion:1,status:'ready',sessionId:'project',productId:'premium:8x8',sku:'premium-sku',favoriteId:'anchor',renderer:'scene',sceneId:'fine-art-square',fit:'exact',url:'https://liten.invalid/generation-product.jpg',urlExpiresAt:'2099-01-01',width:1024,height:1024,watermarked:true,productionPrintFile:false,purchaseAuthorization:false};
+ const api=new backend.GiftBackend(async url=>{request=url;return new Response(JSON.stringify(v))});
+ assert.equal((await api.productPreview('project','premium:8x8','anchor',undefined,'generation-1')).status,'ready');
+ assert(request.endsWith('&generationId=generation-1'));assert(!request.includes('provisional'));
+ v.status='adaptation_required';await assert.rejects(()=>api.productPreview('project','premium:8x8','anchor',undefined,'generation-1'),/invalid_product_preview_response/);
 });

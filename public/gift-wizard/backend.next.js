@@ -36,7 +36,7 @@ export function assertSession(v) {
 }
 // Only the replacement masters/masks from litenco product image alphas 2-assets.zip.
 const approvedSceneFamilies = { 'fine-art-portrait': 'fine_art', 'fine-art-landscape': 'fine_art', 'premium-square': 'premium', 'premium-landscape': 'premium', 'classic-framed-square': 'framed', 'classic-framed-portrait': 'framed', 'gallery-canvas-portrait': 'canvas', 'framed-canvas-portrait': 'framed_canvas', 'matted-frame-portrait': 'matted', 'fine-art-square': 'fine_art', 'premium-fine-art': 'premium', 'classic-framed': 'framed', 'matted-frame-square': 'matted', 'gallery-canvas-square': 'canvas', 'gallery-canvas-landscape': 'canvas', 'matted-frame-landscape': 'matted', 'framed-canvas': 'framed_canvas', 'ceramic-mug': 'mug', 'greeting-card': 'card' };
-export function isApprovedScene(productId, sceneId) { return typeof sceneId === 'string' && approvedSceneFamilies[sceneId] === productId.split(':')[0]; }
+export function isApprovedScene(productId, sceneId) { return typeof sceneId === 'string' && (approvedSceneFamilies[sceneId] === productId.split(':')[0] || (productId.split(':')[0] === 'premium' && ['fine-art-square', 'fine-art-portrait'].includes(sceneId))); }
 export const integrationBlocks = Object.freeze(['sandbox_final_release', 'mug_card_profiles']);
 export class GiftBackend {
     transport;
@@ -150,14 +150,16 @@ export class GiftBackend {
             throw new GiftApiError('approved_scene_required', 0);
         return v;
     }
-    async productPreview(id, productId, favoriteId, signal) {
-        const v = await this.request('GET', sessionPath(id) + '/product-preview?productId=' + encodeURIComponent(productId) + '&provisional=1', undefined, signal);
+    async productPreview(id, productId, favoriteId, signal, generationId) {
+        const v = await this.request('GET', sessionPath(id) + '/product-preview?productId=' + encodeURIComponent(productId) + (generationId ? '&generationId=' + segment(generationId) : '&provisional=1'), undefined, signal);
         if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.productId !== productId || v.favoriteId !== favoriteId || !['ready', 'provisional', 'adaptation_required', 'not_available'].includes(v.status))
             throw new GiftApiError('invalid_product_preview_response', 0);
         if ((v.status === 'ready' || v.status === 'provisional') && (v.watermarked !== true || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['scene', 'artwork', 'calibrated'].includes(v.renderer)))
             throw new GiftApiError('invalid_product_preview_response', 0);
         if ((v.status === 'ready' || v.status === 'provisional') && !isProductRepresentation(v.status === 'provisional' ? { ...v, ...v.provisional } : v, productId, v.sceneId))
             throw new GiftApiError('approved_scene_required', 0);
+        if (generationId && !['ready', 'not_available'].includes(v.status))
+            throw new GiftApiError('invalid_product_preview_response', 0);
         if (v.status === 'provisional') {
             const p = v.provisional;
             if (v.fit !== 'contain' || !p || p.exactArtworkShown !== true || p.cropped !== false || p.distorted !== false || p.surround !== 'neutral' || !p.bars || !['top_bottom', 'left_right'].includes(p.bars.sides) || !Number.isFinite(p.bars.fractionPerSide) || p.bars.fractionPerSide < 0 || p.bars.fractionPerSide >= 0.5 || !['generated', 'deterministic', null].includes(p.finalComposition))
