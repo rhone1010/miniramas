@@ -1,0 +1,14 @@
+{
+ "probedAt": "2026-10-24T23:10:52.353Z",
+ "found": [
+  {
+   "family": "framed_canvas",
+   "sku": "GLOBAL-FRA-CAN-16X12",
+   "dims": {
+    "width": 16,
+    "height": 12,
+    "units": "in"
+   }
+  }
+ ]
+}

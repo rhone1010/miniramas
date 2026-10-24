@@ -1,0 +1,577 @@
+{
+ "probedAt": "2026-10-24T23:07:46.413Z",
+ "asked": 275,
+ "found": [
+  {
+   "sku": "POSTER-HANGER-20-6X8-PORT",
+   "description": "22.5cm / 8.9\" poster hanger with 6x8\" EMA portrait print",
+   "dims": {
+    "width": 15,
+    "height": 20,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 1800,
+    "verticalResolution": 2400
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-20-6X8-LAND",
+   "description": "22.5cm / 8.9\"  poster hanger with 6x8\" EMA landscape print",
+   "dims": {
+    "width": 20,
+    "height": 15,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 2400,
+    "verticalResolution": 1800
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-20-8X10-PORT",
+   "description": "22.5cm / 8.9\" poster hanger with 8x10\" EMA portrait print",
+   "dims": {
+    "width": 20,
+    "height": 25,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 2400,
+    "verticalResolution": 3000
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-30-8X10-LAND",
+   "description": "32cm / 12.6\" poster hanger with 8x10\" EMA landscape print",
+   "dims": {
+    "width": 25,
+    "height": 20,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 3000,
+    "verticalResolution": 2400
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-30-11X14-PORT",
+   "description": "32cm / 12.6\" poster hanger with 11x14\" EMA portrait print",
+   "dims": {
+    "width": 28,
+    "height": 35.5,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 3307,
+    "verticalResolution": 4192
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-40-11X14-LAND",
+   "description": "42cm / 16.5\" poster hanger with 11x14\" EMA landscape print",
+   "dims": {
+    "width": 35.5,
+    "height": 28,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 4192,
+    "verticalResolution": 3307
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-30-12X16-PORT",
+   "description": "32cm / 12.6\" poster hanger with 12x16\" EMA portrait print",
+   "dims": {
+    "width": 30,
+    "height": 40,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 3600,
+    "verticalResolution": 4800
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-40-12X16-LAND",
+   "description": "42cm / 16.5\" poster hanger with 12x16\" EMA landscape print",
+   "dims": {
+    "width": 40,
+    "height": 30,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 4800,
+    "verticalResolution": 3600
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-40-16X20-PORT",
+   "description": "42cm / 16.5\" poster hanger with 16x20\" EMA portrait print",
+   "dims": {
+    "width": 40,
+    "height": 50,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 4800,
+    "verticalResolution": 6000
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-50-16X20-LAND",
+   "description": "52cm / 20.5\" poster hanger with 16x20\" EMA landscape print",
+   "dims": {
+    "width": 50,
+    "height": 40,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 6000,
+    "verticalResolution": 4800
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-50-18X24-PORT",
+   "description": "52cm / 20.5\" poster hanger with 18x24\" EMA portrait print",
+   "dims": {
+    "width": 45,
+    "height": 60,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 5400,
+    "verticalResolution": 7200
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-60-18X24-LAND",
+   "description": "A 62cm / 24.4\" poster hanger with 18x24\" EMA landscape print",
+   "dims": {
+    "width": 60,
+    "height": 45,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 7200,
+    "verticalResolution": 5400
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-50-20X28-PORT",
+   "description": "52cm / 20.5\" poster hanger with 20x28\" EMA portrait print",
+   "dims": {
+    "width": 50,
+    "height": 70,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 6000,
+    "verticalResolution": 8400
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-50-20X28-LAND",
+   "description": "52cm / 20.5\" poster hanger with 20x28\" EMA landscape print",
+   "dims": {
+    "width": 70,
+    "height": 50,
+    "units": "cm"
+   },
+   "area": {
+    "horizontalResolution": 8267,
+    "verticalResolution": 5905
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-80-20X28-LAND",
+   "description": "A 86cm / 33.9\" poster hanger with 20x28\" EMA landscape print",
+   "dims": {
+    "width": 70,
+    "height": 50,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 8400,
+    "verticalResolution": 6000
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-50-20X30-PORT",
+   "description": "52cm / 20.5\" poster hanger with 20x30\" EMA portrait print",
+   "dims": {
+    "width": 50,
+    "height": 75,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 6000,
+    "verticalResolution": 9000
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-80-20X30-LAND",
+   "description": "A 86cm / 33.9\" poster hanger with 20x30\" EMA landscape print",
+   "dims": {
+    "width": 75,
+    "height": 50,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 9000,
+    "verticalResolution": 6000
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-60-24X32-PORT",
+   "description": "A 62cm / 24.4\" poster hanger with 24x32\" EMA portrait print",
+   "dims": {
+    "width": 60,
+    "height": 80,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 7200,
+    "verticalResolution": 9600
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-80-24X32-LAND",
+   "description": "A 86cm / 33.9\" poster hanger with 24x32\" EMA landscape print",
+   "dims": {
+    "width": 80,
+    "height": 60,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 9600,
+    "verticalResolution": 7200
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-60-24X36-PORT",
+   "description": "A 62cm / 24.4\" poster hanger with 24x36\" EMA portrait print",
+   "dims": {
+    "width": 60,
+    "height": 90,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 7200,
+    "verticalResolution": 10800
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-80-28X40-PORT",
+   "description": "A 86cm / 33.9\" poster hanger with 28x40\" EMA portrait print",
+   "dims": {
+    "width": 70,
+    "height": 100,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 8400,
+    "verticalResolution": 12000
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-80-30X40-PORT",
+   "description": "A 86cm / 33.9\" poster hanger with 30x40\" EMA portrait print",
+   "dims": {
+    "width": 75,
+    "height": 100,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 9000,
+    "verticalResolution": 12000
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-30-12X12-SQUARE",
+   "description": "32cm / 12.6\"  poster hanger with 12x12\" EMA square print",
+   "dims": {
+    "width": 30,
+    "height": 30,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 3600,
+    "verticalResolution": 3600
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-50-20X20-SQUARE",
+   "description": "52cm / 20.5\" poster hanger with 20x20\" EMA square print",
+   "dims": {
+    "width": 50,
+    "height": 50,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 6000,
+    "verticalResolution": 6000
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-30-A3-PORT",
+   "description": "32cm / 12.6\" poster hanger with A3\" EMA portrait print",
+   "dims": {
+    "width": 29.7,
+    "height": 42,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 3507,
+    "verticalResolution": 4960
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-40-A3-LAND",
+   "description": "42cm / 16.5\" poster hanger with A3\" EMA landscape print",
+   "dims": {
+    "width": 42,
+    "height": 29.7,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 4960,
+    "verticalResolution": 3507
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-20-A4-PORT",
+   "description": "22.5cm / 8.9\" poster hanger with A4\" EMA portrait print",
+   "dims": {
+    "width": 21,
+    "height": 29.7,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 2490,
+    "verticalResolution": 3510
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-30-A4-LAND",
+   "description": "32cm / 12.6\" poster hanger with A4\" EMA landscape print",
+   "dims": {
+    "width": 29.7,
+    "height": 21,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 3510,
+    "verticalResolution": 2490
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-40-A2-PORT",
+   "description": "42cm / 16.5\" poster hanger with A2\" EMA portrait print",
+   "dims": {
+    "width": 42,
+    "height": 59.4,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 4960,
+    "verticalResolution": 7015
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-60-A2-LAND",
+   "description": "A 62cm / 24.4\" poster hanger with A2\" EMA landscape print",
+   "dims": {
+    "width": 59.4,
+    "height": 42,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 7015,
+    "verticalResolution": 4960
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-60-A1-PORT",
+   "description": "A 62cm / 24.4\" poster hanger with A1\" EMA portrait print",
+   "dims": {
+    "width": 59.4,
+    "height": 84.1,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 7020,
+    "verticalResolution": 9930
+   }
+  },
+  {
+   "sku": "POSTER-HANGER-80-A1-LAND",
+   "description": "A 86cm / 33.9\" poster hanger with A1\" EMA landscape print",
+   "dims": {
+    "width": 84.1,
+    "height": 59.4,
+    "units": "cm"
+   },
+   "colors": [
+    "black",
+    "natural",
+    "white"
+   ],
+   "area": {
+    "horizontalResolution": 9930,
+    "verticalResolution": 7020
+   }
+  }
+ ]
+}
