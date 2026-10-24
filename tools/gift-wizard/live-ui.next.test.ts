@@ -57,11 +57,8 @@ test('checkout requires valid delivery and explicit acceptance with a saved favo
 test('actual Stripe return parameter is verified by server before restoring its project',async()=>{const s:any=project();s.confirmation={confirmed:true,session:project()};const {win,calls,dom}=await boot('gift_order_session=cs_test',s);assert.ok(calls.includes('/api/v1/gift/orders/confirm'));assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(win.document.getElementById('primary').disabled,false);dom.window.close()});
 test('unconfirmed Stripe return stays pending and can retry without granting access',async()=>{const s:any=project();s.confirmation={confirmed:false};const {win,calls,dom}=await boot('gift_order_session=cs_test',s);assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);assert.ok(win.document.getElementById('screen').textContent.includes('Checking your payment'));win.navigate('effects');assert.equal(win.document.getElementById('screen').dataset.view,'payment');dom.window.close()});
 
-test('stable direct URL is live and never loads fixture artwork',async()=>{
- const {win,calls,dom}=await boot('');
- assert.ok(calls.includes('/api/v1/gift/sessions'));assert.ok(calls.includes('/api/v1/print/catalog'));
- assert.equal(calls.some(x=>x.includes('fixtures.next')),false);
- assert.equal(win.document.getElementById('screen').dataset.view,'photo');dom.window.close();
+test('bare entrance offers a choice without restoring or loading fixtures',async()=>{
+ const {win,calls,dom}=await boot('');assert.ok(calls.includes('/api/v1/gift/sessions'));assert.equal(calls.some(x=>x.includes('fixtures.next')),false);assert.equal(win.document.getElementById('screen').dataset.view,'entry');assert(win.document.getElementById('start-new-gift'));dom.window.close();
 });
 test('unassociated pack return cannot fabricate a project or preview balance',async()=>{
  const {win,calls,dom}=await boot('gift_pack_session=cs_test_unknown');
@@ -196,21 +193,12 @@ test('compact shopping favorite returns to gallery and configuration retains bac
 
 
 
-test('returning through the bare Wizard URL restores only server-owned artwork and navigation hints',async()=>{
- const s:any=artworkProject();s.order.state='none';s.resume={sessionId:'project',view:'focus',effectIds:['jade','invented'],artFocus:s.batches[0].previews[0].previewId,recipient:contracts.recipientOptions[0]};
- const {win,dom,calls}=await boot('',s);
- assert.ok(calls.includes('/api/v1/gift/sessions/project'));
- assert.equal(win.document.getElementById('screen').dataset.view,'focus');
- assert.equal(new URL(win.location.href).searchParams.get('sessionId'),'project');
- const hint=JSON.parse(win.sessionStorage.getItem('liten-gift-resume'));
- assert.equal(hint.effectIds.includes('invented'),false);
- assert.equal('batches' in hint,false);assert.equal('entitlement' in hint,false);assert.equal('source' in hint,false);
- assert.equal(calls.some(x=>x.endsWith('/batches')),false);dom.window.close();
+test('bare entrance offers paid gift resume without automatically restoring or changing it',async()=>{
+ const s:any=artworkProject();s.resume={sessionId:'project',view:'compositions'};
+ const {win,dom,calls}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'entry');assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);assert(win.document.querySelector('[data-resume-gift="project"]'));assert(!calls.some(x=>/approve|compositions|batches/.test(x)));dom.window.close();
 });
 test('remembered paid-looking view cannot bypass authentication',async()=>{
- const {win,dom}=await boot('',{error:'sign_in_required',resume:{sessionId:'project',view:'compositions'}},401);
- assert.ok(win.document.getElementById('screen').textContent.includes('Sign in'));
- assert.equal(win.document.querySelector('#screen img'),null);dom.window.close();
+ const {win,dom}=await boot('',{error:'sign_in_required',resume:{sessionId:'project',view:'compositions'}},401);assert(win.document.getElementById('entry-signin'));assert.equal(win.document.querySelector('#screen img'),null);dom.window.close();
 });
 test('explicit different session ignores another project navigation hints',async()=>{
  const s:any=project('none');s.resume={sessionId:'other-project',view:'checkout',effectIds:['jade']};
@@ -255,17 +243,14 @@ test('generation SVG and animation/background remain exact Collection ports',()=
 });
 
 function latest(s:any,step='previews'){return {contractVersion:1,current:s,resume:s?{sessionId:s.sessionId,suggestedStep:step,resumeBatches:s.batches.filter((b:any)=>b.generation==='stalled').map((b:any)=>b.batchIndex),runningBatches:s.batches.filter((b:any)=>b.generation==='running').map((b:any)=>b.batchIndex)}:null,recent:[]}}
-test('server latest session overrides stale local identity and restores signed source without IndexedDB',async()=>{
- const s:any=project('none');s.source.photoUrl='https://liten.invalid/signed-source.jpg';s.resume={sessionId:'old-project',view:'checkout'};s.latestResponse=latest({...s},'effects');s.route=(url:string)=>url.endsWith('/old-project')?new Response(JSON.stringify({error:'session_not_found'}),{status:404}):null;
- const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions'));assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.some(x=>x.endsWith('/old-project')),true);assert.equal(win.document.getElementById('screen').dataset.view,'effects');win.navigate('photo');assert.ok([...win.document.images].some((i:any)=>i.src===s.source.photoUrl));dom.window.close();
+test('entry lists server gifts without restoring stale local project identity',async()=>{
+ const s:any=project('none');s.resume={sessionId:'old-project',view:'checkout'};s.latestResponse=latest({...s},'effects');const {win,calls,dom}=await boot('',s);assert(win.document.querySelector('[data-resume-gift="project"]'));assert(!calls.some(x=>x.endsWith('/old-project')||x.endsWith('/sessions/project')));dom.window.close();
 });
-test('no active server session ignores remembered project and returns to Photo',async()=>{
- const s:any=project('none');s.resume={sessionId:'project',view:'focus'};s.latestResponse=latest(null);s.route=(url:string)=>url.endsWith('/sessions/project')?new Response(JSON.stringify({error:'session_not_found'}),{status:404}):null;
- const {win,dom,calls}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'photo');assert.equal(calls.includes('/api/v1/gift/sessions/project'),true);dom.window.close();
+test('no active server session offers new gift without restoration',async()=>{
+ const s:any=project('none');s.resume={sessionId:'project',view:'focus'};s.latestResponse=latest(null);const {win,dom,calls}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'entry');assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);dom.window.close();
 });
-test('latest restoration validates response identity before using any artwork',async()=>{
- const s:any=project();s.latestResponse=latest({...s});s.latestResponse.resume.sessionId='wrong';
- const {win,dom}=await boot('',s);assert.equal(win.document.getElementById('error').textContent,'invalid_restore_response');assert.equal(win.document.querySelector('#screen img'),null);dom.window.close();
+test('invalid entry response offers retry without using artwork',async()=>{
+ const s:any=project();s.latestResponse=latest({...s});s.latestResponse.resume.sessionId='wrong';const {win,dom}=await boot('',s);assert(win.document.getElementById('retry-entry'));assert.equal(win.document.querySelector('#screen img'),null);dom.window.close();
 });
 test('stalled restoration resumes unfinished batch once, never reserves a batch, and automatic polling only reads',async()=>{
  const s:any=workingProject();s.batches[0].generation='stalled';let retries=0;s.route=(url:string)=>{if(url.endsWith('/retry')){retries++;return {session:s,batch:s.batches[0],status:'partial'}}};
@@ -402,8 +387,8 @@ test('Studio Back preserves artwork, cart and per-product choices',async()=>{
 });
 
 
-test('bare return restores the authenticated working gift instead of another latest gift',async()=>{
- const s:any=artworkProject();s.order.state='none';s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2};const {win,calls,dom}=await boot('',s);assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.includes('/api/v1/gift/sessions'),false);assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
+test('explicit resume restores the authenticated working gift instead of another latest gift',async()=>{
+ const s:any=artworkProject();s.order.state='none';s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:2};const {win,calls,dom}=await boot('sessionId=project',s);assert.ok(calls.includes('/api/v1/gift/sessions/project'));assert.equal(calls.includes('/api/v1/gift/sessions'),false);assert.equal(win.document.getElementById('screen').dataset.view,'products');assert.equal(win.document.getElementById('copies').value,'2');await new Promise(r=>setTimeout(r,25));dom.window.close();
 });
 
 
@@ -432,13 +417,13 @@ test('retryable failure waits for explicit retry; exhausted failure opens existi
  s.compositions[0].retryable=false;const b=await boot('sessionId=project',s);assert.equal(b.win.document.getElementById('retry-preparation-line').textContent,'Concierge');assert.equal(posts,1);b.dom.window.close();
 });
 test('latest-session composition resume enters final review with no generation for ready',async()=>{
- const s=compositionProject('ready');s.latestResponse={contractVersion:1,current:structuredClone(s),resume:{sessionId:'project',suggestedStep:'compositions',resumeBatches:[],runningBatches:[],compositions:{state:'ready',resumeNeeded:false,preparing:[],stalled:[],failed:[]}},recent:[]};const {win,calls,dom}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'compositions');assert.equal(calls.some(u=>u.endsWith('/compositions')),false);dom.window.close();
+ const s=compositionProject('ready');s.latestResponse={contractVersion:1,current:structuredClone(s),resume:{sessionId:'project',suggestedStep:'compositions',resumeBatches:[],runningBatches:[],compositions:{state:'ready',resumeNeeded:false,preparing:[],stalled:[],failed:[]}},recent:[]};const {win,calls,dom}=await boot('sessionId=project',s);assert.equal(win.document.getElementById('screen').dataset.view,'compositions');assert.equal(calls.some(u=>u.endsWith('/compositions')),false);dom.window.close();
 });
 test('provisional transport opts in and rejects missing watermark or false surround claims',async()=>{
  const v:any={contractVersion:1,status:'provisional',sessionId:'project',productId:'fine_art:12x18',favoriteId:'favorite',renderer:'scene',sceneId:'fine-art-square',fit:'contain',url:'https://liten.invalid/provisional.png',urlExpiresAt:'2099-01-01',width:1254,height:1254,watermarked:true,productionPrintFile:false,purchaseAuthorization:false,provisional:{exactArtworkShown:true,cropped:false,distorted:false,surround:'neutral',bars:{sides:'top_bottom',fractionPerSide:0.1},favoriteAspect:1,pictureAspect:0.6667,extension:0.3,finalComposition:'generated'}};let requested='';const api=new backend.GiftBackend(async u=>{requested=u;return new Response(JSON.stringify(v))});assert.equal((await api.productPreview('project','fine_art:12x18','favorite')).status,'provisional');assert.ok(requested.endsWith('&provisional=1'));v.watermarked=false;await assert.rejects(()=>api.productPreview('project','fine_art:12x18','favorite'),/invalid_product_preview/);v.watermarked=true;v.provisional.cropped=true;await assert.rejects(()=>api.productPreview('project','fine_art:12x18','favorite'),/invalid_product_preview/);
 });
 test('provisional configuration shows the returned image and explains neutral surround and later generation',async()=>{
- const s:any=artworkProject();s.order.state='none';s.route=(u:string)=>u.includes('/product-preview?')?{contractVersion:1,status:'provisional',sessionId:'project',productId:new URL('https://test'+u).searchParams.get('productId'),favoriteId:'favorite',sku:catalog.products.find((p:any)=>p.productId===new URL('https://test'+u).searchParams.get('productId'))!.sku,renderer:'scene',sceneId:'fine-art-square',fit:'contain',url:'https://liten.invalid/provisional.png',urlExpiresAt:'2099-01-01',width:1254,height:1254,watermarked:true,productionPrintFile:false,purchaseAuthorization:false,provisional:{exactArtworkShown:true,cropped:false,distorted:false,surround:'neutral',bars:{sides:'top_bottom',fractionPerSide:.1},finalComposition:'generated'}}:null;s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:1};const {win,dom}=await boot('',s);await new Promise(r=>setTimeout(r,30));assert.ok(win.document.body.textContent.includes('neutral surround is not artwork'));assert.ok(win.document.body.textContent.includes('new composition of the same effect'));assert.ok(win.document.querySelector('img[src="https://liten.invalid/provisional.png"]'));dom.window.close();
+ const s:any=artworkProject();s.order.state='none';s.route=(u:string)=>u.includes('/product-preview?')?{contractVersion:1,status:'provisional',sessionId:'project',productId:new URL('https://test'+u).searchParams.get('productId'),favoriteId:'favorite',sku:catalog.products.find((p:any)=>p.productId===new URL('https://test'+u).searchParams.get('productId'))!.sku,renderer:'scene',sceneId:'fine-art-square',fit:'contain',url:'https://liten.invalid/provisional.png',urlExpiresAt:'2099-01-01',width:1254,height:1254,watermarked:true,productionPrintFile:false,purchaseAuthorization:false,provisional:{exactArtworkShown:true,cropped:false,distorted:false,surround:'neutral',bars:{sides:'top_bottom',fractionPerSide:.1},finalComposition:'generated'}}:null;s.resume={sessionId:'project',view:'configuration',activeProduct:'fine_art',size:'12x18',copies:1};const {win,dom}=await boot('sessionId=project',s);await new Promise(r=>setTimeout(r,30));assert.ok(win.document.body.textContent.includes('neutral surround is not artwork'));assert.ok(win.document.body.textContent.includes('new composition of the same effect'));assert.ok(win.document.querySelector('img[src="https://liten.invalid/provisional.png"]'));dom.window.close();
 });
 
 test('all eight default product photographs are approved source masters, with catalog values unchanged',()=>{
@@ -533,7 +518,7 @@ test('Studio review and quantity survive authenticated refresh',async()=>{
  const landing=new JSDOM(fs.readFileSync('public/gifts.next.html','utf8'),{url:'https://liten.invalid'+cancel.dataset.href,runScripts:'outside-only'});
  landing.window.eval(fs.readFileSync('public/gifts/entry.next.js','utf8'));
  const links=Array.from(landing.window.document.querySelectorAll('a.hp-cta'));
- assert.equal(links.length,2);for(const a of links)assert.equal(a.getAttribute('href'),'/gift-wizard.next.html?newGift=1&resumeSessionId=project');
+ assert.equal(links.length,2);for(const a of links)assert.equal(a.getAttribute('href'),'/gift-wizard.next.html');
  dom.window.close();landing.window.close();
  });
 
@@ -617,7 +602,7 @@ for(const gender of ['unknown',null])test('unclassified Portrait uses only expli
  const {win,dom}=await boot('sessionId=project',s);
  assert.equal(win.document.querySelector('#screen img').getAttribute('src'),'/previews/effects/jade/neutral.jpg');
  dom.window.close();
- const restored=await boot('',{...s,resume:{sessionId:'project',view:'effects'}});
+ const restored=await boot('sessionId=project',{...s,resume:{sessionId:'project',view:'effects'}});
  assert.equal(restored.win.document.querySelector('#screen img').getAttribute('src'),'/previews/effects/jade/neutral.jpg');restored.dom.window.close();
 });
 

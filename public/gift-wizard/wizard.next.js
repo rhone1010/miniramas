@@ -38,7 +38,7 @@ function effects() { return liveEffects(registry()); }
 function currentArt() { return session.batches.flat().find(p => p.id === artFocus) || session.batches[batchIndex]?.[0]; }
 function favorite() { return session.batches.flat().find(p => p.id === (shoppingFavoriteId || session.favoriteId)); }
 function stage() { if (pivotMode)
-    return view === 'acceptance' ? 5 : view === 'generation' ? 4 : ['cart', 'checkout', 'compositions', 'payment', 'complete'].includes(view) ? 6 : view === 'photo' ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
+    return view === 'acceptance' ? 5 : view === 'generation' ? 4 : ['cart', 'checkout', 'compositions', 'payment', 'complete'].includes(view) ? 6 : ['entry', 'photo'].includes(view) ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
 function go(v, record = true) { if (busy)
     return; if (live?.session?.entrance === 'collection' && ['photo', 'effects', 'review', 'focus', 'compare', 'more'].includes(v))
     v = purchased(live.session) ? 'compositions' : 'products'; if (live?.session && purchased(live.session) && ['photo', 'products', 'configuration', 'cart', 'checkout'].includes(v)) {
@@ -136,7 +136,9 @@ function render() {
         el.setAttribute('aria-current', 'step');
     else
         el.removeAttribute('aria-current'); });
-    if (view === 'complete')
+    if (view === 'entry')
+        renderEntry();
+    else if (view === 'complete')
         renderJourneyComplete();
     else if (view === 'acceptance')
         renderCompositionAcceptance();
@@ -185,6 +187,9 @@ function render() {
         $('back').hidden = true;
     document.querySelectorAll('[data-product-preview]').forEach(b => b.onclick = () => { productPreviews.delete(b.dataset.productPreview); render(); });
     adaptMobileView();
+    document.querySelector('.progress').hidden = view === 'entry';
+    if ($('mobile-progress'))
+        $('mobile-progress').hidden = view === 'entry';
     if (pivotMode)
         sharedStageLayout();
     rememberView();
@@ -734,7 +739,7 @@ function sharedStageLayout() {
     guidance.className = 'stage-guidance';
     Array.from(rail.childNodes).filter(n => n !== nav).forEach(n => guidance.append(n));
     rail.insertBefore(guidance, nav);
-    nav.hidden = view === 'photo' && !sourceURL && !live?.session && !history.length;
+    nav.hidden = view === 'entry' || view === 'photo' && !sourceURL && !live?.session && !history.length;
     requestAnimationFrame(fitStage);
 }
 function pivotRail(title) {
@@ -1433,7 +1438,54 @@ window.addEventListener('pageshow', e => { if (e.persisted && serverMode) {
     void retryRestoration();
 } });
 let live = serverMode && params.get('sessionId') ? new LiveGift(new GiftBackend((url, init) => fetch(url, init)), params.get('sessionId')) : null;
+let entryGifts = [];
+let entrySignedIn = false, entryFailed = false;
+function renderEntry() {
+    rail('Your<br>Gift', '');
+    $('back').hidden = true;
+    $('screen').innerHTML = '<h2>Start a New Gift</h2>' + secondary('start-new-gift', 'Start a New Gift');
+    $('start-new-gift').onclick = () => location.assign('/gift-wizard.next.html?newGift=1');
+    $('right').innerHTML = '<h2>Resume Gift</h2>' + (busy ? '<p role="status">Checking your account…</p>' : entryFailed ? secondary('retry-entry', 'Try again') : !entrySignedIn ? secondary('entry-signin', 'Sign in') : !entryGifts.length ? '<p>No gifts to resume.</p>' : entryGifts.map(g => '<div class="summary-item"><div><p>' + esc(g.series || 'Gift') + esc(g.createdAt ? ' · ' + new Date(g.createdAt).toLocaleDateString() : '') + '</p><button type="button" data-resume-gift="' + esc(g.sessionId) + '">Resume Gift</button></div></div>').join(''));
+    for (const button of document.querySelectorAll('[data-resume-gift]'))
+        button.onclick = () => location.assign('/gift-wizard.next.html?sessionId=' + encodeURIComponent(button.dataset.resumeGift));
+    if ($('entry-signin'))
+        $('entry-signin').onclick = () => window.LitenAuth.open('/gift-wizard.next.html');
+    if ($('retry-entry'))
+        $('retry-entry').onclick = () => void loadGiftEntry();
+}
+async function loadGiftEntry() {
+    live = null;
+    restorationComplete = false;
+    clearTimeout(generationTimer);
+    clearTimeout(productGenerationTimer);
+    pivotMode = true;
+    view = 'entry';
+    busy = true;
+    entryGifts = [];
+    entrySignedIn = false;
+    entryFailed = false;
+    render();
+    try {
+        const latest = await new GiftBackend((url, init) => fetch(url, init)).restoreLatest();
+        entrySignedIn = true;
+        entryGifts = latest.recent;
+        if (latest.current && !entryGifts.some(g => g.sessionId === latest.current.sessionId))
+            entryGifts.unshift({ sessionId: latest.current.sessionId, series: latest.current.source.series, createdAt: undefined });
+    }
+    catch (e) {
+        entryFailed = !(e instanceof GiftApiError && e.status === 401);
+    }
+    finally {
+        busy = false;
+        view = 'entry';
+        render();
+    }
+}
 async function retryRestoration() {
+    if (!params.get('sessionId') && params.get('newGift') !== '1' && !params.has('gift_order_session') && !params.has('gift_pack_session')) {
+        await loadGiftEntry();
+        return;
+    }
     restorationComplete = false;
     clearTimeout(generationTimer);
     paymentState = 'restoring';
@@ -1873,8 +1925,9 @@ function adaptServerView() {
                 busy = true;
                 render();
                 try {
-                    const next = '/gift-wizard.next.html' + location.search;
-                    location.assign(await new GiftBackend((url, init) => fetch(url, init)).signIn(next));
+                    busy = false;
+                    render();
+                    window.LitenAuth.open('/gift-wizard.next.html' + location.search);
                 }
                 catch (e) {
                     busy = false;

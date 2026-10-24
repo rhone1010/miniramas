@@ -13,3 +13,6 @@
 @media(max-width:600px){.lc-consent{display:block;padding:12px 16px}.lc-actions{gap:8px}.lc-footer{padding:12px 16px}.lc-footer nav{gap:12px}.lc-preferences{padding:20px}}
 
 #effectFloor>.lc-footer,#siloFloor>.lc-footer,#poseFloor>.lc-footer{aspect-ratio:auto;min-height:0;height:auto;align-self:start}
+
+#liten-signin input[type=email]{box-sizing:border-box;width:100%;height:auto;min-height:44px;font:inherit;padding:10px;margin-bottom:16px}
+.mh-series-menu [hidden],.progress[hidden]{display:none!important}

@@ -1,2 +1,2 @@
 /* An explicit Cancel leaves the retained project; the next entry starts fresh. */
-(function(){'use strict';var params=new URLSearchParams(location.search);var destination='/gift-wizard.next.html?newGift=1',resume=params.get('resumeSessionId');if(!resume){try{resume=JSON.parse(sessionStorage.getItem('liten-gift-resume')||'null')?.sessionId}catch{}}if(resume&&/^[\w-]{1,80}$/.test(resume))destination+='&resumeSessionId='+encodeURIComponent(resume);document.querySelectorAll('a[href="/gift-wizard.next.html"]').forEach(function(link){link.href=destination});})();
+(function(){'use strict';document.querySelectorAll('a[href="/gift-wizard.next.html"]').forEach(function(link){link.href='/gift-wizard.next.html'});})();

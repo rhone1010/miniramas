@@ -75,7 +75,7 @@ export class GiftBackend {
   if(!next.startsWith('/')||next.startsWith('//'))throw new GiftApiError('invalid_return_path',0);
   const v=await this.request<{ok:boolean;url?:string}>('POST','/api/v1/auth/signin',{provider:'google',next});
   if(!v.ok||!v.url||!/^https:\/\/[^/]+\.supabase\.co\/auth\/v1\/authorize\?/.test(v.url))throw new GiftApiError('invalid_signin_response',0);
-  return v.url;
+  const authorize=new URL(v.url);authorize.searchParams.set('prompt','select_account');return authorize.href;
  }
  compose(id:string):Promise<SessionView>{return this.session('POST',sessionPath(id)+'/compositions')}
  correct(id:string,lineId:string):Promise<SessionView>{return this.session('POST',sessionPath(id)+'/compositions/'+segment(lineId)+'/correct')}

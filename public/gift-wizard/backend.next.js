@@ -129,7 +129,9 @@ export class GiftBackend {
         const v = await this.request('POST', '/api/v1/auth/signin', { provider: 'google', next });
         if (!v.ok || !v.url || !/^https:\/\/[^/]+\.supabase\.co\/auth\/v1\/authorize\?/.test(v.url))
             throw new GiftApiError('invalid_signin_response', 0);
-        return v.url;
+        const authorize = new URL(v.url);
+        authorize.searchParams.set('prompt', 'select_account');
+        return authorize.href;
     }
     compose(id) { return this.session('POST', sessionPath(id) + '/compositions'); }
     correct(id, lineId) { return this.session('POST', sessionPath(id) + '/compositions/' + segment(lineId) + '/correct'); }
