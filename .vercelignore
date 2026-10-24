@@ -37,3 +37,8 @@ public/actionmini.html
 /preview-matrix/
 /_scratch/
 /archive/
+
+# Local Gift Shop review harnesses and test outputs are not deployment assets.
+/.temp/
+/public/.beauty-review.html
+/public/.gift-scene-review.html

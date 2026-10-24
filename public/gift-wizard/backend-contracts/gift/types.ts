@@ -44,6 +44,7 @@ export interface GiftLine {
   lineId: string; productId: string; size: string; copies: number
   /** Generations flow: the accepted generation (picture) this line is made from. It is the line's approved composition, bound when the cart is set; it cannot change after payment. */
   generationId?: string
+  frameColor?: string
 }
 
 /** The geometry a line will eventually print at, from the catalog. Informational: the server derives it. */
@@ -485,6 +486,10 @@ export type ProductPreviewView =
       renderer: 'scene' | 'artwork' | 'calibrated'; sceneId: string | null; fit: 'exact' | 'resample'; sceneRefusal?: SceneRefusalView | null
       url: string; urlExpiresAt: string; width: number; height: number; cached: boolean
       watermarked: true; productionPrintFile: false; purchaseAuthorization: false
+      beauty?: import('./beauty-scenes').BeautyRouting
+      /** The frame colour this preview was made for (frame products; null otherwise). Part of the cache key: another colour is another preview. */
+      frameColor?: string | null
+      beautyInput?: { kind: 'generation_picture' | 'mug_full_wrap_view'; url: string; urlExpiresAt: string; width: number; height: number; aspect: number; generationId: string; sha256: string } | null
     } & PreviewRepresentation
   | {
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'adaptation_required'; reason: 'shape_needs_composition'; sessionId: string; productId: string; sku: string; favoriteId: string

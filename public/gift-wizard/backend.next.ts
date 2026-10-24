@@ -48,7 +48,7 @@ export class GiftBackend {
  }
  async catalog(signal?:AbortSignal){const v=await this.request<CatalogResponse>('GET','/api/v1/print/catalog',undefined,signal);if(v.contractVersion!==1||!Array.isArray(v.products))throw new GiftApiError('invalid_catalog_response',0);return v}
  async availability(id:string,signal?:AbortSignal){const v=await this.request<AvailabilityView>('GET',sessionPath(id)+'/availability',undefined,signal);if(v.contractVersion!==1||v.sessionId!==id||!Array.isArray(v.products)||v.products.some(p=>typeof p.purchasable!=='boolean'||typeof p.productId!=='string'))throw new GiftApiError('invalid_availability_response',0);return v}
- setLines(id:string,b:{lines:Array<SetLinesRequest["lines"][number]&{generationId?:string}>},signal?:AbortSignal){return this.session('PUT',sessionPath(id)+'/lines',{lines:b.lines.map(l=>({lineId:l.lineId,productId:l.productId,copies:l.copies,...(l.generationId?{generationId:l.generationId}:{})}))},signal)}
+ setLines(id:string,b:{lines:Array<SetLinesRequest["lines"][number]&{generationId?:string;frameColor?:string;acceptFinish?:boolean}>},signal?:AbortSignal){return this.session('PUT',sessionPath(id)+'/lines',{lines:b.lines.map(l=>({lineId:l.lineId,productId:l.productId,copies:l.copies,...(l.generationId?{generationId:l.generationId}:{}),...(l.frameColor?{frameColor:l.frameColor}:{}),...(l.acceptFinish===true?{acceptFinish:true}:{})}))},signal)}
  async confirmOrder(b:OrderConfirmRequest,signal?:AbortSignal){const v=await this.request<OrderConfirmResponse>('POST','/api/v1/gift/orders/confirm',{stripeSessionId:b.stripeSessionId},signal);if(typeof v.confirmed!=='boolean'||(v.confirmed&&!v.session))throw new GiftApiError('invalid_confirmation_response',0);if(v.session)assertSession(v.session);return v}
  async batch(id:string,n:number,signal?:AbortSignal){if(!Number.isInteger(n)||n<1)throw new GiftApiError('invalid_batch_index',0);return this.request<BatchView>('GET',sessionPath(id)+'/batches/'+n,undefined,signal)}
  selectArtwork(id:string,b:SelectArtworkRequest,signal?:AbortSignal){return this.session('POST',sessionPath(id)+'/artwork',{previewId:b.previewId},signal)}
@@ -89,11 +89,13 @@ export class GiftBackend {
   if(!isProductRepresentation(v,v.productId,v.scene?.sceneId))throw new GiftApiError('approved_scene_required',0);
   return v;
  }
- async productPreview(id:string,productId:string,favoriteId:string,signal?:AbortSignal,generationId?:string):Promise<ProductPreviewView>{
-  const v=await this.request<ProductPreviewView>('GET',sessionPath(id)+'/product-preview?productId='+encodeURIComponent(productId)+(generationId?'&generationId='+segment(generationId):'&provisional=1'),undefined,signal);
+ async productPreview(id:string,productId:string,favoriteId:string,signal?:AbortSignal,generationId?:string,frameColor?:string):Promise<ProductPreviewView>{
+  const v=await this.request<ProductPreviewView>('GET',sessionPath(id)+'/product-preview?productId='+encodeURIComponent(productId)+(generationId?'&generationId='+segment(generationId):'&provisional=1')+(frameColor?'&frameColor='+encodeURIComponent(frameColor):''),undefined,signal);
   if(!v||v.contractVersion!==1||v.sessionId!==id||v.productId!==productId||v.favoriteId!==favoriteId||!['ready','provisional','adaptation_required','not_available'].includes(v.status))throw new GiftApiError('invalid_product_preview_response',0);
   if((v.status==='ready'||v.status==='provisional')&&(v.watermarked!==true||v.productionPrintFile!==false||v.purchaseAuthorization!==false||!previewURL(v.url)||!(Date.parse(v.urlExpiresAt)>Date.now())||!(v.width>0&&v.height>0)||!['scene','artwork','calibrated'].includes(v.renderer)))throw new GiftApiError('invalid_product_preview_response',0);
   if((v.status==='ready'||v.status==='provisional')&&!isProductRepresentation(v.status==='provisional'?{...v,...v.provisional}:v,productId,v.sceneId))throw new GiftApiError('approved_scene_required',0);
+  if(v.status==='ready'&&frameColor&&v.frameColor!==frameColor)throw new GiftApiError('invalid_product_preview_response',0);
+  if(v.status==='ready'&&v.beautyInput&&(!previewURL(v.beautyInput.url)||v.beautyInput.generationId!==generationId||Date.parse(v.beautyInput.urlExpiresAt)<=Date.now()||!(v.beautyInput.width>0&&v.beautyInput.height>0)))throw new GiftApiError('invalid_product_preview_response',0);
   if(generationId&&!['ready','not_available'].includes(v.status))throw new GiftApiError('invalid_product_preview_response',0);
   if(v.status==='provisional'){const p=v.provisional;if(v.fit!=='contain'||!p||p.exactArtworkShown!==true||p.cropped!==false||p.distorted!==false||p.surround!=='neutral'||!p.bars||!['top_bottom','left_right'].includes(p.bars.sides)||!Number.isFinite(p.bars.fractionPerSide)||p.bars.fractionPerSide<0||p.bars.fractionPerSide>=0.5||!['generated','deterministic',null].includes(p.finalComposition))throw new GiftApiError('invalid_product_preview_response',0)}
   return v;

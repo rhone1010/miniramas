@@ -94,7 +94,7 @@ export class GiftBackend {
         throw new GiftApiError('invalid_catalog_response', 0); return v; }
     async availability(id, signal) { const v = await this.request('GET', sessionPath(id) + '/availability', undefined, signal); if (v.contractVersion !== 1 || v.sessionId !== id || !Array.isArray(v.products) || v.products.some(p => typeof p.purchasable !== 'boolean' || typeof p.productId !== 'string'))
         throw new GiftApiError('invalid_availability_response', 0); return v; }
-    setLines(id, b, signal) { return this.session('PUT', sessionPath(id) + '/lines', { lines: b.lines.map(l => ({ lineId: l.lineId, productId: l.productId, copies: l.copies, ...(l.generationId ? { generationId: l.generationId } : {}) })) }, signal); }
+    setLines(id, b, signal) { return this.session('PUT', sessionPath(id) + '/lines', { lines: b.lines.map(l => ({ lineId: l.lineId, productId: l.productId, copies: l.copies, ...(l.generationId ? { generationId: l.generationId } : {}), ...(l.frameColor ? { frameColor: l.frameColor } : {}), ...(l.acceptFinish === true ? { acceptFinish: true } : {}) })) }, signal); }
     async confirmOrder(b, signal) { const v = await this.request('POST', '/api/v1/gift/orders/confirm', { stripeSessionId: b.stripeSessionId }, signal); if (typeof v.confirmed !== 'boolean' || (v.confirmed && !v.session))
         throw new GiftApiError('invalid_confirmation_response', 0); if (v.session)
         assertSession(v.session); return v; }
@@ -150,14 +150,18 @@ export class GiftBackend {
             throw new GiftApiError('approved_scene_required', 0);
         return v;
     }
-    async productPreview(id, productId, favoriteId, signal, generationId) {
-        const v = await this.request('GET', sessionPath(id) + '/product-preview?productId=' + encodeURIComponent(productId) + (generationId ? '&generationId=' + segment(generationId) : '&provisional=1'), undefined, signal);
+    async productPreview(id, productId, favoriteId, signal, generationId, frameColor) {
+        const v = await this.request('GET', sessionPath(id) + '/product-preview?productId=' + encodeURIComponent(productId) + (generationId ? '&generationId=' + segment(generationId) : '&provisional=1') + (frameColor ? '&frameColor=' + encodeURIComponent(frameColor) : ''), undefined, signal);
         if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.productId !== productId || v.favoriteId !== favoriteId || !['ready', 'provisional', 'adaptation_required', 'not_available'].includes(v.status))
             throw new GiftApiError('invalid_product_preview_response', 0);
         if ((v.status === 'ready' || v.status === 'provisional') && (v.watermarked !== true || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['scene', 'artwork', 'calibrated'].includes(v.renderer)))
             throw new GiftApiError('invalid_product_preview_response', 0);
         if ((v.status === 'ready' || v.status === 'provisional') && !isProductRepresentation(v.status === 'provisional' ? { ...v, ...v.provisional } : v, productId, v.sceneId))
             throw new GiftApiError('approved_scene_required', 0);
+        if (v.status === 'ready' && frameColor && v.frameColor !== frameColor)
+            throw new GiftApiError('invalid_product_preview_response', 0);
+        if (v.status === 'ready' && v.beautyInput && (!previewURL(v.beautyInput.url) || v.beautyInput.generationId !== generationId || Date.parse(v.beautyInput.urlExpiresAt) <= Date.now() || !(v.beautyInput.width > 0 && v.beautyInput.height > 0)))
+            throw new GiftApiError('invalid_product_preview_response', 0);
         if (generationId && !['ready', 'not_available'].includes(v.status))
             throw new GiftApiError('invalid_product_preview_response', 0);
         if (v.status === 'provisional') {

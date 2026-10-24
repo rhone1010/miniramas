@@ -705,3 +705,46 @@ test('development finish choice defaults black, updates summary and leaves norma
  dom.window.close();
  const normal=await boot('sessionId=project');assert.equal(normal.win.document.querySelectorAll('[data-configuration]').length,0);normal.dom.window.close();
 });
+
+test('live frame finish uses availability, explicit approval and preserves color on quantity changes',async()=>{
+ const s:any=project('none');s.order.orderId=null;s.lines=[];s.geometries=[];s.flow='generations';s.artworkPreviewId='anchor';
+ const g:any={generationId:'11111111-1111-4111-8111-111111111111',productId:'framed:8x8',status:'ready',width:1024,height:1024,url:'https://liten.invalid/art.jpg',sha256:'a'.repeat(64),accepted:false};
+ s.generations={effectId:'jade',items:[],allowance:{freeTotal:6,freeRemaining:6,next:'free'}};
+ const writes:any[]=[];
+ s.route=(u:string,init:any)=>{
+  if(u.endsWith('/availability'))return {contractVersion:1,sessionId:'project',products:catalog.products.map(p=>({productId:p.productId,purchasable:p.selectable,frameColors:p.family==='framed'?{supported:['black','white','brown'],default:'black',selected:'black'}:null}))};
+  if(u.endsWith('/generations')&&init.method==='POST'){s.generations.items=[g];return {generation:g,session:s}}
+  if(u.includes('/product-preview?'))return {...fixtureProductPreview(s,u),frameColor:new URL(u,'https://liten.invalid').searchParams.get('frameColor')};
+  if(u.endsWith('/accept')){g.accepted=true;return {generation:g,session:s}}
+  if(u.endsWith('/lines')){const b=JSON.parse(init.body);writes.push(b);s.lines=b.lines.map((l:any)=>({...l,size:l.productId.split(':')[1]}));s.geometries=s.lines.map((l:any)=>{const p=catalog.products.find(p=>p.productId===l.productId)!;return {lineId:l.lineId,productId:l.productId,sku:p.sku,requiredPx:p.requirements.finalPx}});return s}
+  return null;
+ };
+ const {win,dom,calls}=await boot('sessionId=project',s);
+ try{
+  win.document.querySelector('[data-feature="framed"]').click();assert.equal(win.document.querySelectorAll('[data-configuration]').length,3);
+  assert.equal(win.document.querySelector('[data-configuration="black"]').getAttribute('aria-pressed'),'true');
+  win.document.querySelector('[data-configuration="brown"]').click();win.document.querySelector('[data-size="8x8"]').click();win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,35));
+  assert.ok(calls.some(u=>u.includes('frameColor=brown')));win.document.getElementById('primary').click();assert.equal(g.accepted,false);
+  win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,35));assert.equal(g.accepted,true);
+  win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,35));assert.equal(writes[0].lines[0].frameColor,'brown');assert.equal(writes[0].lines[0].acceptFinish,true);assert.equal(writes[0].lines[0].generationId,g.generationId);
+  win.document.querySelector('[data-delta="1"]').click();await new Promise(r=>setTimeout(r,35));assert.equal(writes[1].lines[0].frameColor,'brown');assert.equal(writes[1].lines[0].acceptFinish,undefined);assert.equal(writes[1].lines[0].copies,2);
+  assert.ok(win.document.querySelector('.cart-details').textContent.includes('color: brown'));
+ }finally{dom.window.close()}
+});
+
+test('preview transport refuses an echoed finish or artwork identity mismatch',async()=>{
+ const s:any=project('none');s.artworkPreviewId='anchor';
+ const base:any={...fixtureProductPreview(s,'/product-preview?productId=framed:8x8'),frameColor:'white'};
+ const api=new backend.GiftBackend(async()=>new Response(JSON.stringify(base)));
+ await assert.rejects(()=>api.productPreview('project','framed:8x8','anchor',undefined,'generation','black'),/invalid_product_preview_response/);
+ base.frameColor='black';base.beautyInput={generationId:'different',url:'https://liten.invalid/art.jpg',urlExpiresAt:'2099-01-01',width:100,height:100};
+ await assert.rejects(()=>api.productPreview('project','framed:8x8','anchor',undefined,'generation','black'),/invalid_product_preview_response/);
+});
+
+test('live Matted 8x12 excludes both grey finishes and defaults safely on size change',async()=>{
+ const s:any=project('none');s.lines=[];s.geometries=[];s.flow='generations';s.generations={effectId:'jade',items:[],allowance:{next:'free'}};
+ s.catalog={...catalog,products:catalog.products.map(p=>p.family==='matted'?{...p,status:'launch',retailCents:9900}:p)};
+ s.route=(u:string)=>u.endsWith('/availability')?{contractVersion:1,sessionId:'project',products:s.catalog.products.map((p:any)=>({productId:p.productId,purchasable:p.family==='matted',frameColors:p.family==='matted'?{default:'black',selected:'black',supported:p.size==='8x12'?['black','white','natural','brown','gold','silver']:['black','white','natural','brown','dark grey','light grey','gold','silver']}:null}))}:null;
+ const {win,dom}=await boot('sessionId=project',s);
+ try{win.document.querySelector('[data-feature="matted"]').click();assert.equal(win.document.querySelectorAll('[data-configuration]').length,8);win.document.querySelector('[data-configuration="dark grey"]').click();win.document.querySelector('[data-aspect="Portrait"]').click();assert.equal(win.document.querySelectorAll('[data-configuration]').length,6);assert.equal(win.document.querySelector('[data-configuration="dark grey"]'),null);assert.equal(win.document.querySelector('[data-configuration="light grey"]'),null);assert.equal(win.document.querySelector('[data-configuration="black"]').getAttribute('aria-pressed'),'true');await new Promise(r=>setTimeout(r,20));}finally{dom.window.close()}
+});
