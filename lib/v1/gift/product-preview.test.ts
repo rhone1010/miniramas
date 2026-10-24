@@ -159,7 +159,7 @@ describe('the cart is the server\'s: PUT /lines persists and every later read re
     await setLines(r.deps, U1, sid, [L('a', 'canvas:8x8', 3), L('b', 'framed:12x18')])
     expect((await restoreSession(r.deps, U1)).current!.lines.map(l => [l.lineId, l.productId, l.copies])).toEqual([['a', 'canvas:8x8', 3], ['b', 'framed:12x18', 1]])
     await setLines(r.deps, U1, sid, [L('b', 'framed:16x24')])
-    expect((await getSessionView(r.deps, U1, sid)).lines).toEqual([{ lineId: 'b', productId: 'framed:16x24', size: '16x24', copies: 1 }])
+    expect((await getSessionView(r.deps, U1, sid)).lines).toEqual([{ lineId: 'b', productId: 'framed:16x24', size: '16x24', copies: 1, frameColor: 'black' }])
     await setLines(r.deps, U1, sid, [])
     expect((await restoreSession(r.deps, U1)).resume!.suggestedStep).toBe('products')
   })

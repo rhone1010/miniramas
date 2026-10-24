@@ -16,6 +16,7 @@ import { approvedSceneFor, requireApprovedScene } from './presentation'
 import { realSceneRenderer } from './mockup-real'
 import { COMPOSITION_MAX_ATTEMPTS, adaptationValidationFor, BATCH_SIZE, FREE_BATCHES, MASTER_ASPECT_DEFAULT, MAX_COPIES, PACK_PRICE_CENTS, RATE_LIMIT_PAUSE_MS, RATE_LIMIT_RETRY_WORKERS, parallelRenders, RETENTION, STORAGE, FREE_GENERATIONS, GENERATIONS_PER_PACK, GENERATION_MAX_ATTEMPTS, MAX_INFLIGHT_GENERATIONS, newSessionFlow } from './policy'
 import { bindGenerationLines } from './generations'
+import { frameColorsFor, lineFrameColor, resolveFrameColor } from './frame-colors'
 import { EffectSelectionError, fillEffects, remainingEffectCount } from './effects'
 import type { GenerationAllowance, GenerationRec } from './generation-store'
 import { StoreError, byNewest, correctionUsed, finalizedAt, type BatchRec, type GiftStore, type PreviewRec, type SessionRec } from './store'
@@ -37,7 +38,7 @@ export type GiftErrorCode =
   | 'disclosure_version_required' | 'disclosure_version_mismatch' | 'rate_limited'
   | 'geometry_snapshot_invalid' | 'geometry_snapshot_unavailable' | 'stale_composition' | 'mockup_failed' | 'mockup_renderer_unavailable' | 'mockup_configuration_mismatch'
   | 'composition_failed' | 'composition_geometry_mismatch' | 'repair_claim_lost' | 'repair_not_consistent' | 'composition_not_found' | 'order_has_no_lines' | 'order_not_found' | 'order_not_payable' | 'session_already_has_order'
-  | 'generations_unavailable' | 'effect_not_chosen' | 'effect_fixed' | 'flow_not_generations' | 'legacy_batches_closed' | 'generation_in_progress' | 'generation_not_found' | 'generation_not_ready' | 'generation_not_accepted' | 'generation_changed' | 'product_aspect_unsupported'
+  | 'generations_unavailable' | 'effect_not_chosen' | 'effect_fixed' | 'flow_not_generations' | 'legacy_batches_closed' | 'generation_in_progress' | 'generation_not_found' | 'generation_not_ready' | 'generation_not_accepted' | 'generation_changed' | 'invalid_frame_color' | 'finish_required' | 'finish_not_accepted' | 'product_aspect_unsupported'
   | 'order_session_mismatch' | 'invalid_refund_request' | 'payment_not_confirmed' | 'session_retained'
 const STATUS: Partial<Record<GiftErrorCode, number>> = {
   image_b64_required: 400, image_too_large: 400, image_not_base64: 400, image_unreadable: 400, age_restricted: 403, unsupported_subject: 422, analysis_unavailable: 503,
@@ -49,7 +50,7 @@ const STATUS: Partial<Record<GiftErrorCode, number>> = {
   compositions_not_approved: 409, artwork_not_selected: 409, refund_not_available_after_manufacturing: 409, order_not_paid: 409, line_not_found: 404,
   composition_failed: 502, composition_geometry_mismatch: 409, repair_claim_lost: 409, repair_not_consistent: 409, composition_not_found: 404, order_has_no_lines: 409, order_not_found: 404, order_not_payable: 409, session_already_has_order: 409,
   order_session_mismatch: 409, invalid_refund_request: 400, payment_not_confirmed: 409, session_retained: 409,
-  generations_unavailable: 503, effect_not_chosen: 409, effect_fixed: 409, flow_not_generations: 409, legacy_batches_closed: 409, generation_in_progress: 429, generation_not_found: 404, generation_not_ready: 409, generation_not_accepted: 409, generation_changed: 409, product_aspect_unsupported: 409,
+  generations_unavailable: 503, effect_not_chosen: 409, effect_fixed: 409, flow_not_generations: 409, legacy_batches_closed: 409, generation_in_progress: 429, generation_not_found: 404, generation_not_ready: 409, generation_not_accepted: 409, generation_changed: 409, invalid_frame_color: 400, finish_required: 400, finish_not_accepted: 409, product_aspect_unsupported: 409,
   disclosure_version_required: 400, disclosure_version_mismatch: 409, rate_limited: 429,
   geometry_snapshot_invalid: 409, geometry_snapshot_unavailable: 409, stale_composition: 409, mockup_failed: 502, mockup_renderer_unavailable: 503, mockup_configuration_mismatch: 409,
 }
@@ -247,15 +248,24 @@ export async function setLines(deps: GiftDeps, userId: string, sessionId: string
     if (requireApprovedScene() && !approvedSceneFor(p, sceneDescriber(deps))) throw new GiftError('product_not_available')       // no approved scene: it could not be shown or approved after payment (presentation.ts)
     if (!Number.isInteger(l.copies) || l.copies < 1 || l.copies > MAX_COPIES) throw new GiftError('invalid_quantity')
     if (l.generationId !== undefined && l.generationId !== null && (typeof l.generationId !== 'string' || !/^[0-9a-f-]{36}$/i.test(l.generationId))) throw new GiftError('invalid_lines')
-    // A line keeps the generation it was bound to while its product is unchanged (the client need not resend it); a new one replaces it.
-    const kept = rec.lines.find(x => x.lineId === l.lineId && x.productId === p.productId)?.generationId
+    // FRAME COLOUR (Gift Shop only): validated here against the product's exact Prodigi values; absent = black for a frame product; refused for a product with no frame colour.
+    const before = rec.lines.find(x => x.lineId === l.lineId && x.productId === p.productId)
+    const frameColor = resolveFrameColor(p, l.frameColor ?? (before ? lineFrameColor(p, before) : undefined))
+    const sameFinish = !!before && lineFrameColor(p, before) === frameColor
+    // A line keeps the generation it was bound to while its product AND finish are unchanged (the client need not resend it). A different finish is a different approval: the binding is dropped, and a
+    // client that re-sends the generation for a new finish must say it explicitly accepts that finish (acceptFinish: true).
+    const kept = sameFinish ? before?.generationId : undefined
+    if (l.generationId && frameColorsFor(p) && l.frameColor === undefined) throw new GiftError('finish_required')              // binding a picture to a frame needs the colour stated, not assumed
+    if (l.generationId && before?.generationId === l.generationId && !sameFinish && l.acceptFinish !== true) throw new GiftError('finish_not_accepted')
     const generationId: string | undefined = l.generationId || kept || undefined
-    out.push({ lineId: l.lineId, productId: p.productId, size: p.size, copies: l.copies, ...(generationId ? { generationId } : {}) })   // size is the catalog's, never the client's
+    out.push({ lineId: l.lineId, productId: p.productId, size: p.size, copies: l.copies, ...(generationId ? { generationId } : {}), ...(frameColor ? { frameColor } : {}) })   // size is the catalog's, never the client's
   }
   // A composition belongs to a line AND its product: when a line is removed or its product changes, its reviewed composition (and approval) no longer applies.
   const before = new Map(rec.lines.map(l => [l.lineId, l.productId]))
   for (const c of await deps.store.listCompositions(rec.id)) {
-    if ((c.status !== 'ready' && c.status !== 'approved') || out.find(l => l.lineId === c.line_id)?.productId === before.get(c.line_id)) continue
+    const nl = out.find(l => l.lineId === c.line_id)
+    const finishChanged = !!nl && frameColorsFor(allProducts().find(x => x.productId === nl.productId) ?? { family: 'x' as any }) !== null && (c.plan as { frameColor?: string }).frameColor !== undefined && (c.plan as { frameColor?: string }).frameColor !== nl.frameColor
+    if ((c.status !== 'ready' && c.status !== 'approved') || (nl?.productId === before.get(c.line_id) && !finishChanged)) continue
     await deps.store.patchComposition(c.id, { status: 'superseded', plan: { ...c.plan, supersededReason: 'line_changed' } })
   }
   await bindGenerationLines(deps, rec, out)                       // generations flow: an accepted generation becomes the line's approved composition (validated before anything is written)

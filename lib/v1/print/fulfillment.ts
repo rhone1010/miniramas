@@ -6,6 +6,20 @@ import {AssetsNotReadyError,enqueueOrderJobs,summarizeJobs} from './upscale/orde
 import {sha256} from './upscale/checks'
 import {PipelineInactiveError,pipelineState} from './upscale/pipeline'
 export class PlacementUncertainError extends Error {}
+
+/**
+ * The attributes Prodigi is given for an item: for a Gift Shop line, the attributes FROZEN into the order when it was sold (they include the customer's frame colour); otherwise the SKU map's.
+ * The frozen product must be the same SKU and carry only string attributes whose keys equal the SKU map's, so a malformed snapshot can never add or drop an attribute; anything else falls back
+ * to the SKU map exactly as before (the Print Shop has no snapshot and is unchanged).
+ */
+export function soldAttributes(item:{sku?:string;frozen?:unknown},skuEntry:{sku:string;attributes?:Record<string,string>}):Record<string,string>|undefined{
+  const p=(item.frozen as {product?:{sku?:string;attributes?:unknown}}|undefined)?.product
+  const a=p?.attributes
+  if(!p||p.sku!==skuEntry.sku||!a||typeof a!=='object'||!skuEntry.attributes)return skuEntry.attributes
+  const frozen=a as Record<string,unknown>,base=skuEntry.attributes
+  const sameKeys=Object.keys(frozen).sort().join('|')===Object.keys(base).sort().join('|')
+  return sameKeys&&Object.values(frozen).every(v=>typeof v==='string')?(frozen as Record<string,string>):base
+}
 export {AssetsNotReadyError,PipelineInactiveError}
 
 const SIGNED_URL_SECONDS = 7 * 24 * 60 * 60   // Prodigi fetches within minutes; matches the previous asset URLs
@@ -53,7 +67,7 @@ export async function prepareAndPlacePrint(order:PrintOrderRow,squareTest:boolea
       prodigiItems.push({
         sku:    skuEntry.sku,
         copies: item.copies,
-        attributes:skuEntry.attributes,
+        attributes:soldAttributes(item,skuEntry),
         sizing: skuEntry.defaultSizing,
         assets: [{ printArea: 'default', url: signedUrl }],
       })

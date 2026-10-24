@@ -30,6 +30,7 @@ import { aspectCompatibility } from '../print/geometry'
 import { STORAGE } from './policy'
 import { generationShapeOf, geometryKeyOf } from './generations'
 import { resolveBeautyScene } from './beauty-scenes'
+import { resolveFrameColor, withFrameColor } from './frame-colors'
 import { noScenePresentation, representationFields } from './presentation'
 import { GIFT_CONTRACT_VERSION, type ProductPreviewView, type SceneRefusalView } from './types'
 
@@ -75,7 +76,7 @@ export async function productShapedPicture(master: Buffer, product: CanonicalPro
   return { picture, fit: 'resample' }
 }
 
-export async function getProductPreview(deps: GiftDeps, userId: string, sessionId: string, productIdRaw: unknown, opts: { provisional?: boolean; generationId?: string | null } = {}): Promise<ProductPreviewView> {
+export async function getProductPreview(deps: GiftDeps, userId: string, sessionId: string, productIdRaw: unknown, opts: { provisional?: boolean; generationId?: string | null; frameColor?: string | null } = {}): Promise<ProductPreviewView> {
   const rec = await owned(deps, userId, sessionId)
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (rec.refund_requested_at) throw new GiftError('refund_pending')
@@ -84,7 +85,10 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   if (!rec.artwork_preview_id) throw new GiftError('artwork_not_selected')              // the favorite comes first: previews, then gifts
   const base = { contractVersion: GIFT_CONTRACT_VERSION, sessionId: rec.id, productId: productIdRaw, favoriteId: rec.artwork_preview_id } as const
 
-  const product = allProducts().find(p => p.productId === productIdRaw && p.status === 'launch')
+  const catalogProduct = allProducts().find(p => p.productId === productIdRaw && p.status === 'launch')
+  // Frame colour: validated against the product's exact values (null = black for a frame product). The product below IS the one in that colour, so its attributes (and so the identity and every cache key) carry it.
+  const frameColor = catalogProduct ? resolveFrameColor(catalogProduct, opts.frameColor ?? undefined) : null
+  const product = catalogProduct ? withFrameColor(catalogProduct, frameColor) : undefined
   const legacyCalibrated = noScenePresentation() === 'calibrated'                       // legacy template renderer for products without a scene; off by default
   const templateId = product ? templateFor(product) : null                             // only the legacy renderer needs one: a missing template never makes a product unavailable
   if (!product || (legacyCalibrated && !templateId)) return { ...base, status: 'not_available', reason: product ? 'no_mockup_template' : 'product_not_available', sku: product?.sku ?? null }
@@ -128,7 +132,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   }))
   const path = `${STORAGE.productPreviewDir(rec.id)}${product.productId.replace(/[^\w-]/g, '_')}-${identity.slice(0, 16)}.jpg`
   const sign = async () => { const url = await deps.storage.signedUrl(path, MOCKUP_URL_SECONDS); return url ? { url, urlExpiresAt: new Date((deps.clock ?? Date.now)() + MOCKUP_URL_SECONDS * 1000).toISOString() } : null }
-  const meta = { watermarked: true as const, productionPrintFile: false as const, purchaseAuthorization: false as const }
+  const meta = { frameColor, watermarked: true as const, productionPrintFile: false as const, purchaseAuthorization: false as const }
   const bars = provisional ? (favoriteAspect > pictureAspect ? { sides: 'top_bottom' as const, fractionPerSide: Math.round(((1 - pictureAspect / favoriteAspect) / 2) * 1e4) / 1e4 } : { sides: 'left_right' as const, fractionPerSide: Math.round(((1 - favoriteAspect / pictureAspect) / 2) * 1e4) / 1e4 }) : null
   const ready = (r: { renderer: 'scene' | 'artwork' | 'calibrated'; sceneId: string | null; width: number; height: number; fit: 'exact' | 'resample'; cached: boolean }, s: { url: string; urlExpiresAt: string }): ProductPreviewView =>
     provisional
@@ -137,7 +141,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
       : { ...base, status: 'ready', sku: product.sku, renderer: r.renderer, ...representationFields(r.renderer), sceneId: r.sceneId, fit: r.fit, width: r.width, height: r.height, cached: r.cached, ...s, ...meta, sceneRefusal: r.renderer === 'scene' ? null : sceneRefusal }
 
   // The beauty input (product-first requests only): what the browser composites into the display-only beauty photograph. Stored beside the preview under the same identity.
-  const beauty = generation ? resolveBeautyScene(product) : undefined
+  const beauty = generation ? resolveBeautyScene(product, frameColor) : undefined
   const inputPath = `${STORAGE.productPreviewDir(rec.id)}${product.productId.replace(/[^\w-]/g, '_')}-input-${identity.slice(0, 16)}.jpg`
   const signInput = async (w: number, h: number) => {
     if (!generation || !beauty?.sceneId) return null
