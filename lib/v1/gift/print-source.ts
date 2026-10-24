@@ -33,8 +33,11 @@ export async function loadApprovedCompositionWith(store: GiftStore, storage: Gif
     const digest = createHash('sha256').update(bytes).digest('hex')
     if (!gen || gen.status !== 'ready' || !gen.accepted_at || !gen.sha256 || digest !== gen.sha256 || digest !== pinned) throw new Error('gift_generation_changed')
     const orderRow = await store.getOrder(order.id)
-    const pin = (orderRow?.items[job.item_index]?.frozen as { composition?: { artworkSha256?: string | null } } | undefined)?.composition
+    const sold = orderRow?.items[job.item_index]?.frozen as { composition?: { artworkSha256?: string | null; frameColor?: string | null }; product?: { attributes?: Record<string, string> } } | undefined
+    const pin = sold?.composition
     if (pin?.artworkSha256 && pin.artworkSha256 !== digest) throw new Error('gift_generation_changed')
+    const approvedColor = (comp.plan as { frameColor?: string }).frameColor          // the finish approved is the finish sold and printed
+    if (approvedColor !== undefined && ((pin?.frameColor ?? approvedColor) !== approvedColor || (sold?.product?.attributes?.color ?? approvedColor) !== approvedColor)) throw new Error('gift_finish_changed')
   }
   return bytes
 }

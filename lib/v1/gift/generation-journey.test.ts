@@ -245,3 +245,95 @@ describe('beauty scenes and the mug full wrap stay tied to the same composition 
     expect(await sharp(f.jpeg).metadata()).toMatchObject({ width: 2670, height: 1110 })
   })
 })
+
+describe('customer-selected frame colour (Gift Shop only), black by default, part of the approval', () => {
+  async function framed(r: R, productId = 'framed_canvas:12x18') {
+    const v = await createSession(r.gift, { userId: U1, imageB64: await photo() }); const sid = v.sessionId
+    await chooseEffect(r.gift, U1, sid, liveEffectIds('portraits')[0])
+    const g = (await startGeneration(r.gift, U1, sid, { productId, idempotencyKey: key(1) })).generation; await acceptGeneration(r.gift, U1, sid, g.generationId)
+    return { sid, g }
+  }
+  const line = (g: { generationId: string }, over: Record<string, unknown> = {}, productId = 'framed_canvas:12x18') => ({ lineId: 'f', productId, copies: 1, generationId: g.generationId, ...over })
+
+  it('the exact Prodigi colours per product, black by default; the matted 8x12 loses the two greys Prodigi prints at another size', async () => {
+    const { frameColorsFor, resolveFrameColor, FRAME_COLOR_DEFAULT } = await import('./frame-colors'); const gp = (id: string) => getProduct(id)!
+    expect(frameColorsFor(gp('framed:12x12'))).toEqual(['black', 'white', 'natural', 'brown', 'dark grey', 'light grey', 'gold', 'silver'])
+    expect(frameColorsFor(gp('matted:12x18'))).toEqual(['black', 'white', 'natural', 'brown', 'dark grey', 'light grey', 'gold', 'silver'])
+    expect(frameColorsFor(gp('framed_canvas:12x18'))).toEqual(['black', 'white', 'natural', 'brown', 'gold', 'silver'])
+    expect(frameColorsFor(gp('matted:8x12'))).toEqual(['black', 'white', 'natural', 'brown', 'gold', 'silver'])
+    for (const id of ['fine_art:12x18', 'premium:8x8', 'canvas:12x12', 'mug:11oz', 'card:7x5']) expect(frameColorsFor(gp(id)), id).toBeNull()
+    expect(resolveFrameColor(gp('framed:12x12'), undefined)).toBe(FRAME_COLOR_DEFAULT); expect(FRAME_COLOR_DEFAULT).toBe('black'); expect(resolveFrameColor(gp('canvas:12x12'), undefined)).toBeNull()
+    expect(() => resolveFrameColor(gp('framed_canvas:12x18'), 'dark grey')).toThrow(); expect(() => resolveFrameColor(gp('canvas:12x12'), 'black')).toThrow(); expect(() => resolveFrameColor(gp('framed:12x12'), 'Black')).toThrow()
+  })
+
+  it('validated on the server, stated explicitly when a picture is bound, kept through the cart and restoration', async () => {
+    const r = rig(); vi.stubGlobal('fetch', r.fetchMock); const { sid, g } = await framed(r)
+    await expect(setLines(r.gift, U1, sid, [line(g)])).rejects.toMatchObject({ code: 'finish_required' })                                       // the colour is stated, not assumed, when a picture is bound to a frame
+    await expect(setLines(r.gift, U1, sid, [line(g, { frameColor: 'purple' })])).rejects.toMatchObject({ code: 'invalid_frame_color', details: { supported: ['black', 'white', 'natural', 'brown', 'gold', 'silver'] } })
+    await expect(setLines(r.gift, U1, sid, [line(g, { frameColor: 'dark grey' })])).rejects.toMatchObject({ code: 'invalid_frame_color' })      // a classic-frame colour, not a framed-canvas one
+    await expect(setLines(r.gift, U1, sid, [{ lineId: 'c', productId: 'canvas:12x12', copies: 1, frameColor: 'black' }])).rejects.toMatchObject({ code: 'invalid_frame_color' })   // a product with no frame colour
+    expect((await setLines(r.gift, U1, sid, [{ lineId: 'f', productId: 'framed_canvas:12x18', copies: 1 }])).lines[0]).toMatchObject({ frameColor: 'black' })          // unbound lines default to black
+    const v = await setLines(r.gift, U1, sid, [line(g, { frameColor: 'gold' })])
+    expect(v.lines[0]).toMatchObject({ frameColor: 'gold', generationId: g.generationId })
+    expect(r.store.compositions.find(c => c.status === 'approved')!.plan).toMatchObject({ frameColor: 'gold', artworkSha256: g.sha256 })
+    expect((await setLines(r.gift, U1, sid, [{ lineId: 'f', productId: 'framed_canvas:12x18', copies: 4 }])).lines[0]).toMatchObject({ frameColor: 'gold', generationId: g.generationId, copies: 4 })      // a quantity change keeps colour and binding
+    const { restoreSession } = await import('./service'); expect((await restoreSession(r.gift, U1)).current!.lines[0]).toMatchObject({ frameColor: 'gold', generationId: g.generationId })
+    const av = await (await import('./availability')).getProductAvailability(r.gift, U1, sid); const p = av.products.find(x => x.productId === 'framed_canvas:12x18')!
+    expect(p.frameColors).toEqual({ supported: ['black', 'white', 'natural', 'brown', 'gold', 'silver'], default: 'black', selected: 'gold' }); expect(p.beauty).toMatchObject({ sceneId: 'beauty-framed_canvas_portrait', frame: { selected: 'gold' } })
+    expect(av.products.find(x => x.productId === 'canvas:12x12')!.frameColors).toBeNull(); expect(av.products.find(x => x.productId === 'framed:12x12')!.frameColors).toMatchObject({ selected: 'black', default: 'black' })
+  })
+
+  it('a different finish is a different approval: it drops the binding unless the customer explicitly accepts that finish for that picture', async () => {
+    const r = rig(); vi.stubGlobal('fetch', r.fetchMock); const { sid, g } = await framed(r)
+    await setLines(r.gift, U1, sid, [line(g, { frameColor: 'gold' })])
+    await expect(setLines(r.gift, U1, sid, [line(g, { frameColor: 'silver' })])).rejects.toMatchObject({ code: 'finish_not_accepted' })       // re-sending the picture is not accepting the new finish
+    const dropped = await setLines(r.gift, U1, sid, [{ lineId: 'f', productId: 'framed_canvas:12x18', copies: 1, frameColor: 'silver' }])
+    expect(dropped.lines[0]).toMatchObject({ frameColor: 'silver' }); expect(dropped.lines[0].generationId).toBeUndefined()                  // the gold approval did not follow the line to silver
+    expect(r.store.compositions.filter(c => c.status === 'approved')).toHaveLength(0); await expect(checkout(r, sid)).rejects.toMatchObject({ code: 'compositions_not_approved' })
+    const again = await setLines(r.gift, U1, sid, [line(g, { frameColor: 'silver', acceptFinish: true })]); expect(again.lines[0]).toMatchObject({ frameColor: 'silver', generationId: g.generationId })
+    const live = r.store.compositions.filter(c => c.status === 'approved'); expect(live).toHaveLength(1); expect(live[0].plan).toMatchObject({ frameColor: 'silver' })
+    expect(r.store.compositions.filter(c => (c.plan as any).frameColor === 'gold' && c.status === 'superseded').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('checkout quotes, freezes, pins and Final Approval verifies the selected colour; fulfilment places exactly what was sold; tampering is refused', async () => {
+    const { soldAttributes } = await import('../print/fulfillment'); const { getSku } = await import('../print/sku-map')
+    const r = rig(); vi.stubGlobal('fetch', r.fetchMock); const { sid, g } = await framed(r)
+    await setLines(r.gift, U1, sid, [line(g, { frameColor: 'brown' })])
+    const out = await checkout(r, sid)
+    expect((r.deps.quote as any).mock.calls.at(-1)[0].items[0].attributes).toEqual({ color: 'brown', wrap: 'MirrorWrap' })               // the quote is for the colour chosen
+    r.pay(out.stripeSessionId); await confirmGiftOrder(r.deps, out.stripeSessionId, U1); const order = [...r.store.orders.values()][0]
+    const frozen = order.items[0].frozen as any; expect(frozen.product.attributes).toEqual({ color: 'brown', wrap: 'MirrorWrap' }); expect(frozen.composition).toMatchObject({ frameColor: 'brown', generationId: g.generationId, artworkSha256: g.sha256 })
+    expect(soldAttributes(order.items[0] as any, getSku('12x18' as any, 'framed_canvas' as any))).toEqual({ color: 'brown', wrap: 'MirrorWrap' })           // what Prodigi is given
+    // an order sold before colours existed (frozen black) and one with no snapshot are unchanged; a malformed snapshot can never add or drop an attribute
+    const base = getSku('12x18' as any, 'framed_canvas' as any)
+    expect(soldAttributes({ sku: base.sku, frozen: { product: { sku: base.sku, attributes: { color: 'black', wrap: 'MirrorWrap' } } } }, base)).toEqual({ color: 'black', wrap: 'MirrorWrap' })
+    expect(soldAttributes({ sku: base.sku }, base)).toEqual(base.attributes)
+    expect(soldAttributes({ sku: base.sku, frozen: { product: { sku: base.sku, attributes: { color: 'brown' } } } }, base)).toEqual(base.attributes)
+    expect(soldAttributes({ sku: base.sku, frozen: { product: { sku: 'OTHER', attributes: { color: 'brown', wrap: 'MirrorWrap' } } } }, base)).toEqual(base.attributes)
+    // Final Approval: the finish approved, pinned and sold must agree
+    const comp = r.store.compositions.find(c => c.status === 'approved')!; (comp.plan as any).frameColor = 'gold'
+    await expect(finalizeOrder(r.gift, U1, sid)).rejects.toMatchObject({ code: 'finish_not_accepted' }); (comp.plan as any).frameColor = 'brown'
+    await finalizeOrder(r.gift, U1, sid); await releaseOrder(r.gift, { operator: 'test-operator', userId: U1, sessionId: sid })
+    const src = () => loadApprovedCompositionWith(r.store, r.gift.storage, { id: order.id }, { render_id: `gift:${sid}:f`, item_index: 0 })
+    expect(sha(await src())).toBe(g.sha256); (comp.plan as any).frameColor = 'gold'; await expect(src()).rejects.toThrow('gift_finish_changed')
+  })
+
+  it('the preview is per colour: validated, echoed, and a different colour is a different cache entry with the recolour instruction', async () => {
+    const { getProductPreview } = await import('./product-preview'); const { realSceneRenderer } = await import('./mockup-real')
+    const r = rig(); vi.stubGlobal('fetch', r.fetchMock)
+    ;(r.gift as any).mockup = { revision: async () => 'cal', render: vi.fn(), scenes: { describe: (id: string) => realSceneRenderer.describe(id), revision: async () => 'rev-1', render: vi.fn() } }
+    const { sid, g } = await framed(r)
+    const a: any = await getProductPreview(r.gift, U1, sid, 'framed_canvas:12x18', { generationId: g.generationId }), b: any = await getProductPreview(r.gift, U1, sid, 'framed_canvas:12x18', { generationId: g.generationId, frameColor: 'gold' })
+    expect(a.frameColor).toBe('black'); expect(b.frameColor).toBe('gold'); expect(b.cached).toBe(false); expect(b.beautyInput.url).not.toBe(a.beautyInput.url); expect(b.url).not.toBe(a.url)       // not the same cache entry
+    expect(b.beauty.frame).toMatchObject({ selected: 'gold', recolor: { mask: 'frame-mask.svg', toColor: 'gold', photographedColor: 'natural', needed: true } }); expect(a.beauty.frame).toMatchObject({ selected: 'black' })
+    const again: any = await getProductPreview(r.gift, U1, sid, 'framed_canvas:12x18', { generationId: g.generationId, frameColor: 'gold' }); expect(again.cached).toBe(true); expect(again.url).toBe(b.url)
+    await expect(getProductPreview(r.gift, U1, sid, 'framed_canvas:12x18', { generationId: g.generationId, frameColor: 'dark grey' })).rejects.toMatchObject({ code: 'invalid_frame_color' })
+    await expect(getProductPreview(r.gift, U1, sid, 'fine_art:12x18', { generationId: g.generationId, frameColor: 'black' })).rejects.toMatchObject({ code: 'invalid_frame_color' })
+  })
+
+  it('the Print Shop is untouched: its catalog carries no frame colours and its Classic Frame stays black', async () => {
+    const { catalogResponse } = await import('../print/catalog'); const c: any = catalogResponse(null)
+    for (const p of c.products.filter((x: any) => x.family === 'framed')) { expect(p.attributes).toEqual({ color: 'black' }); expect(p.frameColors).toBeUndefined(); expect(p.selectable).toBe(true) }
+    for (const p of c.products.filter((x: any) => x.family === 'matted' || x.family === 'framed_canvas')) { expect(p.attributes.color).toBe('black'); expect(p.selectable).toBe(false) }
+  })
+})

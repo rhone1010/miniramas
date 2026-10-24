@@ -13,6 +13,7 @@ import type { Series } from './types'
 import { planFor } from './composition-plan'
 import { GIFT_ENABLED_FAMILIES, GIFT_PRODUCT_HOLDS } from '../print/gift-enablement'
 import { resolveBeautyScene } from './beauty-scenes'
+import { FRAME_COLOR_DEFAULT, frameColorsFor, lineFrameColor } from './frame-colors'
 import { generationAspectOf, generationShapeOf, generationTargetFor } from './generations'
 import { GiftError, owned, type GiftDeps } from './service'
 import { approvedSceneFor, noScenePresentation, representationFields, type PreviewBasis } from './presentation'
@@ -61,6 +62,8 @@ export interface ProductAvailability {
   blockers: string[]
   /** The product-first generation for THIS product and the series of this session: the ratio asked of NB2.1, how much of the picture is trimmed to reach the exact shape (fraction per axis), or why it cannot. */
   generation: { supported: true; requestedAspect: string; trimFraction: number; geometryKey: string } | { supported: false; reason: 'no_ratio_within_bound_for_series' | 'not_a_launch_candidate' }
+  /** Frame colour (Classic Frame, Matted Frame, Framed Canvas; null for every other product): the exact Prodigi values this product is sold in, the default, and the colour currently selected for this session's line of the product (the default when none). */
+  frameColors: { supported: string[]; default: string; selected: string } | null
   /** Which display-only beauty photograph may show this configuration (finish, orientation and opening all match), the artwork input it needs, or why none (lib/v1/gift/beauty-scenes.ts). */
   beauty: import('./beauty-scenes').BeautyRouting
   /** The manufacturing configuration the backend sends to Prodigi. Fixed by LITEN, not customer-selectable; `unexposed` lists what Prodigi offers that is deliberately not offered. */
@@ -105,6 +108,7 @@ export async function getProductAvailability(deps: GiftDeps, userId: string, ses
   const ctx = { series: rec.series, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }
   const scenes = scenesEnabledNow() ? (deps.mockup?.scenes ?? realSceneRenderer) : null
   const legacy = noScenePresentation() === 'calibrated'
+  const selectedColor = (p: CanonicalProduct) => { const line = rec.lines.find(l => l.productId === p.productId); return line ? lineFrameColor(p, line) : frameColorsFor(p) ? FRAME_COLOR_DEFAULT : null }
   const products: ProductAvailability[] = allProducts().map(p => {
     const purchasable = p.status === 'launch' && p.retailCents !== null
     const plan = purchasable ? planFor(p, ctx) : null
@@ -119,7 +123,8 @@ export async function getProductAvailability(deps: GiftDeps, userId: string, ses
       preview: { representation: rep.representation === 'scene' ? 'scene' : 'artwork_only', sceneId, previewBasis: rep.previewBasis, physicalProductShown: rep.physicalProductShown, disclosureCode: rep.disclosureCode, disclosure: rep.disclosure },
       approval: { possible: purchasable && !!plan, basis: rep.previewBasis },
       blockers: blockersOf(p),
-      beauty: resolveBeautyScene(p),
+      beauty: resolveBeautyScene(p, selectedColor(p)),
+      frameColors: frameColorsFor(p) ? { supported: [...frameColorsFor(p)!], default: FRAME_COLOR_DEFAULT, selected: selectedColor(p)! } : null,
       generation: genOf(p, rec.series, rec.analysis.peopleCount ?? null),
       configuration: { artworkProfile: p.artworkProfile, skuOrientation: p.requirements.skuOrientation, fixedAttributes: p.attributes, unexposed: p.unexposedOptions, picturePx: p.requirements.picturePx, finalPx: p.requirements.finalPx, pictureAspect: p.requirements.pictureAspect, generationPicturePx: generationShapeOf(p), generationAspect: generationAspectOf(p), layout: p.family === 'mug' ? 'mug_full_wrap' : p.family === 'card' ? 'card_spread' : 'flat' },
     }

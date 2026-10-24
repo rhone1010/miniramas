@@ -227,7 +227,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
     if (g.effect_id !== anchor.effect_id) throw new GiftError('stale_composition')
     if (g.geometry_key !== geometryKeyOf(p)) throw new GiftError('composition_geometry_mismatch')
     const live = comps.filter(c => c.line_id === l.lineId && c.preview_id === rec.artwork_preview_id && (c.status === 'ready' || c.status === 'approved'))
-    plans.push({ line: l, g, keep: live.find(c => c.generation_id === g.id && c.status === 'approved') ?? null })
+    plans.push({ line: l, g, keep: live.find(c => c.generation_id === g.id && c.status === 'approved' && (c.plan as { frameColor?: string }).frameColor === (l.frameColor ?? undefined)) ?? null })          // same picture AND same finish
   }
   const at = new Date(now(deps)).toISOString()
   for (const { line, g, keep } of plans) {
@@ -239,7 +239,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
       geometry_key: g.geometry_key, method: 'generated', source_composition_id: null, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
       nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
       plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: (g.generation as { targetAspect?: number } | null)?.targetAspect ?? null, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId, ...(line.productId.startsWith('mug:') ? { layout: 'mug_full_wrap' } : {}) },
+              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId, ...(line.productId.startsWith('mug:') ? { layout: 'mug_full_wrap' } : {}), ...(line.frameColor ? { frameColor: line.frameColor } : {}) },
       ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
     })
     await deps.store.patchComposition(row.id, { approved_at: at })
@@ -251,6 +251,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
  * idempotency key is per line, so a retry (or a refresh) resumes the same generation and never pays twice; the line's correction is spent only when the new picture is delivered.
  */
 export async function correctGenerationLine(deps: GiftDeps, userId: string, rec: SessionRec, line: { line_id: string; product_id: string }, current: CompositionRec, phase: 'draft' | 'purchased'): Promise<void> {
+  const keepFinish = (current.plan as { frameColor?: string }).frameColor
   const p = productOf(line.product_id); if (!p || !rec.series) throw new GiftError('product_not_available')
   const t = generationTargetFor(p, rec.series, rec.analysis.peopleCount ?? null); if (!t) throw new GiftError('product_aspect_unsupported')
   if (phase !== 'purchased') throw new GiftError('order_payment_required')           // before payment the customer simply generates again (it is part of the allowance)
@@ -270,7 +271,7 @@ export async function correctGenerationLine(deps: GiftDeps, userId: string, rec:
     geometry_key: g.geometry_key, method: 'generated', source_composition_id: current.id, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
     nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
     plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: p.requirements.pictureAspect, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? { layout: 'mug_full_wrap' } : {}) },
+            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? { layout: 'mug_full_wrap' } : {}), ...(keepFinish ? { frameColor: keepFinish } : {}) },
     ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
   })
 }

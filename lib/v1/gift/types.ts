@@ -44,6 +44,8 @@ export interface GiftLine {
   lineId: string; productId: string; size: string; copies: number
   /** Generations flow: the accepted generation (picture) this line is made from. It is the line's approved composition, bound when the cart is set; it cannot change after payment. */
   generationId?: string
+  /** Frame colour for Classic Frame, Matted Frame and Framed Canvas lines (Prodigi's own value; default 'black'); absent for every other product. Part of the composition identity: a different colour is a different approval. */
+  frameColor?: string
 }
 
 /** The geometry a line will eventually print at, from the catalog. Informational: the server derives it. */
@@ -491,6 +493,8 @@ export type ProductPreviewView =
        * 2670:1110 full-wrap VIEW (rolled so the primary face is in the middle). Watermarked, signed, never the print file, never a rendered photograph, never the mug's raw 2670 x 1034 band.
        */
       beauty?: import('./beauty-scenes').BeautyRouting
+      /** The frame colour this preview was made for (frame products; null otherwise). Part of the cache key: another colour is another preview. */
+      frameColor?: string | null
       beautyInput?: { kind: 'generation_picture' | 'mug_full_wrap_view'; url: string; urlExpiresAt: string; width: number; height: number; aspect: number; generationId: string; sha256: string } | null
     } & PreviewRepresentation
   | {
