@@ -243,6 +243,6 @@ describe('the preview says why it is not scene-backed', () => {
     if (ext <= 0.02 + 1e-10) expect(fa).toMatchObject({ status: 'ready', renderer: 'scene', sceneRefusal: null })
     else expect(fa).toMatchObject({ status: 'ready', renderer: 'calibrated', sceneRefusal: { reason: 'shape_needs_extension', sceneId: 'fine-art-square', openingAspect: Math.round(opening * 1e4) / 1e4, extension: Math.round(ext * 1e4) / 1e4 } })
     expect(await getProductPreview(r.deps, U1, sid, 'canvas:8x8')).toMatchObject({ renderer: 'scene', sceneRefusal: null })
-    expect(await getProductPreview(r.deps, U1, sid, 'canvas:12x18', { provisional: true })).toMatchObject({ status: 'provisional', sceneRefusal: { reason: 'orientation_not_photographed' } })
+    expect(await getProductPreview(r.deps, U1, sid, 'canvas:12x18', { provisional: true })).toMatchObject({ status: 'provisional', sceneRefusal: { reason: 'shape_needs_extension' } })
   })
 })

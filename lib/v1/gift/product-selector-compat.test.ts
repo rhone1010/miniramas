@@ -41,13 +41,13 @@ describe('approved-scene availability per configuration (the same resolver the p
   const cov = launchCoverage(describeReal), scene = (id: string) => cov.find(c => c.productId === id)!.scene
   it('is exactly: every fine art size, premium and canvas squares, the mug and the card; nothing else', () => {
     const withScene = cov.filter(c => c.scene).map(c => c.productId).sort()
-    expect(withScene).toEqual(['canvas:12x12', 'canvas:16x16', 'canvas:20x20', 'canvas:8x8', 'card:7x5', 'fine_art:12x12', 'fine_art:12x18', 'fine_art:16x16', 'fine_art:16x24', 'fine_art:20x20', 'fine_art:20x30', 'fine_art:8x12', 'fine_art:8x8', 'mug:11oz', 'premium:12x12', 'premium:16x16', 'premium:20x20', 'premium:8x8'])
-    for (const id of ['framed:8x8', 'framed:12x18', 'premium:12x18', 'canvas:12x18']) expect(scene(id), id).toBeFalsy()
+    expect(withScene).toEqual(['canvas:12x12', 'canvas:16x16', 'canvas:20x20', 'canvas:8x8', 'card:7x5', 'fine_art:12x12', 'fine_art:12x18', 'fine_art:16x16', 'fine_art:16x24', 'fine_art:20x20', 'fine_art:20x30', 'fine_art:8x12', 'fine_art:8x8', 'mug:11oz', 'premium:12x12', 'premium:12x18', 'premium:16x16', 'premium:16x24', 'premium:20x20', 'premium:20x30', 'premium:8x12', 'premium:8x8'])
+    for (const id of ['framed:8x8', 'framed:12x18', 'canvas:12x18', 'matted:8x8', 'framed_canvas:8x8']) expect(scene(id), id).toBeFalsy()
   })
   it('a scene is only ever used for the same family and the same orientation as the purchased configuration, within 2% of its shape', () => {
     for (const p of launch) {
       const r: any = resolveScene(p, describeReal); if (!r.scene) continue
-      const d = describeReal(r.scene.sceneId); expect(d.family, p.productId).toBe(p.family); expect(r.scene.extension, p.productId).toBeLessThanOrEqual(0.02 + 1e-9)
+      const d = describeReal(r.scene.sceneId); expect(d.family === p.family || (['fine_art', 'premium'].includes(d.family) && ['fine_art', 'premium'].includes(p.family)), p.productId).toBe(true); expect(r.scene.extension, p.productId).toBeLessThanOrEqual(0.02 + 1e-9)
     }
   })
   it('no retired or physically different photograph can stand in: a configuration without a scene resolves to none, with a reason', () => {

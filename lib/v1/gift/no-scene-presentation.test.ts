@@ -52,8 +52,8 @@ describe('availability: three separate answers per product', () => {
   })
   it('the preview basis is data: a scene where a photograph truthfully shows the configuration, otherwise the product-shaped artwork with a disclosure; neither changes purchasability', async () => {
     const r = rig(); const sid = await withFavorite(r); const a = await getProductAvailability(r.deps, U1, sid); const by = (id: string) => a.products.find(p => p.productId === id)!
-    for (const id of ['fine_art:12x18', 'fine_art:8x8', 'premium:12x12', 'canvas:20x20']) expect(by(id).preview, id).toMatchObject({ representation: 'scene', physicalProductShown: true, previewBasis: 'in_situ_mockup', disclosureCode: null })
-    for (const id of ['framed:12x12', 'framed:12x18', 'premium:12x18', 'canvas:12x18', 'canvas:8x12']) expect(by(id).preview, id).toMatchObject({ representation: 'artwork_only', sceneId: null, physicalProductShown: false, previewBasis: 'product_shaped_artwork', disclosureCode: 'artwork_only_preview', disclosure: ARTWORK_ONLY_DISCLOSURE })
+    for (const id of ['fine_art:12x18', 'fine_art:8x8', 'premium:12x12', 'premium:12x18', 'canvas:20x20']) expect(by(id).preview, id).toMatchObject({ representation: 'scene', physicalProductShown: true, previewBasis: 'in_situ_mockup', disclosureCode: null })
+    for (const id of ['framed:12x12', 'framed:12x18', 'canvas:12x18', 'canvas:8x12']) expect(by(id).preview, id).toMatchObject({ representation: 'artwork_only', sceneId: null, physicalProductShown: false, previewBasis: 'product_shaped_artwork', disclosureCode: 'artwork_only_preview', disclosure: ARTWORK_ONLY_DISCLOSURE })
     process.env.GIFT_SCENE_MOCKUPS = '0'; const off = await getProductAvailability(r.deps, U1, sid)
     expect(off.products.filter(p => p.purchasable).map(p => p.productId)).toEqual(a.products.filter(p => p.purchasable).map(p => p.productId)); expect(off.products.filter(p => p.purchasable).every(p => p.preview.representation === 'artwork_only')).toBe(true)
   })
@@ -103,9 +103,10 @@ describe('approval without in-situ photography: purchase, composition, review, a
   it('each composed line is shown as its exact product-shaped artwork (clean, since paid) or its scene; approval and finalize need no photograph and no template; nothing is released', async () => {
     const r = rig(); const { sid, orderId } = await paid(r); const v = await ensureCompositions(r.deps, U1, sid); expect(v.compositions.every(c => c.status === 'ready')).toBe(true)
     const a: any = await getLineMockup(r.deps, U1, sid, 'a'), b: any = await getLineMockup(r.deps, U1, sid, 'b'), c: any = await getLineMockup(r.deps, U1, sid, 'c')
-    for (const m of [a, b]) expect(m).toMatchObject({ renderer: 'artwork', representation: 'artwork_only', physicalProductShown: false, previewBasis: 'product_shaped_artwork', disclosureCode: 'artwork_only_preview', watermarked: false, productionPrintFile: false, purchaseAuthorization: false })
+    expect(b).toMatchObject({ renderer: 'scene', representation: 'scene', physicalProductShown: true })          // premium 12x18 shares the Fine Art portrait photograph
+    for (const m of [a]) expect(m).toMatchObject({ renderer: 'artwork', representation: 'artwork_only', physicalProductShown: false, previewBasis: 'product_shaped_artwork', disclosureCode: 'artwork_only_preview', watermarked: false, productionPrintFile: false, purchaseAuthorization: false })
     expect(c).toMatchObject({ renderer: 'scene', representation: 'scene', physicalProductShown: true, previewBasis: 'in_situ_mockup' })
-    for (const m of [a, b]) expect(m.width / m.height).toBeCloseTo(2 / 3, 2)                          // the product's own shape
+    for (const m of [a]) expect(m.width / m.height).toBeCloseTo(2 / 3, 2)                          // the product's own shape
     expect(r.render).not.toHaveBeenCalled(); expect(((await getLineMockup(r.deps, U1, sid, 'a')) as any).cached).toBe(true)
     for (const comp of r.store.compositions.filter(x => x.status === 'ready')) await approveComposition(r.deps, U1, sid, comp.id)
     const done = await finalizeOrder(r.deps, U1, sid); expect(done.order).toMatchObject({ state: 'approved', manufacturing: 'not_released' }); expect(r.store.orders.get(orderId)!.status).toBe('awaiting_artwork'); expect(r.deps.kick).not.toHaveBeenCalled()

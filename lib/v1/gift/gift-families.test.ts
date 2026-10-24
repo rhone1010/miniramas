@@ -40,7 +40,8 @@ describe('availability: exact blockers and configuration for the four families',
     expect(by('matted:8x12').configuration.fixedAttributes).toEqual({ color: 'black' }); expect(by('framed_canvas:12x18').configuration.fixedAttributes).toEqual({ color: 'black', wrap: 'MirrorWrap' })
     expect(by('card:7x5-gloss')).toMatchObject({ blockers: ['not_a_launch_candidate'], generation: { supported: false, reason: 'not_a_launch_candidate' } })
     // the generation each can have (Portraits): the ratio asked of NB2.1 and the sliver trimmed to reach the exact shape
-    expect(by('mug:11oz').generation).toMatchObject({ supported: true, requestedAspect: '1:1', trimFraction: 0 })
+    expect(by('mug:11oz').generation).toMatchObject({ supported: true, requestedAspect: '21:9' }); expect((by('mug:11oz').generation as any).trimFraction).toBeGreaterThan(0.09); expect((by('mug:11oz').generation as any).trimFraction).toBeLessThan(0.1)          // the full wrap: 2670 x 1034, trimmed from NB2.1's 21:9
+    expect(by('mug:11oz').configuration).toMatchObject({ layout: 'mug_full_wrap', generationPicturePx: { w: 2670, h: 1034 } })
     expect(by('framed_canvas:12x18').generation).toMatchObject({ supported: true, requestedAspect: '2:3', trimFraction: 0 })
     expect(by('card:7x5').generation).toMatchObject({ supported: true, requestedAspect: '3:4' }); expect((by('card:7x5').generation as any).trimFraction).toBeLessThan(0.06)
     expect(by('matted:12x18').generation).toMatchObject({ supported: true, requestedAspect: '9:16' }); expect((by('matted:12x18').generation as any).trimFraction).toBeLessThan(0.03)
@@ -52,9 +53,8 @@ describe('availability: exact blockers and configuration for the four families',
     const deps = rig('groups', 4); const v = await createSession(deps, { userId: U1, imageB64: await photo() })
     const a = await getProductAvailability(deps, U1, v.sessionId)
     const g = (id: string) => a.products.find(p => p.productId === id)!.generation
-    expect(g('mug:11oz')).toMatchObject({ supported: true, requestedAspect: '1:1' }); expect(g('framed_canvas:12x18')).toMatchObject({ supported: true, requestedAspect: '2:3' })
-    expect(['matted:12x18', 'matted:16x24'].map(id => (g(id) as any).supported)).toEqual([false, false])                       // 16% and 11% from the nearest Groups format: beyond the 10% bound
-    expect(g('matted:12x18')).toMatchObject({ reason: 'no_ratio_within_bound_for_series' })
+    expect(g('mug:11oz')).toMatchObject({ supported: false, reason: 'no_ratio_within_bound_for_series' });          // the full wrap (2.58:1) is far from every Groups format expect(g('framed_canvas:12x18')).toMatchObject({ supported: true, requestedAspect: '2:3' })
+    expect((g('matted:12x18') as any).supported).toBe(false); expect(g('matted:12x18')).toMatchObject({ reason: 'no_ratio_within_bound_for_series' })          // 14% of the picture would have to be trimmed from the nearest Groups format: beyond the 10% bound
   })
   it('what is not for sale is refused with product_not_available: no generation is spent on it', async () => {
     const deps = rig(); const v = await createSession(deps, { userId: U1, imageB64: await photo() }); await chooseEffect(deps, U1, v.sessionId, liveEffectIds('portraits')[0])
@@ -78,7 +78,7 @@ describe('generation to print: the accepted picture is what the lab preparation 
       expect(fit!.trimFraction, p.productId).toBeLessThan(0.1)
       const raw = await sharp(png).raw().toBuffer()
       if (p.family === 'mug' || p.family === 'card') {
-        const panel = p.family === 'mug' ? MUG.panel : { w: CARD.frontTrim.w, h: CARD.frontTrim.h }
+        const panel = p.family === 'mug' ? { w: MUG.fullWrap.printable.w, h: MUG.fullWrap.printable.h } : { w: CARD.frontTrim.w, h: CARD.frontTrim.h }
         const c = await preparePanelComposition({ imageB64: png.toString('base64'), panel }); expect(c.outpainted, p.productId).toBe(false); expect([c.width, c.height], p.productId).toEqual([md.width, md.height]); expect(c.fit).not.toBe('extend')
         expect((await sharp(c.working).raw().toBuffer()).equals(raw), p.productId).toBe(true)
       } else {

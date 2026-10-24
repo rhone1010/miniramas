@@ -43,6 +43,8 @@ export interface SceneRenderer {
 export type SceneOrientation = 'square' | 'portrait' | 'landscape' | 'wrap'
 interface SceneFacts {
   family: CanonicalProduct['family']
+  /** Other families whose physical product looks the same in this photograph (Fine Art and Premium Fine Art are both an unframed print: they share beauty photography and keep separate SKUs, specifications and prices). */
+  serves?: ReadonlyArray<CanonicalProduct['family']>
   orientation: SceneOrientation
   /** The finish the photograph really shows. null = not verified, so the scene is never routed (a different finish would be a different product). */
   attributes: Record<string, string> | null
@@ -60,21 +62,29 @@ export const SCENE_FACTS: Readonly<Record<string, SceneFacts>> = {
   'greeting-card': { family: 'card', orientation: 'portrait', attributes: {}, skus: ['GLOBAL-GRE-MOH-7X5-BLA'], note: 'upright 5 x 7 front, Mohawk launch card' },
   'gallery-canvas-square': { family: 'canvas', orientation: 'square', attributes: { wrap: 'MirrorWrap' }, note: 'stretched canvas, picture continuing around the edge' },
   'gallery-canvas-landscape': { family: 'canvas', orientation: 'landscape', attributes: { wrap: 'MirrorWrap' }, note: 'landscape canvas; the catalog sells no landscape canvas' },
-  'matted-frame-landscape': { family: 'canvas', orientation: 'landscape', attributes: null, note: 'a rectangular canvas despite its name; wrap not verified' },
-  'fine-art-square': { family: 'fine_art', orientation: 'square', attributes: {}, note: 'unframed square print' },
-  'fine-art-portrait': { family: 'fine_art', orientation: 'portrait', attributes: {}, note: 'unframed portrait print, opening about 2:3' },
-  'fine-art-landscape': { family: 'fine_art', orientation: 'landscape', attributes: {}, note: 'unframed landscape print, opening about 3:2; the catalog sells no landscape fine art print' },
-  'premium-square': { family: 'premium', orientation: 'square', attributes: {}, note: 'unframed square premium print' },
-  'premium-landscape': { family: 'premium', orientation: 'landscape', attributes: {}, note: 'unframed landscape premium print, opening about 3:2; the catalog sells none' },
-  'premium-fine-art': { family: 'premium', orientation: 'portrait', attributes: {}, note: 'unframed print, opening about 4:5' },
-  'classic-framed': { family: 'framed', orientation: 'landscape', attributes: null, note: 'landscape framed print; frame colour not verified' },
-  'matted-frame-square': { family: 'matted', orientation: 'square', attributes: null, note: 'matted square frame; frame colour not verified' },
+  'gallery-canvas-portrait': { family: 'canvas', orientation: 'portrait', attributes: { wrap: 'MirrorWrap' }, note: 'portrait stretched canvas, opening about 0.70 (the 2:3 canvases are about 4.9% away: not routed)' },
+  // CORRECTED 2026-10-24: this scene is the MATTED FRAME (a mat inside a natural-wood frame), not a canvas. The catalog sells no landscape matted frame and its matted frames are black, so it routes nothing yet.
+  'matted-frame-landscape': { family: 'matted', orientation: 'landscape', attributes: null, note: 'landscape matted frame, natural wood frame and white mat; the catalog sells no landscape matted frame, and its matted frames are black' },
+  'matted-frame-portrait': { family: 'matted', orientation: 'portrait', attributes: null, note: 'portrait matted frame, natural wood frame and white mat (catalog matted frames are black; opening about 0.69)' },
+  'fine-art-square': { family: 'fine_art', serves: ['premium'], orientation: 'square', attributes: {}, note: 'unframed square print (shared with Premium)' },
+  'fine-art-portrait': { family: 'fine_art', serves: ['premium'], orientation: 'portrait', attributes: {}, note: 'unframed portrait print, opening about 2:3 (shared with Premium)' },
+  'fine-art-landscape': { family: 'fine_art', serves: ['premium'], orientation: 'landscape', attributes: {}, note: 'unframed landscape print, opening about 3:2; the catalog sells no landscape fine art print (shared with Premium)' },
+  'premium-square': { family: 'premium', serves: ['fine_art'], orientation: 'square', attributes: {}, note: 'unframed square premium print (shared with Fine Art)' },
+  'premium-landscape': { family: 'premium', serves: ['fine_art'], orientation: 'landscape', attributes: {}, note: 'unframed landscape premium print, opening about 3:2; the catalog sells none (shared with Fine Art)' },
+  'premium-fine-art': { family: 'premium', serves: ['fine_art'], orientation: 'portrait', attributes: {}, note: 'unframed print, opening about 4:5 (shared with Fine Art)' },
+  'classic-framed': { family: 'framed', orientation: 'landscape', attributes: null, note: 'landscape framed print in a natural wood frame; the catalog classic frame is black' },
+  'classic-framed-portrait': { family: 'framed', orientation: 'portrait', attributes: null, note: 'portrait framed print in a natural wood frame; the catalog classic frame is black' },
+  'classic-framed-square': { family: 'framed', orientation: 'square', attributes: null, note: 'square framed print in a natural wood frame; the catalog classic frame is black' },
+  'matted-frame-square': { family: 'matted', orientation: 'square', attributes: null, note: 'matted square frame, natural wood frame and white mat; the catalog matted frame is black' },
   'framed-canvas': { family: 'framed_canvas', orientation: 'square', attributes: { color: 'natural-brown-wood' }, note: 'framed canvas in a natural brown wood frame (the catalog sells black only)' },
+  'framed-canvas-portrait': { family: 'framed_canvas', orientation: 'portrait', attributes: { color: 'natural-brown-wood' }, note: 'portrait framed canvas in a natural brown wood frame (the catalog sells black only)' },
 }
 
 export type SceneRefusal = 'no_scene_for_family' | 'configuration_not_photographed' | 'orientation_not_photographed' | 'shape_needs_extension' | 'shape_incompatible' | 'scene_unavailable'
 export interface SceneChoice {
   sceneId: string
+  /** The family the SCENE belongs to (the renderer requires it): equal to the product's family unless the photograph is shared (Fine Art / Premium). */
+  sceneFamily: string
   /** Planned fit, for the coverage report. exact: the picture already has the opening's shape; resample: a mirror-extension of a few pixels reaches it (never a crop, never a stretch). The fit actually used is recorded from the derived picture. */
   fit: 'exact' | 'resample'
   /** Fractional difference between the production picture's shape and the opening's. */
@@ -104,7 +114,7 @@ const attributesMatch = (facts: SceneFacts, p: CanonicalProduct): boolean => {
  * scene (its photographed plane). The caller keeps the existing calibrated renderer for every refusal.
  */
 export function resolveScene(product: CanonicalProduct, describe: (sceneId: string) => SceneDescription, diagnostic?: (event: SceneDiagnostic) => void): SceneResolution {
-  const candidates = Object.entries(SCENE_FACTS).filter(([, f]) => f.family === product.family)
+  const candidates = Object.entries(SCENE_FACTS).filter(([, f]) => f.family === product.family || f.serves?.includes(product.family))
   if (!candidates.length) return { scene: null, reason: 'no_scene_for_family' }
   const orientation = orientationOf(product)
   const saw = { orientation: false, extension: false, shape: false, unavailable: false }
@@ -115,12 +125,12 @@ export function resolveScene(product: CanonicalProduct, describe: (sceneId: stri
     if (facts.orientation !== orientation) { saw.orientation = true; continue }
     let d: SceneDescription
     try { d = describe(sceneId) } catch (e) { diagnostic?.({ sceneId, stage: 'describe', reason: 'scene_dependency_unavailable', ...sceneErrorDiagnostic(e) }); saw.unavailable = true; continue }
-    if (d.family !== product.family || d.productionGeometry !== false) { diagnostic?.({ sceneId, stage: 'describe', reason: 'scene_descriptor_mismatch' }); saw.unavailable = true; continue }
+    if (d.family !== facts.family || d.productionGeometry !== false) { diagnostic?.({ sceneId, stage: 'describe', reason: 'scene_descriptor_mismatch' }); saw.unavailable = true; continue }
     // The picture the renderer is given: the mug's wrap is built to its own exact ratio; every other family is shaped from the production picture.
     const extension = d.inputKind === 'rolled-full-wrap' ? 0 : aspectCompatibility(product.requirements.picturePx.w, product.requirements.picturePx.h, d.inputAspect * 1e6, 1e6).extension
     if (extension <= 0.02 + 1e-10) {
-      const choice: SceneChoice = { sceneId, fit: extension <= 5e-4 ? 'exact' : 'resample', extension: Math.round(extension * 1e6) / 1e6, inputKind: d.inputKind }
-      if (!best || choice.extension < best.extension) best = choice
+      const choice: SceneChoice = { sceneId, sceneFamily: facts.family, fit: extension <= 5e-4 ? 'exact' : 'resample', extension: Math.round(extension * 1e6) / 1e6, inputKind: d.inputKind }
+      if (!best || choice.extension < best.extension - 1e-9 || (Math.abs(choice.extension - best.extension) <= 1e-9 && facts.family === product.family && best.sceneFamily !== product.family)) best = choice
     } else {
       if (extension <= 0.20 + 1e-10) saw.extension = true; else saw.shape = true
       if (!nearest || extension < nearest.extension) nearest = { sceneId, openingAspect: Math.round(d.inputAspect * 1e4) / 1e4, productAspect: Math.round(product.requirements.pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4 }

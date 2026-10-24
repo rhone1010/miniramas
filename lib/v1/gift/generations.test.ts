@@ -122,7 +122,7 @@ describe('one generation, at the product\'s exact aspect', () => {
       expect(generationTargetFor(fine('fine_art:12x18'), s, 3)).toMatchObject({ aspect: '2:3', geometryKey: 'a667' }); expect(generationTargetFor(fine('fine_art:8x8'), s, 3)).toMatchObject({ aspect: '1:1', geometryKey: 'a1000' })
     }
     // 3:2 landscape: the architecture resolves the exact ratio from the product's own picture aspect (data only, once a Prodigi SKU is verified).
-    const landscape = { ...fine('fine_art:12x18'), requirements: { ...fine('fine_art:12x18').requirements, pictureAspect: 1.5 } } as any
+    const landscape = { ...fine('fine_art:12x18'), requirements: { ...fine('fine_art:12x18').requirements, pictureAspect: 1.5, picturePx: { w: 3600, h: 2400 } } } as any
     for (const s of ['portraits', 'pets'] as const) expect(generationTargetFor(landscape, s, null)).toMatchObject({ aspect: '3:2', geometryKey: 'a1500' })
     expect(generationTargetFor(landscape, 'groups', 4)).toMatchObject({ aspect: '3:2' })
   })

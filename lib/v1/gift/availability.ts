@@ -12,7 +12,7 @@ import { ratioOf } from './aspects'
 import type { Series } from './types'
 import { planFor } from './composition-plan'
 import { GIFT_ENABLED_FAMILIES, GIFT_PRODUCT_HOLDS } from '../print/gift-enablement'
-import { generationTargetFor, gridOf } from './generations'
+import { generationAspectOf, generationShapeOf, generationTargetFor } from './generations'
 import { GiftError, owned, type GiftDeps } from './service'
 import { approvedSceneFor, noScenePresentation, representationFields, type PreviewBasis } from './presentation'
 import { realSceneRenderer } from './mockup-real'
@@ -61,7 +61,9 @@ export interface ProductAvailability {
   /** The product-first generation for THIS product and the series of this session: the ratio asked of NB2.1, how much of the picture is trimmed to reach the exact shape (fraction per axis), or why it cannot. */
   generation: { supported: true; requestedAspect: string; trimFraction: number; geometryKey: string } | { supported: false; reason: 'no_ratio_within_bound_for_series' | 'not_a_launch_candidate' }
   /** The manufacturing configuration the backend sends to Prodigi. Fixed by LITEN, not customer-selectable; `unexposed` lists what Prodigi offers that is deliberately not offered. */
-  configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number }
+  configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number
+    /** The shape of the picture a GENERATION for this product has (equals picturePx except the mug: the full-wrap band 2670 x 1034, with the 1/8 inch unprinted rim and base inside the 2670 x 1110 lab file). */
+    generationPicturePx: { w: number; h: number }; generationAspect: number; layout: 'flat' | 'mug_full_wrap' | 'card_spread' }
 }
 
 export interface AvailabilityView {
@@ -115,7 +117,7 @@ export async function getProductAvailability(deps: GiftDeps, userId: string, ses
       approval: { possible: purchasable && !!plan, basis: rep.previewBasis },
       blockers: blockersOf(p),
       generation: genOf(p, rec.series, rec.analysis.peopleCount ?? null),
-      configuration: { artworkProfile: p.artworkProfile, skuOrientation: p.requirements.skuOrientation, fixedAttributes: p.attributes, unexposed: p.unexposedOptions, picturePx: p.requirements.picturePx, finalPx: p.requirements.finalPx, pictureAspect: p.requirements.pictureAspect },
+      configuration: { artworkProfile: p.artworkProfile, skuOrientation: p.requirements.skuOrientation, fixedAttributes: p.attributes, unexposed: p.unexposedOptions, picturePx: p.requirements.picturePx, finalPx: p.requirements.finalPx, pictureAspect: p.requirements.pictureAspect, generationPicturePx: generationShapeOf(p), generationAspect: generationAspectOf(p), layout: p.family === 'mug' ? 'mug_full_wrap' : p.family === 'card' ? 'card_spread' : 'flat' },
     }
   })
   const orient = (o: 'square' | 'portrait' | 'landscape') => { const ids = products.filter(x => x.purchasable && x.configuration.skuOrientation === o).map(x => x.productId); return { supported: ids.length > 0, reason: ids.length ? null : `no_${o}_sku_verified_with_prodigi`, productIds: ids } }
