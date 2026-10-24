@@ -1,4 +1,5 @@
-import {productScene} from './product-scene.next.js';
+import {frameColors,frameFinishes} from './frame-finishes.next.js';
+import {framePhotograph,productScene} from './product-scene.next.js';
 import {beautyPhoto} from './beauty-scenes.next.js';
 import {giftCompositionEligibility} from '../product-studio/gift-composition-policy.next.js';
 import {mountStudio,familyPhoto,type StudioState} from '../product-studio/studio.next.js';
@@ -260,7 +261,7 @@ function renderCart(){
 // Isolated review adapter for the approved migration-059 screens. No generation API is invented.
 const legacyProgress=document.querySelector('.progress')!.innerHTML;
 let pivotRestored=false;
-function rememberPivotReview(){if(!pivotRestored)return;try{sessionStorage.setItem(pivotKey,JSON.stringify({view,effectIds:session.effectIds,studioState,...(journeyDemo?{demoItems,demoAccepted,lines:session.lines,sourceURL:selectedGeneration()?.url||sourceURL,selectedGenerationId,email:session.email,address:session.address,disclosureAccepted}: {})}))}catch{}}
+function rememberPivotReview(){if(!pivotRestored)return;try{sessionStorage.setItem(pivotKey,JSON.stringify({view,effectIds:session.effectIds,studioState,previewFrameColors,generationFrameColors,...(journeyDemo?{demoItems,demoAccepted,lines:session.lines,sourceURL:selectedGeneration()?.url||sourceURL,selectedGenerationId,email:session.email,address:session.address,disclosureAccepted}: {})}))}catch{}}
 function setPivotProgress(){
  document.querySelector('.progress')!.innerHTML=['Upload Photo','Choose One Effect','Choose Gift','Gift Details','Personalized Review','Approve','Checkout'].map(x=>'<li>'+x+'</li>').join('');
 }
@@ -270,6 +271,8 @@ function restorePivotReview(){
   const id=saved.effectIds?.[0];session.effectIds=effects().some(e=>e.id===id)?[id]:[];effectFocus=session.effectIds[0]||'';
   if(['photo','effects','products',...(journeyDemo?['generation','acceptance','cart','checkout','payment','complete']:[])].includes(saved.view))view=saved.view;
   if(journeyDemo){demoItems=Array.isArray(saved.demoItems)?saved.demoItems:[];for(const item of demoItems){if(item.status==='generating'||item.status==='pending')item.status='failed'}demoAccepted=saved.demoAccepted===true;session.lines=saved.lines||[];sourceURL=saved.sourceURL||'';selectedGenerationId=saved.selectedGenerationId||'';session.email=saved.email||'';if(saved.address)session.address=saved.address;disclosureAccepted=saved.disclosureAccepted===true;}
+  if(journeyDemo&&saved.generationFrameColors)for(const [id,color] of Object.entries(saved.generationFrameColors))if(typeof color==='string'&&frameFinishes[color])generationFrameColors[id]=color;
+  if(journeyDemo&&saved.previewFrameColors)for(const p of products){const color=saved.previewFrameColors[p.id];if(frameColors(p.id).includes(color)){previewFrameColors[p.id]=color;for(const o of p.options)o.attributes={...o.attributes,color};}}
   if(saved.studioState&&products.some(p=>p.id===saved.studioState.productId)){const old=saved.studioState;studioState={step:['product','size','options','review'].includes(old.step)?old.step:'product',productId:old.productId,size:typeof old.size==='string'?old.size:'',copies:1,drafts:{}};for(const p of products){const draft=old.drafts?.[p.id];if(draft&&p.options.some(o=>o.size===draft.size))studioState.drafts[p.id]={size:draft.size,copies:1};}}
  }catch{}
 }
@@ -281,7 +284,7 @@ function confirmStageAction(title:string,message:string,label:string,action:()=>
 function startOverGift(){
  confirmStageAction('Start Over',journeyDemo?'Start a new development walkthrough? The current walkthrough progress will be cleared.':'Start a new gift? Your saved gift remains available. This does not cancel a paid order.','Start Over',()=>{
  if(serverMode){rememberView();location.assign('/gift-wizard.next.html?newGift=1'+(live?'&resumeSessionId='+encodeURIComponent(live.id):''));return}
- sessionStorage.removeItem(pivotKey);session.effectIds=[];studioState={step:'product',productId:'',size:'',copies:1,drafts:{}};sourceURL='';history=[];demoItems=[];demoAccepted=false;session.lines=[];go('photo',false);
+ sessionStorage.removeItem(pivotKey);session.effectIds=[];studioState={step:'product',productId:'',size:'',copies:1,drafts:{}};sourceURL='';history=[];for(const key of Object.keys(previewFrameColors))delete previewFrameColors[key];if(journeyDemo)for(const p of products)if(frameColors(p.id).length)for(const o of p.options)o.attributes={...o.attributes,color:'black'};demoItems=[];demoAccepted=false;session.lines=[];go('photo',false);
  });
 }
 function fitStage(){if(pivotMode)$('workspace').style.setProperty('--stage-height',Math.max(360,innerHeight-$('workspace').getBoundingClientRect().top)+'px')}
@@ -297,7 +300,7 @@ function sharedStageLayout(){
 }
 function pivotRail(title:string){
  rail(title,'');$('new-gift')?.remove();$('left').querySelector('.eyebrow')?.remove();$('left').querySelector('.rule')?.remove();$('left').querySelector('.tagline')?.remove();
- const start=document.createElement('button');start.id='pivot-start';start.textContent='Start Over';start.onclick=()=>{if(serverMode){rememberView();location.assign('/gift-wizard.next.html?newGift=1'+(live?'&resumeSessionId='+encodeURIComponent(live.id):''));return}try{sessionStorage.removeItem(pivotKey)}catch{}session.effectIds=[];studioState={step:'product',productId:'',size:'',copies:1,drafts:{}};sourceURL='';history=[];if(journeyDemo){demoItems=[];demoAccepted=false;session.lines=[]}go('photo',false)};$('left').insertBefore(start,$('back'));
+ const start=document.createElement('button');start.id='pivot-start';start.textContent='Start Over';start.onclick=()=>{if(serverMode){rememberView();location.assign('/gift-wizard.next.html?newGift=1'+(live?'&resumeSessionId='+encodeURIComponent(live.id):''));return}try{sessionStorage.removeItem(pivotKey)}catch{}session.effectIds=[];studioState={step:'product',productId:'',size:'',copies:1,drafts:{}};sourceURL='';history=[];for(const key of Object.keys(previewFrameColors))delete previewFrameColors[key];if(journeyDemo)for(const p of products)if(frameColors(p.id).length)for(const o of p.options)o.attributes={...o.attributes,color:'black'};if(journeyDemo){demoItems=[];demoAccepted=false;session.lines=[]}go('photo',false)};$('left').insertBefore(start,$('back'));
 }
 let selectedGenerationId='';
 let productGenerationPending=false,productGenerationTimer:ReturnType<typeof setTimeout>|undefined;
@@ -340,14 +343,14 @@ function serverGenerationPicture(g:GenerationView,p:Product,o:CatalogOption){
 function generationPicture(g:GenerationView,productId=studioState.productId,size=studioState.size){
  const p=products.find(p=>p.id===productId),o=p?.options.find(o=>o.size===size);if(!p||!o||!g.url)return '';
  if(live?.session?.flow==='generations'&&!purchased(live.session))return serverGenerationPicture(g,p,o);
- const source=live&&purchased(live.session)?productPhotography.get(p.id+':'+o.size):beautyPhoto(p,o),key=g.generationId+':'+p.id+':'+o.size;
+ const source=live&&purchased(live.session)?productPhotography.get(p.id+':'+o.size):beautyPhoto(p,o),key=g.generationId+':'+p.id+':'+o.size+':'+(journeyDemo?generationFrameColors[g.generationId]||'black':'');
  if(scenePictures.has(key))return photo(scenePictures.get(key)!,p.label+' · '+o.label+' · personalized composition','gift-feature-image');
  if(source&&!scenePending.has(key)&&!sceneFailures.has(key)){
-  scenePending.add(key);void productScene(source,g.url,o.imageWidthIn/o.imageHeightIn).then((url:string)=>{scenePictures.set(key,url)}).catch(()=>sceneFailures.add(key)).finally(()=>{scenePending.delete(key);if(['generation','acceptance','cart','checkout','complete','payment'].includes(view))render()});
+  scenePending.add(key);void productScene(source,g.url,o.imageWidthIn/o.imageHeightIn,journeyDemo&&frameColors(p.id).length?generationFrameColors[g.generationId]||'black':undefined).then((url:string)=>{scenePictures.set(key,url)}).catch(()=>sceneFailures.add(key)).finally(()=>{scenePending.delete(key);if(['generation','acceptance','cart','checkout','complete','payment'].includes(view))render()});
  }
  return photo(g.url,'Your exact composition','gift-feature-image')+'<p class="small" role="status">'+(!source||sceneFailures.has(key)?'Product photography is not available for this configuration. Your exact artwork is shown.':'Preparing your product photograph…')+'</p>';
 }
-function generationDetails(){const {p,o}=selectedProduct();return '<h2>'+esc(p?.label||'Your Gift')+'</h2><p>'+esc(o?.label||'')+'</p><p>'+esc(Object.entries(o?.attributes||{}).map(([k,v])=>k+': '+v).join(' · '))+'</p><p>'+esc(effects().find(e=>e.id===session.effectIds[0])?.label||'')+'</p>'}
+function generationDetails(){const {p,o}=selectedProduct();return '<h2>'+esc(p?.label||'Your Gift')+'</h2><p>'+esc(o?.label||'')+'</p><p>'+esc(Object.entries({...o?.attributes,...(journeyDemo&&generationFrameColors[selectedGeneration()?.generationId||'']?{color:generationFrameColors[selectedGeneration()!.generationId]}:{})}).map(([k,v])=>k+': '+v).join(' · '))+'</p><p>'+esc(effects().find(e=>e.id===session.effectIds[0])?.label||'')+'</p>'}
 function changeGenerationSelection(){go('effects')}
 function renderProductGeneration(){
  const g=selectedGeneration(),a=live?.session?.generations?.allowance;
@@ -373,6 +376,7 @@ function renderCompositionAcceptance(){
 function demoCraft(){
  const {p,o}=selectedProduct();if(!p||!o)return;
  const id='development-'+crypto.randomUUID();selectedGenerationId=id;
+ if(frameColors(p.id).length)generationFrameColors[id]=previewFrameColors[p.id]||'black';
  demoItems.push({generationId:id,productId:p.id+':'+o.size,status:'generating',url:null,width:null,height:null,sha256:null,accepted:false} as GenerationView);
  go('generation');setTimeout(()=>{const g=demoItems.find(x=>x.generationId===id)!;g.status='ready';g.url=thumb(session.effectIds[0]);g.width=1024;g.height=1024;g.sha256='development-sample-not-production';if(view==='generation')render()},1200);
 }
@@ -400,12 +404,32 @@ function renderPivotEffects(){
  document.querySelectorAll<HTMLButtonElement>('[data-effect]').forEach(b=>b.onclick=()=>{const scroll=$('screen').closest('.center')!.scrollTop,paletteScroll=$('screen').querySelector('.palette')!.scrollTop;effectFocus=b.dataset.effect!;session.effectIds=[effectFocus];render();$('screen').closest('.center')!.scrollTop=scroll;$('screen').querySelector('.palette')!.scrollTop=paletteScroll});
  primary('Choose This Effect',()=>{session.effectIds=[effectFocus];studioState.step='product';if(live?.session?.flow==='generations')void serverAction(()=>live!.api.chooseEffect(live!.id,effectFocus),'products');else go('products')});
 }
+// Finish options are development-only until CC's persisted configuration contract arrives.
+const previewFrameColors:Record<string,string>={},generationFrameColors:Record<string,string>={};
+const finishPictures=new Map<string,string>(),finishPending=new Set<string>(),finishFailures=new Set<string>();
+function frameConfiguration(p:Product){
+ if(!journeyDemo)return '';
+ const colors=frameColors(p.id);if(!colors.length)return '';
+ const selected=previewFrameColors[p.id]||'black';
+ return '<h3>Finish</h3><div class="sizes frame-finishes" aria-label="Finish">'+colors.map((c:string)=>'<button type="button" data-configuration="'+esc(c)+'" aria-pressed="'+(selected===c)+'">'+esc(frameFinishes[c].label)+'</button>').join('')+'</div>';
+}
+function detailPhotograph(p:Product,o:CatalogOption|undefined){
+ if(!o)return photo(p.image,p.label);
+ const url=beautyPhoto(p,o),color=journeyDemo&&frameColors(p.id).length?(previewFrameColors[p.id]||'black'):'';
+ if(!color)return url?photo(url,p.label):'<p role="status">Product photography unavailable.</p>';
+ const key=url+'|'+color;
+ if(!finishPictures.has(key)&&!finishPending.has(key)&&!finishFailures.has(key)){
+  finishPending.add(key);void framePhotograph(url,color).then(result=>{finishPictures.set(key,result)}).catch(()=>finishFailures.add(key)).finally(()=>{finishPending.delete(key);if(view==='products'&&studioState.step!=='product')render()});
+ }
+ if(finishFailures.has(key))return '<p role="status">Product photography unavailable.</p>';
+ return finishPictures.has(key)?photo(finishPictures.get(key)!,p.label+' · '+frameFinishes[color].label):'<p role="status">Preparing product preview…</p>';
+}
 function renderPivotProducts(){
  pivotRail(studioState.step==='product'?'Choose<br>your Gift':'Choose<br>your Size');$('right').innerHTML='';$('back').hidden=true;
  const familyOrder=['fine_art','premium','framed','mug','matted','canvas','framed_canvas','card'];
  const choices=[...products].sort((a,b)=>familyOrder.indexOf(a.id)-familyOrder.indexOf(b.id)).map(p=>({...p,unavailableOptions:unavailableCatalogOptions.get(p.id),image:beautyPhoto({id:p.id,image:asset(p.image)}),options:(p.options as CatalogOption[]).filter(o=>productAvailability.has(p.id+':'+o.size)||giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
  mountStudio($('screen'),{products:choices,state:studioState,navigationHost:$('left'),configurationHost:$('right'),
-  sizeHeading:'Choose a Size to Continue',requireSizeClick:true,detailsIntroHtml:(p,o)=>'<h3>Your Product</h3>'+((o as CatalogOption).familyNote?'<div class="product-guidance"><p>'+esc((o as CatalogOption).familyNote)+'</p></div>':''),detailsHtml:(p,o)=>{if(!o)return photo(p.image,p.label);const url=beautyPhoto(p,o);return url?photo(url,p.label):'<p role="status">Product photography unavailable.</p>'},previewHtml:p=>photo(p.image,p.label),canAdd:(p,o)=>p.available&&o.compatible!==false&&(journeyDemo||!!live?.session?.generations?.effectId&&['free','paid'].includes(live.session.generations.allowance.next)),onAdd:()=>journeyDemo?demoCraft():void craftProduct(),busy,addLabel:'Show me a Preview of My Art',
+  sizeHeading:'Choose a Size to Continue',requireSizeClick:true,detailsIntroHtml:(p,o)=>'<h3>Your Product</h3>'+((o as CatalogOption).familyNote?'<div class="product-guidance"><p>'+esc((o as CatalogOption).familyNote)+'</p></div>':''),detailsHtml:(p,o)=>detailPhotograph(p,o as CatalogOption),configurationHtml:p=>frameConfiguration(p),onConfiguration:color=>{if(journeyDemo&&frameColors(studioState.productId).includes(color)){previewFrameColors[studioState.productId]=color;for(const o of products.find(p=>p.id===studioState.productId)?.options||[])o.attributes={...o.attributes,color};demoAccepted=false;rememberPivotReview()}},previewHtml:p=>photo(p.image,p.label),canAdd:(p,o)=>p.available&&o.compatible!==false&&(journeyDemo||!!live?.session?.generations?.effectId&&['free','paid'].includes(live.session.generations.allowance.next)),onAdd:()=>journeyDemo?demoCraft():void craftProduct(),busy,addLabel:'Show me a Preview of My Art',
   onChange:s=>{studioState=s;requestAnimationFrame(sharedStageLayout);if(layoutReview)rememberPivotReview();else rememberView();$('left').querySelector('h1')!.innerHTML=s.step==='product'?'Choose<br>your Gift':'Choose<br>your Size';document.body.dataset.pivotStep=s.step;document.querySelectorAll('.progress li').forEach((el,i)=>{if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});if(mobileLayout.matches){$('mobile-progress')?.remove();renderMobileProgress()}},
   onExit:()=>go('effects'),utilityHtml:''});
  document.body.dataset.pivotStep=studioState.step;

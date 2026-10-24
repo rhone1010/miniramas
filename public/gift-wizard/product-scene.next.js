@@ -1,3 +1,4 @@
+import {tintFramePixels} from './frame-finishes.next.js';
 import {MUG,mugPanelRects} from './backend-contracts/print/production-profiles.js';
 // Projection functions copied unchanged from tools/product-mockup/compositor.next.cjs, lines 7–34 and 178–183.
 function solve(matrix, rhs) {
@@ -57,8 +58,8 @@ function mugPreviewPixels(art){
  return {canvas:rolled,context:rc,width:W,height:H,data:rc.getImageData(0,0,W,H)};
 }
 // Display derivative only. The original generation, dimensions, hash and acceptance stay server-owned.
-export async function productScene(sourceImage,artworkUrl,physicalAspect){
- const key=sourceImage+'|'+artworkUrl+'|'+physicalAspect;if(cache.has(key))return cache.get(key);
+export async function productScene(sourceImage,artworkUrl,physicalAspect,frameColor){
+ const key=sourceImage+'|'+artworkUrl+'|'+physicalAspect+'|'+(frameColor||'');if(cache.has(key))return cache.get(key);
  const task=(async()=>{
  const baseURL=new URL('.',new URL(sourceImage,location.href));
  const response=await fetch(new URL('scene.next.json',baseURL));if(!response.ok)throw Error('scene_unavailable');
@@ -82,6 +83,23 @@ export async function productScene(sourceImage,artworkUrl,physicalAspect){
   const sx=u*(art.width-1),sy=v*(art.height-1),ax=Math.floor(sx),ay=Math.floor(sy),bx=Math.min(ax+1,art.width-1),by=Math.min(ay+1,art.height-1),tx=sx-ax,ty=sy-ay;
   for(let c=0;c<3;c++){const at=(xx,yy)=>art.data.data[(yy*art.width+xx)*4+c];const sample=(at(ax,ay)*(1-tx)+at(bx,ay)*tx)*(1-ty)+(at(ax,by)*(1-tx)+at(bx,by)*tx)*ty;output[i+c]=Math.round(original[i+c]*(1-k)+sample*k);}
  }
+ if(frameColor){
+  if(!m.frameMask)throw Error('frame_mask_unavailable');
+  const fm=await pixels(new URL(m.frameMask,baseURL)),mm=m.matteMask?await pixels(new URL(m.matteMask,baseURL)):null;
+  if(fm.width!==base.width||fm.height!==base.height||mm&&(mm.width!==base.width||mm.height!==base.height))throw Error('frame_mask_mismatch');
+  tintFramePixels(output,fm.data.data,mask.data.data,mm?.data.data,frameColor);
+ }
  base.context.putImageData(base.data,0,0);return base.canvas.toDataURL('image/png');
  })();cache.set(key,task);try{return await task}catch(e){cache.delete(key);throw e}
+}
+
+// Product-selection photograph, before a customer artwork is available.
+export async function framePhotograph(sourceImage,color='black'){
+ const baseURL=new URL('.',new URL(sourceImage,location.href));
+ const response=await fetch(new URL('scene.next.json',baseURL));if(!response.ok)throw Error('scene_unavailable');
+ const m=await response.json();if(!m.frameMask)throw Error('frame_mask_unavailable');
+ const [base,frame,art,mat]=await Promise.all([pixels(new URL(m.sourceImage,baseURL)),pixels(new URL(m.frameMask,baseURL)),pixels(new URL(m.artworkMask,baseURL)),m.matteMask?pixels(new URL(m.matteMask,baseURL)):null]);
+ for(const mask of [frame,art,mat].filter(Boolean))if(mask.width!==base.width||mask.height!==base.height)throw Error('frame_mask_mismatch');
+ tintFramePixels(base.data.data,frame.data.data,art.data.data,mat?.data.data,color);
+ base.context.putImageData(base.data,0,0);return base.canvas.toDataURL('image/png');
 }

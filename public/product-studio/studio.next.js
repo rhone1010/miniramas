@@ -56,6 +56,10 @@ export function mountStudio(host, a) {
         else {
             body = '<h2 tabindex="-1">' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><p>' + esc(Object.entries(o.attributes || {}).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><label class="field"><span>Quantity</span><input id="copies" type="number" min="1" max="20" step="1" value="' + s.copies + '"></label><button id="primary" class="primary" ' + (a.busy || !a.canAdd(p, o) ? 'disabled' : '') + '>' + esc(a.addLabel || 'Add to Cart') + ' →</button>';
         }
+        if (o && s.step !== 'product' && a.configurationHtml) {
+            const extra = a.configurationHtml(p, o);
+            body = s.step === 'review' ? body.replace('<label class="field">', extra + '<label class="field">') : body + extra;
+        }
         a.navigationHost?.querySelector('#studio-back')?.remove();
         panel.innerHTML = '<div class="actions"><button type="button" id="studio-back">← Back</button></div>' + body + (a.utilityHtml || '');
         const backButton = panel.querySelector('#studio-back');
@@ -81,6 +85,7 @@ export function mountStudio(host, a) {
             commit();
             draw();
         } });
+        panel.querySelectorAll('[data-configuration]').forEach(b => b.onclick = () => { a.onConfiguration?.(b.dataset.configuration); draw(); });
         const review = panel.querySelector('[data-review]');
         if (review)
             review.onclick = () => advance('review');

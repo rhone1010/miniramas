@@ -8,6 +8,7 @@ export interface StudioAdapter {
  canAdd:(product:StudioProduct,option:StudioOption)=>boolean;
  onChange:(state:StudioState)=>void;onAdd:(product:StudioProduct,option:StudioOption,copies:number)=>void;onExit:()=>void;
  detailsIntroHtml?:(product:StudioProduct,option:StudioOption)=>string;detailsHtml?:(product:StudioProduct,option:StudioOption|undefined)=>string;sizeHeading?:string;requireSizeClick?:boolean;utilityHtml?:string;addLabel?:string;busy?:boolean;
+ configurationHtml?:(product:StudioProduct,option:StudioOption)=>string;onConfiguration?:(value:string)=>void;
  navigationHost?:HTMLElement;configurationHost?:HTMLElement;
 }
 const esc=(s:unknown)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -54,6 +55,7 @@ export function mountStudio(host:HTMLElement,a:StudioAdapter){
   }else{
    body='<h2 tabindex="-1">'+esc(p.label)+'</h2><p>'+esc(o.label)+' · '+money(o.retailCents)+'</p><p>'+esc(Object.entries(o.attributes||{}).map(([k,v])=>k+': '+v).join(' · '))+'</p><label class="field"><span>Quantity</span><input id="copies" type="number" min="1" max="20" step="1" value="'+s.copies+'"></label><button id="primary" class="primary" '+(a.busy||!a.canAdd(p,o)?'disabled':'')+'>'+esc(a.addLabel||'Add to Cart')+' →</button>';
   }
+  if(o&&s.step!=='product'&&a.configurationHtml){const extra=a.configurationHtml(p,o);body=s.step==='review'?body.replace('<label class="field">',extra+'<label class="field">'):body+extra;}
   a.navigationHost?.querySelector('#studio-back')?.remove();
   panel.innerHTML='<div class="actions"><button type="button" id="studio-back">← Back</button></div>'+body+(a.utilityHtml||'');
   const backButton=panel.querySelector<HTMLButtonElement>('#studio-back')!;backButton.onclick=back;
@@ -64,6 +66,7 @@ export function mountStudio(host:HTMLElement,a:StudioAdapter){
   panel.querySelectorAll<HTMLButtonElement>('[data-aspect]').forEach(b=>b.onclick=()=>{const next=p.options.find(x=>aspect(x)===b.dataset.aspect&&x.compatible!==false)||p.options.find(x=>aspect(x)===b.dataset.aspect);if(next){s.size=next.size;commit();draw()}});
   panel.querySelectorAll<HTMLButtonElement>('[data-size]').forEach(b=>b.onclick=()=>{const selected=p.options.find(x=>x.size===b.dataset.size)!;s.size=optionChoices(p,selected).find(x=>x.compatible!==false)!.size;advance(hasChoices(p,selected)?'options':'review')});
   panel.querySelectorAll<HTMLButtonElement>('[data-option-key]').forEach(b=>b.onclick=()=>{const next=optionChoices(p,o!).find(x=>x.compatible!==false&&x.attributes?.[b.dataset.optionKey!]===b.dataset.optionValue);if(next){s.size=next.size;commit();draw()}});
+  panel.querySelectorAll<HTMLButtonElement>('[data-configuration]').forEach(b=>b.onclick=()=>{a.onConfiguration?.(b.dataset.configuration!);draw()});
   const review=panel.querySelector<HTMLButtonElement>('[data-review]');if(review)review.onclick=()=>advance('review');
   const qty=panel.querySelector<HTMLInputElement>('#copies');if(qty)qty.oninput=()=>{s.copies=Number(qty.value);commit();const add=panel.querySelector<HTMLButtonElement>('#primary')!;add.disabled=!!a.busy||!Number.isInteger(s.copies)||s.copies<1||s.copies>20||!a.canAdd(p,o!)};
   const add=panel.querySelector<HTMLButtonElement>('#primary');if(add)add.onclick=()=>{if(!a.busy&&o&&Number.isInteger(s.copies)&&s.copies>=1&&s.copies<=20&&a.canAdd(p,o))a.onAdd(p,o,s.copies)};

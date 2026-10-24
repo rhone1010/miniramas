@@ -485,3 +485,7 @@ body.gift-pivot #workspace .studio-media img,body.gift-pivot #workspace #screen 
 @media(max-width:1000px){
  body.gift-pivot #workspace .studio-media img{width:100%;max-height:none;height:auto}
 }
+
+/* Gift-only finish choices use the existing option treatment without stretching. */
+.gift-pivot #workspace #right .studio-panel .frame-finishes{display:flex;flex-wrap:wrap}
+.gift-pivot #workspace #right .studio-panel .frame-finishes button{width:auto;flex:0 0 auto;padding-left:16px;padding-right:16px}
