@@ -3,7 +3,7 @@
 (function(){
 'use strict';
 var header=document.querySelector('.liten-masthead');if(!header)return;
-var data=[{label:'Create',items:[['Portraits','/portraits'],['Groups','/groups'],['Pets','/pets']]},{label:'Gifts',items:[['Gift Collection','/gifts.next.html'],['Print Shop','/discovery?print_pick=1']]},{label:'My Collection',href:'/collection?from=portraits'},{label:'More',items:[['Gallery','/gallery'],['Community','/community'],['Help','/help']]},{label:'Account',items:[['Account','/account'],['Orders','/account','orders'],['Sign in',null,'auth'],['Switch account',null,'switch-account']]}];
+var data=[{label:'Create',items:[['Portraits','/portraits'],['Groups','/groups'],['Pets','/pets']]},{label:'Gifts',items:[['Gift Collection','/gifts.next.html'],['Print Shop','/discovery?print_pick=1']]},{label:'My Collection',href:'/collection?from=portraits'},{label:'More',items:[['Gallery','/gallery'],['Community','/community'],['Help','/help']]},{label:'Account',items:[['Account','/account'],['Paid Gifts','/gift-wizard.next.html?account=gifts'],['Orders','/account','orders'],['Sign in',null,'auth'],['Switch account',null,'switch-account']]}];
 var restoredSeries=new URLSearchParams(location.search).get('from');
 var series=/^\/groups/.test(location.pathname)?'groups':/^\/pets/.test(location.pathname)?'pets':'portraits';
 if(['groups','pets','portraits'].includes(restoredSeries))series=restoredSeries;

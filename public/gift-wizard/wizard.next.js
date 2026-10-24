@@ -847,15 +847,10 @@ function changeGenerationSelection() { go('effects'); }
 function renderProductGeneration() {
     const g = selectedGeneration(), a = live?.session?.generations?.allowance;
     pivotRail('Your<br>Crafted Images');
-    $('screen').innerHTML = g?.url ? generationPicture(g) : '<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><h2>' + (g?.status === 'failed' ? 'Crafting did not finish' : 'Crafting Your Image') + '</h2><p>' + (journeyDemo ? 'Development demonstration · no generation request.' : g?.status === 'failed' ? 'Your selections are here. Retry when you are ready.' : 'Your selected effect is being prepared for your gift. This may take a little time.') + '</p></section>';
+    $('screen').innerHTML = g?.url ? generationPicture(g) : '<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><h2>' + (g?.status === 'failed' ? 'Crafting did not finish' : 'Crafting Your Image') + '</h2><p>' + (journeyDemo ? 'Development demonstration · no generation request.' : g?.status === 'failed' ? 'Your selections are here. Change Effect or Product to try again.' : 'Your selected effect is being prepared for your gift. This may take a little time.') + '</p></section>';
     $('right').innerHTML = generationDetails();
     primary('Review &amp; Approve', () => go('acceptance'), !g || g.status !== 'ready' || !g.url || !g.sha256);
-    $('right').insertAdjacentHTML('beforeend', '<div class="actions">' + secondary('generation-retry', 'Create Another Version') + secondary('change-generation', 'Change Effect or Product') + '</div>');
-    $('generation-retry').onclick = () => confirmStageAction('Create Another Version', journeyDemo ? 'Development demonstration only. No generation allowance is consumed.' : a ? a.freeRemaining + ' / ' + a.freeTotal + ' free generations remaining.' : 'Generation allowance is not available.', 'Create Another Version', () => { if (journeyDemo)
-        demoCraft();
-    else if (a)
-        void craftProduct(g?.status === 'ready'); });
-    $('generation-retry').disabled = busy || g?.status === 'generating';
+    $('right').insertAdjacentHTML('beforeend', '<div class="actions">' + secondary('change-generation', 'Change Effect or Product') + '</div>');
     $('change-generation').onclick = changeGenerationSelection;
     const items = journeyDemo ? demoItems : live?.session?.generations?.items.filter(x => x.status === 'ready') || [];
     if (items.length)
@@ -929,10 +924,11 @@ function renderPivotEffects() {
     if (!focused)
         return;
     $('filters').innerHTML = '<h2>' + esc((session.source?.series || fixtureSeries) === 'groups' ? 'Groups' : (session.source?.series || fixtureSeries) === 'pets' ? 'Pets' : 'Portraits') + '</h2><div class="filters">' + silos.map(x => '<button data-silo="' + x.id + '" aria-pressed="' + (silo === x.id) + '">' + esc(x.label) + '</button>').join('') + '</div>';
-    $('screen').innerHTML = '<div class="palette"><div class="grid">' + all.filter(e => e.category === silo).map(e => '<button class="tile" data-effect="' + e.id + '" aria-pressed="' + (effectFocus === e.id) + '">' + effectPhoto(e.id, e.label) + '<span>' + esc(e.label) + '</span></button>').join('') + '</div></div>';
+    $('screen').innerHTML = '<div class="palette effect-library">' + silos.map(x => '<section id="effect-section-' + x.id + '"><h2>' + esc(x.label) + '</h2><div class="grid">' + all.filter(e => e.category === x.id).map(e => '<button class="tile" data-effect="' + e.id + '" aria-pressed="' + (effectFocus === e.id) + '">' + effectPhoto(e.id, e.label) + '<span>' + esc(e.label) + '</span></button>').join('') + '</div></section>').join('') + '</div>';
     $('right').innerHTML = '<h2>' + esc(focused.label) + '</h2>' + effectPhoto(focused.id, focused.label, 'context-image');
-    document.querySelectorAll('[data-silo]').forEach(b => b.onclick = () => { silo = b.dataset.silo; render(); });
-    document.querySelectorAll('[data-effect]').forEach(b => b.onclick = () => { effectFocus = b.dataset.effect; session.effectIds = [effectFocus]; render(); });
+    document.querySelectorAll('[data-silo]').forEach(b => b.onclick = () => { silo = b.dataset.silo; document.querySelectorAll('[data-silo]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.silo === silo))); const section = $('effect-section-' + silo), scroller = window.matchMedia('(max-width: 760px)').matches ? document.querySelector('.effect-library') : document.querySelector('.center'); if (section && scroller)
+        scroller.scrollTo({ top: scroller.scrollTop + section.getBoundingClientRect().top - scroller.getBoundingClientRect().top, behavior: 'smooth' }); });
+    document.querySelectorAll('[data-effect]').forEach(b => b.onclick = () => { const scroll = $('screen').closest('.center').scrollTop, paletteScroll = $('screen').querySelector('.palette').scrollTop; effectFocus = b.dataset.effect; session.effectIds = [effectFocus]; render(); $('screen').closest('.center').scrollTop = scroll; $('screen').querySelector('.palette').scrollTop = paletteScroll; });
     primary('Choose This Effect', () => { session.effectIds = [effectFocus]; studioState.step = 'product'; if (live?.session?.flow === 'generations')
         void serverAction(() => live.api.chooseEffect(live.id, effectFocus), 'products');
     else
@@ -946,7 +942,7 @@ function renderPivotProducts() {
     const choices = [...products].sort((a, b) => familyOrder.indexOf(a.id) - familyOrder.indexOf(b.id)).map(p => ({ ...p, unavailableOptions: unavailableCatalogOptions.get(p.id), image: familyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => productAvailability.has(p.id + ':' + o.size) || giftCompositionEligibility(p, o, pivotSubjectCount()).allowed) }));
     mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
         sizeHeading: 'Choose a Size to Continue', requireSizeClick: true, detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => { if (!o)
-            return photo(p.image, p.label); const url = o ? productPhotography.get(p.id + ':' + o.size) || (journeyDemo && o.imageWidthIn === o.imageHeightIn ? asset(familyPhoto(p)) : null) : null; return url ? photo(url, p.label) : '<p role="status">Product photography unavailable.</p>'; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && (journeyDemo || !!live?.session?.generations?.effectId && ['free', 'paid'].includes(live.session.generations.allowance.next)), onAdd: () => journeyDemo ? demoCraft() : void craftProduct(), busy, addLabel: 'Craft',
+            return photo(p.image, p.label); const url = o ? productPhotography.get(p.id + ':' + o.size) || (journeyDemo && o.imageWidthIn === o.imageHeightIn ? asset(familyPhoto(p)) : null) : null; return url ? photo(url, p.label) : '<p role="status">Product photography unavailable.</p>'; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && (journeyDemo || !!live?.session?.generations?.effectId && ['free', 'paid'].includes(live.session.generations.allowance.next)), onAdd: () => journeyDemo ? demoCraft() : void craftProduct(), busy, addLabel: 'Show me a Preview of My Art',
         onChange: s => { studioState = s; requestAnimationFrame(sharedStageLayout); if (layoutReview)
             rememberPivotReview();
         else
@@ -1440,18 +1436,55 @@ window.addEventListener('pageshow', e => { if (e.persisted && serverMode) {
 let live = serverMode && params.get('sessionId') ? new LiveGift(new GiftBackend((url, init) => fetch(url, init)), params.get('sessionId')) : null;
 let entryGifts = [];
 let entrySignedIn = false, entryFailed = false;
+const paidGift = (s) => !!s.order.orderId && !['none', 'checkout_open', 'cancelled'].includes(s.order.state);
+function entryCard(g, paid) {
+    const d = g.detail, art = d?.generations?.items.filter(x => x.status === 'ready' && x.url).at(-1)?.url || d?.batches.flatMap(b => b.previews).find(p => p.previewId === d.artworkPreviewId)?.url;
+    const line = d?.lines[0], productId = line?.productId || d?.generations?.items.at(-1)?.productId, product = products.find(p => p.id === productId?.split(':')[0]);
+    return '<article class="gift-entry-card"><div class="gift-entry-images">' + (d?.source.photoUrl ? photo(d.source.photoUrl, 'Source photo') : '') + (art ? photo(art, 'Your artwork') : '') + (product ? photo(asset(familyPhoto(product)), product.label) : '') + '</div><h3>' + esc(product?.label || g.series || 'Gift') + '</h3><p class="small">' + esc(g.createdAt ? new Date(g.createdAt).toLocaleDateString() : '') + (paid ? ' · ' + esc(d?.order.state.replace(/_/g, ' ') || '') : '') + '</p><div class="actions"><button type="button" data-resume-gift="' + esc(g.sessionId) + '">' + (paid ? 'View Gift' : 'Continue Gift') + '</button>' + (!paid && d ? '<button type="button" data-delete-gift="' + esc(g.sessionId) + '">Delete</button>' : '') + '</div></article>';
+}
 function renderEntry() {
-    rail('Your<br>Gift', '');
+    const account = params.get('account') === 'gifts';
+    rail(account ? 'Your<br>Account' : 'Your<br>Gift', '');
     $('back').hidden = true;
-    $('screen').innerHTML = '<h2>Start a New Gift</h2>' + secondary('start-new-gift', 'Start a New Gift');
-    $('start-new-gift').onclick = () => location.assign('/gift-wizard.next.html?newGift=1');
-    $('right').innerHTML = '<h2>Resume Gift</h2>' + (busy ? '<p role="status">Checking your account…</p>' : entryFailed ? secondary('retry-entry', 'Try again') : !entrySignedIn ? secondary('entry-signin', 'Sign in') : !entryGifts.length ? '<p>No gifts to resume.</p>' : entryGifts.map(g => '<div class="summary-item"><div><p>' + esc(g.series || 'Gift') + esc(g.createdAt ? ' · ' + new Date(g.createdAt).toLocaleDateString() : '') + '</p><button type="button" data-resume-gift="' + esc(g.sessionId) + '">Resume Gift</button></div></div>').join(''));
+    $('screen').innerHTML = account ? '<h2>Paid Gifts</h2><div class="gift-entry-list">' + entryGifts.filter(g => g.detail && paidGift(g.detail)).map(g => entryCard(g, true)).join('') + '</div>' : '<div class="gift-entry-intro"><p class="eyebrow">A MORE MEANINGFUL GIFT</p><h2>Start a New Gift</h2><p>Turn a favorite photo into a gift they’ll treasure.</p>' + secondary('start-new-gift', 'Start a New Gift') + '</div>';
+    if ($('start-new-gift'))
+        $('start-new-gift').onclick = () => location.assign('/gift-wizard.next.html?newGift=1');
+    const drafts = entryGifts.filter(g => g.detail && !paidGift(g.detail));
+    $('right').innerHTML = account ? '<h2>Your Account</h2><a class="entry-account" href="/account">Account</a><a class="entry-account" href="/gift-wizard.next.html">Previous Gifts in Progress</a>' : '<h2>Previous Gifts in Progress</h2>';
+    const content = busy ? '<p role="status">Checking your account…</p>' : entryFailed ? secondary('retry-entry', 'Try again') : !entrySignedIn ? secondary('entry-signin', 'Sign in') : account ? '' : !drafts.length ? '<p>No gifts in progress.</p>' : '<div class="gift-entry-list">' + drafts.map(g => entryCard(g, false)).join('') + '</div>';
+    $('right').insertAdjacentHTML('beforeend', content);
+    if (!account && entrySignedIn)
+        $('right').insertAdjacentHTML('beforeend', '<a class="entry-account" href="/gift-wizard.next.html?account=gifts">Paid Gifts in Your Account</a>');
     for (const button of document.querySelectorAll('[data-resume-gift]'))
         button.onclick = () => location.assign('/gift-wizard.next.html?sessionId=' + encodeURIComponent(button.dataset.resumeGift));
+    for (const button of document.querySelectorAll('[data-delete-gift]'))
+        button.onclick = () => confirmStageAction('Delete This Gift', 'Delete this unpaid draft and its photo and previews? Artwork in My Collection and paid gifts are not changed.', 'Delete', () => void deleteEntryGift(button.dataset.deleteGift));
     if ($('entry-signin'))
-        $('entry-signin').onclick = () => window.LitenAuth.open('/gift-wizard.next.html');
+        $('entry-signin').onclick = () => window.LitenAuth.open('/gift-wizard.next.html' + (account ? '?account=gifts' : ''));
     if ($('retry-entry'))
         $('retry-entry').onclick = () => void loadGiftEntry();
+}
+async function deleteEntryGift(id) {
+    if (busy)
+        return;
+    busy = true;
+    render();
+    try {
+        const api = new GiftBackend((url, init) => fetch(url, init));
+        const latest = await api.restore(id);
+        if (paidGift(latest) || !['none', 'checkout_open'].includes(latest.order.state))
+            throw Error('Paid gifts cannot be deleted here.');
+        await api.deleteDraft(id);
+        entryGifts = entryGifts.filter(g => g.sessionId !== id);
+    }
+    catch (e) {
+        busy = false;
+        render();
+        error(e instanceof Error ? e.message : 'Gift could not be deleted.');
+        return;
+    }
+    busy = false;
+    render();
 }
 async function loadGiftEntry() {
     live = null;
@@ -1466,11 +1499,15 @@ async function loadGiftEntry() {
     entryFailed = false;
     render();
     try {
-        const latest = await new GiftBackend((url, init) => fetch(url, init)).restoreLatest();
+        const api = new GiftBackend((url, init) => fetch(url, init)), latest = await api.restoreLatest();
         entrySignedIn = true;
-        entryGifts = latest.recent;
+        entryGifts = latest.recent.map(g => ({ ...g }));
         if (latest.current && !entryGifts.some(g => g.sessionId === latest.current.sessionId))
             entryGifts.unshift({ sessionId: latest.current.sessionId, series: latest.current.source.series, createdAt: undefined });
+        await Promise.all(entryGifts.map(async (g) => { try {
+            g.detail = latest.current?.sessionId === g.sessionId ? latest.current : await api.restore(g.sessionId);
+        }
+        catch { } }));
     }
     catch (e) {
         entryFailed = !(e instanceof GiftApiError && e.status === 401);
@@ -1781,6 +1818,10 @@ async function serverAction(action, next) {
     serverMutation++;
     busy = true;
     render();
+    if (view === 'effects' && pivotMode) {
+        $('primary').textContent = 'Choosing Your Effect…';
+        $('primary').setAttribute('aria-busy', 'true');
+    }
     let failure = '';
     try {
         const s = await action();

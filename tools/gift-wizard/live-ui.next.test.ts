@@ -193,9 +193,9 @@ test('compact shopping favorite returns to gallery and configuration retains bac
 
 
 
-test('bare entrance offers paid gift resume without automatically restoring or changing it',async()=>{
+test('bare entrance moves paid gifts to Account without automatically restoring or changing them',async()=>{
  const s:any=artworkProject();s.resume={sessionId:'project',view:'compositions'};
- const {win,dom,calls}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'entry');assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);assert(win.document.querySelector('[data-resume-gift="project"]'));assert(!calls.some(x=>/approve|compositions|batches/.test(x)));dom.window.close();
+ const {win,dom,calls}=await boot('',s);assert.equal(win.document.getElementById('screen').dataset.view,'entry');assert.equal(calls.includes('/api/v1/gift/sessions/project'),false);assert.equal(win.document.querySelector('[data-resume-gift="project"]'),null);assert(win.document.querySelector('a[href="/gift-wizard.next.html?account=gifts"]'));assert(!calls.some(x=>/approve|compositions|batches/.test(x)));dom.window.close();
 });
 test('remembered paid-looking view cannot bypass authentication',async()=>{
  const {win,dom}=await boot('',{error:'sign_in_required',resume:{sessionId:'project',view:'compositions'}},401);assert(win.document.getElementById('entry-signin'));assert.equal(win.document.querySelector('#screen img'),null);dom.window.close();
@@ -670,4 +670,15 @@ test('Gift wrap and spread products use product availability rather than wall or
  const {win,dom}=await boot('sessionId=project',s);
  try{win.document.querySelector('[data-feature="'+family+'"]').click();const size=win.document.querySelector('[data-size]');assert.ok(size,family+' size must be present');assert.equal(size.disabled,false);size.click();assert.equal(win.document.getElementById('primary').disabled,false)}finally{dom.window.close()}
  }
+});
+
+
+test('October revisions keep all effects browsable and remove another-version control',async()=>{
+ const {win,dom}=await boot('layoutReview=effects&pivot=1&journey=1');try{assert.equal(win.document.querySelectorAll('[data-effect]').length,1);assert.equal(win.document.querySelectorAll('.effect-library section').length,1);win.document.getElementById('primary').click();win.document.querySelector('[data-feature="canvas"]').click();win.document.querySelector('[data-size]').click();assert.match(win.document.getElementById('primary').textContent,/Show me a Preview of My Art/);win.document.getElementById('primary').click();assert.equal(win.document.getElementById('generation-retry'),null)}finally{dom.window.close()}
+});
+test('paid gifts are read-only from Account and absent from unpaid draft list',async()=>{
+ const s:any=project('approved');s.latestResponse=latest({...s},'compositions');const {win,dom,calls}=await boot('account=gifts',s);try{assert.match(win.document.getElementById('screen').textContent,/Paid Gifts/);assert.ok(win.document.querySelector('[data-resume-gift="project"]'));assert.equal(win.document.querySelector('[data-delete-gift]'),null);assert.equal(calls.some(x=>/accept|finalize/.test(x)),false)}finally{dom.window.close()}
+});
+test('draft deletion transport handles 204 and preserves server rejection',async()=>{
+ let request:any;const api=new backend.GiftBackend(async(u,i)=>{request={u,i};return new Response(null,{status:204})});await api.deleteDraft('draft');assert.equal(request.i.method,'DELETE');assert.equal(request.u,'/api/v1/gift/sessions/draft');const blocked=new backend.GiftBackend(async()=>new Response(JSON.stringify({error:'session_retained'}),{status:409}));await assert.rejects(()=>blocked.deleteDraft('paid'),/session_retained/);
 });

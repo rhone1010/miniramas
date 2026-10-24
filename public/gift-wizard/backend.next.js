@@ -70,6 +70,10 @@ export class GiftBackend {
     prePurchaseFavorite(id, b) { return this.selectArtwork(id, b); }
     create(image_b64, signal) { return this.session('POST', '/api/v1/gift/sessions', { image_b64 }, signal); }
     fromCollection(previewId) { return this.session('POST', '/api/v1/gift/sessions/from-collection', { previewId }); }
+    async deleteDraft(id) { const r = await this.transport(sessionPath(id), { method: 'DELETE', credentials: 'same-origin', cache: 'no-store' }); if (r.status !== 204) {
+        const v = await r.json().catch(() => null);
+        throw new GiftApiError(v?.error || 'gift_delete_failed', r.status);
+    } }
     restore(id, signal) { return this.session('GET', sessionPath(id), undefined, signal); }
     async restoreLatest(signal) {
         const v = await this.request('GET', '/api/v1/gift/sessions', undefined, signal);

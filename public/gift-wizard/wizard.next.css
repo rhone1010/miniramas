@@ -438,3 +438,40 @@ body.gift-pivot:has(#screen[data-view="products"]):not([data-pivot-step="product
 body #workspace button:not(.tile):not([data-feature]),body #cancel-gift-dialog button,body #mobile-step-menu button{border-radius:8px;clip-path:none}
 body #workspace .tile,body #workspace .product,body #workspace .studio-products button,body #workspace .product-guidance,body #workspace .artwork-actions{border-radius:5px}
 body #workspace #screen .tile img,body #workspace .studio-products img{border-radius:5px}
+/* Approved October 24 revisions: shared rails, compact media and complete effect library. */
+.gift-pivot #workspace #right{display:flex;flex-direction:column;gap:16px}
+.gift-pivot #workspace #right h2{color:var(--wine);padding-bottom:16px;border-bottom:1px solid var(--gold);margin-bottom:0}
+.gift-pivot #workspace #right h3,.gift-pivot #workspace #right p{margin-bottom:0}
+.gift-pivot #workspace #right .actions{gap:12px}
+.gift-pivot #workspace #left h1:after{content:'';display:block;width:96px;height:1px;background:var(--gold);margin-top:24px}
+.gift-pivot #workspace .effect-library section{scroll-margin-top:16px;margin-bottom:32px}
+.gift-pivot #workspace .effect-library h2{font-size:28px;margin:0 0 16px;color:var(--wine)}
+.gift-pivot #workspace .effect-library .grid{align-items:start}
+.gift-pivot #workspace .effect-library .tile img{aspect-ratio:1;object-fit:contain}
+.gift-pivot #workspace .analysis-feedback h2{color:var(--forest)}
+.gift-pivot #workspace:has([data-view="entry"]){grid-template-columns:21% 34% 45%}
+.gift-entry-intro{border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:5px;padding:32px;background:var(--ivory)}
+.gift-entry-intro p:not(.eyebrow){font:26px/1.4 Cormorant,serif}
+.gift-entry-intro button{background:var(--forest);color:var(--ivory);font-size:28px}
+.gift-entry-list{display:grid;gap:20px}
+.gift-entry-card{padding:20px;border:1px solid var(--line);border-radius:5px}
+.gift-entry-card h3{font-size:28px;margin:12px 0 8px}
+.gift-entry-images{display:flex;gap:12px;align-items:center}
+.gift-entry-images img{width:calc((100% - 24px)/3);aspect-ratio:1;object-fit:contain;border-radius:5px;max-height:144px}
+.gift-pivot #workspace .gift-entry-card .actions{flex-direction:row!important;flex-wrap:wrap;margin-top:16px!important}
+.gift-entry-card [data-resume-gift]{background:var(--forest);color:var(--ivory)}
+.entry-account{display:block;width:fit-content;font:22px/1.3 Cormorant,serif;border:1px solid var(--line);border-radius:8px;padding:10px 16px;margin-top:16px;text-decoration:none}
+@media(min-width:1001px){
+ body.gift-pivot #workspace .upload{width:78%;max-width:560px;min-height:300px;margin:40px auto 0;padding:28px 24px}
+ body.gift-pivot:has(#screen[data-view="effects"]) #workspace #right .context-image{width:min(90%,calc(var(--stage-height) - 240px));align-self:center;max-height:calc(var(--stage-height) - 240px)!important;object-fit:contain}
+ body.gift-pivot #workspace .studio-media{display:flex;align-items:flex-start;justify-content:center}
+ body.gift-pivot #workspace .studio-media img{width:90%;max-height:calc(var(--stage-height) - 112px);object-fit:contain}
+ body.gift-pivot #workspace #right .primary{max-width:100%;white-space:normal}
+}
+@media(max-width:1000px){
+ .gift-pivot #workspace:has([data-view="entry"]){grid-template-columns:1fr}
+ .gift-pivot #workspace .upload{width:100%;min-height:260px;margin:24px auto;padding:24px 16px}
+ .gift-pivot #workspace .effect-library{max-height:440px!important;overflow:auto!important}
+ .gift-entry-intro{padding:24px}
+ .gift-pivot #workspace .gift-entry-card .actions button{width:auto}
+}

@@ -1,0 +1,7 @@
+October 24 Gift Shop revisions — backend dependencies
+
+1. Full paid-gift Account history
+Frontend separates paid gifts from drafts using authoritative SessionView.order state and exposes them under Account > Paid Gifts. GET /api/v1/gift/sessions currently returns at most five active sessions (lib/v1/gift/service.ts restoreSession). This is not a complete paid-order archive. CC must supply an authenticated, ownership-scoped paid-gift listing including completed/older orders, session/order identity and review destination. Preserve all orders and approvals. No backend files changed by this frontend revision.
+
+2. Mug wrap geometry
+Rich's October 24 PDF requires actual 21:9 wrap artwork and accurate front-area presentation. Current GIFT-FAMILIES-AVAILABILITY-CONTRACT-2026-10-23.md explicitly generates a 1:1 front panel and assembles the wrap at print time. Frontend must not pretend this is native 21:9 or stretch the artwork. CC must resolve the generation/print mapping contract before that revision can be called complete. Final product photography and masks remain on hold for Rich's replacements.
