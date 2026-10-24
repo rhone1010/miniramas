@@ -33,8 +33,6 @@ describe('routing: only a configuration whose finish, orientation and opening ma
       ...sq('fine_art', 'beauty-fine_art_print_square'), ...pt('fine_art', 'beauty-fine_art_print_portrait'),
       ...sq('premium', 'beauty-fine_art_print_square'), ...pt('premium', 'beauty-fine_art_print_portrait'),                  // Premium shares the Fine Art photography
       ...sq('canvas', 'beauty-wrapped_canvas_sqaure'), ...pt('canvas', 'beauty-wrapped_canvas_portrait'),
-      ...sq('matted', 'beauty-matted_frame_square'),
-      ...sq('framed_canvas', 'beauty-framed_canvas_square'), ['framed_canvas:8x12', 'beauty-framed_canvas_landscape'], ['framed_canvas:12x18', 'beauty-framed_canvas_portrait'], ['framed_canvas:16x24', 'beauty-framed_canvas_portrait'], ['framed_canvas:20x30', 'beauty-framed_canvas_portrait'],
       ['mug:11oz', 'beauty-mug'], ['card:7x5', 'beauty-greeting_card'],
     ]))
   })
@@ -44,16 +42,13 @@ describe('routing: only a configuration whose finish, orientation and opening ma
     expect(route('card:7x5')).toMatchObject({ sceneId: 'beauty-greeting_card', input: { kind: 'generation_picture' } })
   })
   it('refuses, with the reason, what no photograph truthfully shows', () => {
-    // Classic Frame: the photographs are natural oak, the Print Shop's classic frame is black
-    for (const id of ['framed:8x8', 'framed:12x18', 'framed:20x30']) expect(route(id), id).toMatchObject({ sceneId: null, reason: 'finish_not_photographed' })
-    // Matted rectangles: the mount openings (6x10, 8x14, 12x20, 16x26 inches) are not 2:3
-    for (const id of ['matted:8x12', 'matted:12x18', 'matted:16x24', 'matted:20x30']) expect(route(id), id).toMatchObject({ sceneId: null, reason: 'shape_not_photographed', nearest: { openingAspect: 0.6667 } })
-    expect((route('matted:12x18') as any).nearest.extension).toBeGreaterThan(0.1)
+    // All framed families stay black; the supplied natural-oak scenes cannot represent them.
+    for (const p of allProducts().filter(x => ['framed', 'matted', 'framed_canvas'].includes(x.family))) expect(route(p.productId), p.productId).toMatchObject({ sceneId: null, reason: 'finish_not_photographed' })
     // the other card variants are 6118 x 2161 spreads (landscape): no photograph of that
     expect(route('card:7x5-gloss')).toMatchObject({ sceneId: null, reason: 'orientation_not_photographed' })
   })
-  it('the Gift-only framed families are sold in the finish the photographs show; the Print Shop classic frame is untouched', () => {
-    for (const p of allProducts().filter(x => x.family === 'matted' || x.family === 'framed_canvas')) expect(p.attributes.color, p.productId).toBe('natural')
+  it('owner keeps black frames; natural photographs do not change sold finishes', () => {
+    for (const p of allProducts().filter(x => x.family === 'matted' || x.family === 'framed_canvas')) expect(p.attributes.color, p.productId).toBe('black')
     for (const p of allProducts().filter(x => x.family === 'framed_canvas')) expect(p.attributes.wrap, p.productId).toBe('MirrorWrap')
     for (const p of allProducts().filter(x => x.family === 'framed')) expect(p.attributes, p.productId).toEqual({ color: 'black' })
   })

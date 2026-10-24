@@ -478,10 +478,9 @@ for (const f of ['matted', 'framed_canvas', 'mug', 'card'] as PrintFinish[]) for
   if (cents && e.retailApproved === false) { e.retailCents = cents; delete e.retailApproved }
 }
 
-// FRAME FINISH (owner-supplied beauty photography, 2026-10-24): every frame in the approved photographs is natural oak, so the Gift-only framed families are sold in Prodigi's 'natural' (Prodigi offers
-// black, brown, dark grey, gold, light grey, natural, silver, white for these SKUs; the sandbox quotes natural at the same cost and the print area is unchanged). Orders already placed keep their frozen
-// snapshot (black). The Classic Frame is a Print Shop product (black) and is deliberately NOT changed here. To go back: set GIFT_FRAME_COLOR to 'black'.
-export const GIFT_FRAME_COLOR = 'natural'
+// OWNER DECISION 2026-10-24: keep black frames. Natural-oak photographs do not authorize a finish change.
+// Existing orders retain their frozen attributes. The shared Print Shop classic frame remains unchanged.
+export const GIFT_FRAME_COLOR = 'black'
 for (const f of ['matted', 'framed_canvas'] as PrintFinish[]) for (const e of Object.values(SKU_MAP[f] ?? {}) as SkuEntry[]) e.attributes = { ...(e.attributes ?? {}), color: GIFT_FRAME_COLOR }
 
 /** The Gift Shop families that are not Print Shop products. */
