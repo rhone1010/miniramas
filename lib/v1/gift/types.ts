@@ -160,7 +160,7 @@ export interface GenerationView {
   /** The identity the order will pin (sha256 of the stored clean picture). Present when ready. */
   sha256: string | null
   quality: { status: 'passed' | 'below_bar' | 'unscored'; attempts: number } | null
-  /** How the picture reached the exact aspect: 'native' = the model returned it; 'trim' = a sliver (the stated fraction per axis, never more than 3%) was trimmed from the edges. Never an extension. */
+  /** How the picture reached the exact aspect: 'native' = the model returned it; 'trim' = a sliver (the stated fraction per axis, never more than 10%; launch shapes need 0 to 1%) was trimmed from the edges. Never an extension. */
   conform: { method: 'native' | 'trim'; trimFraction: number } | null
   /** Failed and may be tried again with the same idempotency key (it costs nothing until it is delivered). */
   retryable: boolean

@@ -105,20 +105,21 @@ for (const productId of ['matted:8x8', 'matted:12x18', 'framed_canvas:8x8', 'fra
 describe('the four products are visible but cannot be bought until the owner opens them', () => {
   it('stay in the catalog as disabled with the first open item as the reason, and no price', async () => {
     const { allProducts, getProduct } = await import('../print/catalog')
-    for (const id of ['matted:8x8', 'matted:12x18', 'framed_canvas:8x8', 'framed_canvas:12x18', 'mug:11oz', 'card:7x5']) {
+    for (const id of ['matted:12x18', 'framed_canvas:12x18', 'mug:11oz', 'card:7x5']) {
       const p = getProduct(id)!; expect(p.status).toBe('disabled'); expect(p.disabledReason).toBeTruthy()
     }
+    for (const id of ['matted:8x8', 'framed_canvas:8x8']) expect(getProduct(id)!.status).toBe('launch')          // 2026-10-23: the squares, with their existing prices
     expect(getProduct('matted:8x8')!.retailCents).toBe(9400)                       // the existing square prices are kept
     expect(getProduct('matted:12x18')!.retailCents).toBeNull(); expect(getProduct('mug:11oz')!.retailCents).toBeNull(); expect(getProduct('card:7x5')!.retailCents).toBeNull()
     expect(getProduct('framed_canvas:8x12')!.disabledReason).toBe('orientation_unverified')
-    expect(allProducts().filter(p => p.status === 'launch').every(p => ['fine_art', 'premium', 'canvas', 'framed'].includes(p.family))).toBe(true)
+    expect(allProducts().filter(p => p.status === 'launch').every(p => ['fine_art', 'premium', 'canvas', 'framed', 'matted', 'framed_canvas'].includes(p.family))).toBe(true)
   })
   it('a line for any of them is refused at selection, so checkout never sees one', async () => {
     const service = await import('./service'), store = await import('./store')
     const memory = store.memoryGiftStore(), deps: any = { store: memory, storage: { put: async () => {}, get: async () => null, remove: async () => {}, signedUrl: async () => null }, analyze: async () => ({ status: 'supported', series: 'portraits', peopleCount: null }), generate: async () => ({}), watermark: async () => Buffer.alloc(0) }
     const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
     const v = await service.createSession(deps, { userId: U1, imageB64: photo })
-    for (const productId of ['matted:8x8', 'framed_canvas:12x18', 'mug:11oz', 'card:7x5']) await expect(service.setLines(deps, U1, v.sessionId, [{ lineId: 'a', productId, copies: 1 }])).rejects.toMatchObject({ code: 'product_not_available' })
+    for (const productId of ['matted:12x18', 'framed_canvas:12x18', 'framed_canvas:8x12', 'mug:11oz', 'card:7x5']) await expect(service.setLines(deps, U1, v.sessionId, [{ lineId: 'a', productId, copies: 1 }])).rejects.toMatchObject({ code: 'product_not_available' })
   })
   it('the Print Shop never offers them (its catalog is the four launch families)', async () => {
     const { catalogFor } = await import('../print/geometry')

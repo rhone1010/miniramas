@@ -537,7 +537,7 @@ describe('purchase eligibility is separate from mockup photography', () => {
   })
   it('only a product that cannot be bought at all is refused: not launched, or no approved price', async () => {
     const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'x', productId: 'canvas:12x12', copies: 1 }])
-    for (const id of ['matted:12x18', 'framed_canvas:12x12', 'mug:11oz', 'card:7x5', 'bogus:1x1']) await expect(setLines(r.gift, U1, sid, [{ lineId: 'x', productId: id, copies: 1 }]), id).rejects.toMatchObject({ code: 'product_not_available' })
+    for (const id of ['matted:12x18', 'framed_canvas:8x12', 'mug:11oz', 'card:7x5', 'bogus:1x1']) await expect(setLines(r.gift, U1, sid, [{ lineId: 'x', productId: id, copies: 1 }]), id).rejects.toMatchObject({ code: 'product_not_available' })
   })
   it('strict mode (GIFT_REQUIRE_APPROVED_SCENE=1): a gift with no approved scene is refused at checkout before any quote or Stripe call; a scene-backed one is not', async () => {
     const r = rig(); const sid = await sessionWithLines(r, [{ lineId: 'a', productId: 'framed:12x18', copies: 1 }, { lineId: 'b', productId: 'canvas:12x12', copies: 1 }])

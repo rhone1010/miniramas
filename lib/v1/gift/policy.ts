@@ -90,8 +90,8 @@ export const GENERATIONS_PER_PACK = 6
 export const MAX_INFLIGHT_GENERATIONS = 2
 export const GENERATION_LEASE_SECONDS = 300
 export const GENERATION_MAX_ATTEMPTS = 3
-/** The most a generated picture may be cropped (per axis, fraction of its size) to reach the product's EXACT aspect. Anything further off is refused: nothing is extended or invented after approval. */
-export const MAX_CONFORM_CROP = 0.03
+/** The most a generated picture may be trimmed (per axis, fraction of its size) to reach the product's EXACT aspect. This happens when it is generated, BEFORE the customer sees and accepts it; nothing is extended or invented, and nothing changes after acceptance. Today's launch shapes need 0 to 1%; mount openings and the card front need up to about 8% because the model offers no closer ratio. Anything further off is refused. */
+export const MAX_CONFORM_CROP = 0.10
 /** Which flow NEW sessions start in. 'previews' (default) is the six-preview journey, unchanged; 'generations' is the product-first journey. Existing sessions keep their own flow. */
 export const newSessionFlow = (env: Record<string, string | undefined> = process.env): 'previews' | 'generations' => env.GIFT_NEW_SESSION_FLOW === 'generations' ? 'generations' : 'previews'
 

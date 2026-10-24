@@ -11,8 +11,11 @@
 
 import type { DisabledReason, ProductFamily } from './catalog-types'
 
-/** Owner decision. Empty until prices are approved: add a family here to launch it. */
-export const GIFT_ENABLED_FAMILIES: ProductFamily[] = []
+/**
+ * Owner decision: the families that may be sold. 2026-10-23: Matted Frame and Framed Canvas. Only products with an approved retail price are actually sellable (rule 2 above): their eight SQUARE sizes carry the
+ * prices from the original SKU map; the rectangles are still 'retail_price_pending' and framed_canvas:8x12 also has its Prodigi hold. The Photo Mug and the Greeting Card stay out until their prices are approved.
+ */
+export const GIFT_ENABLED_FAMILIES: ProductFamily[] = ['matted', 'framed_canvas']
 
 /**
  * Families whose product mockup (the clean paid review image) is calibrated and approved. The mug and card templates exist as visual tests

@@ -101,8 +101,8 @@ describe('one generation, at the product\'s exact aspect', () => {
     const g = (await startGeneration(t.deps, U1, t.sessionId, { productId: 'fine_art:8x8', idempotencyKey: key(1) })).generation
     expect(t.calls[0].body.output_aspect_ratio).toBe('1:1'); expect(g).toMatchObject({ geometryKey: 'a1000', width: 700, height: 700, conform: { method: 'native', trimFraction: 0 } })
   })
-  it('a picture the model returns more than 3% off its shape is refused, not extended or stretched, and counts for nothing', async () => {
-    const t = await ready(); t.state.off = 1.08
+  it('a picture the model returns more than 10% off its shape is refused, not extended or stretched, and counts for nothing', async () => {
+    const t = await ready(); t.state.off = 1.25
     const out = await startGeneration(t.deps, U1, t.sessionId, { productId: 'fine_art:12x18', idempotencyKey: key(1) })
     expect(out.generation).toMatchObject({ status: 'failed', retryable: true }); expect([...t.files.keys()].filter(k => k.includes('/masters/'))).toEqual([])
     expect(out.session.generations!.allowance).toMatchObject({ freeUsed: 0, freeRemaining: 6 })
@@ -116,7 +116,7 @@ describe('one generation, at the product\'s exact aspect', () => {
   it('conformTo trims a sliver and nothing else; generationTargetFor knows the exact ratio for 1:1 and 2:3 and would for 3:2', () => {
     expect(conformTo(700, 700, 1)).toMatchObject({ method: 'native', trimFraction: 0 })
     expect(conformTo(705, 700, 1)).toMatchObject({ method: 'trim', crop: { left: 2, top: 0, width: 700, height: 700 } })
-    expect(conformTo(680, 1000, 2 / 3)?.crop).toMatchObject({ width: 667, height: 1000 }); expect(conformTo(700, 1000, 2 / 3)).toBeNull(); expect(conformTo(700, 1000, 0.5)).toBeNull(); expect(conformTo(1000, 700, 1)).toBeNull()
+    expect(conformTo(680, 1000, 2 / 3)?.crop).toMatchObject({ width: 667, height: 1000 }); expect(conformTo(500, 1000, 2 / 3)).toBeNull(); expect(conformTo(700, 1000, 0.5)).toBeNull(); expect(conformTo(1000, 700, 1)).toBeNull()
     const fine = (id: string) => allProducts().find(p => p.productId === id)!
     for (const s of ['portraits', 'pets', 'groups'] as const) {
       expect(generationTargetFor(fine('fine_art:12x18'), s, 3)).toMatchObject({ aspect: '2:3', geometryKey: 'a667' }); expect(generationTargetFor(fine('fine_art:8x8'), s, 3)).toMatchObject({ aspect: '1:1', geometryKey: 'a1000' })

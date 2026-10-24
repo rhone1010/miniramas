@@ -41,7 +41,7 @@ describe('canonical catalog covers the verified inventory', () => {
 
 describe('existing Print Shop behaviour and pricing are preserved', () => {
   it('every launch product maps to the same SKU, attributes and price as getLaunchSku', () => {
-    const launch = allProducts().filter(p => p.status === 'launch')
+    const launch = allProducts().filter(p => p.status === 'launch' && (LAUNCH_FAMILIES as string[]).includes(p.family))
     expect(launch.length).toBe(LAUNCH_FAMILIES.reduce((n, f) => n + Object.keys(SKU_MAP[f]).length, 0))
     for (const p of launch) {
       const e = getLaunchSku(p.size as PrintSize, p.family as PrintFinish)
@@ -50,11 +50,11 @@ describe('existing Print Shop behaviour and pricing are preserved', () => {
     }
   })
   it('the launch set is exactly fine art, premium, canvas and classic frame, and every sku-map entry appears with its price', () => {
-    expect(new Set(allProducts().filter(p => p.status === 'launch').map(p => p.family))).toEqual(new Set(['fine_art', 'premium', 'canvas', 'framed']))
+    expect(new Set(allProducts().filter(p => p.status === 'launch' && (LAUNCH_FAMILIES as string[]).includes(p.family)).map(p => p.family))).toEqual(new Set(['fine_art', 'premium', 'canvas', 'framed']))
     for (const e of allSkus()) expect(getProductBySku(e.sku)?.retailCents).toBe(e.retailApproved === false ? null : e.retailCents)
   })
   it('picture and final sizes agree with printPlan on every launch product', () => {
-    for (const p of allProducts().filter(x => x.status === 'launch')) {
+    for (const p of allProducts().filter(x => x.status === 'launch' && (LAUNCH_FAMILIES as string[]).includes(x.family))) {
       const w = p.requirements.picturePx.w, h = p.requirements.picturePx.h
       const plan = printPlan(w, h, getLaunchSku(p.size as PrintSize, p.family as PrintFinish))
       expect(plan.front, p.sku).toEqual(p.requirements.picturePx); expect(plan.final, p.sku).toEqual(p.requirements.finalPx)

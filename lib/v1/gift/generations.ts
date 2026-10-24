@@ -60,8 +60,22 @@ export function generationTargetFor(p: CanonicalProduct, series: SessionRec['ser
  * How to reach the exact aspect from what the model returned: nothing, or the smallest centered trim. Never an extension. Returns null when the trim would exceed the bound.
  * Pure and exported so tests pin it.
  */
-export function conformTo(width: number, height: number, target: number, grid?: { w: number; h: number }): { method: 'native' | 'trim'; crop: { left: number; top: number; width: number; height: number }; trimFraction: number } | null {
+/** Grids with a side above this are 'coarse' (see conformTo). */
+const COARSE_GRID = 64
+export function conformTo(width: number, height: number, target: number, grid?: { w: number; h: number }): { method: 'native' | 'trim'; crop: { left: number; top: number; width: number; height: number }; trimFraction: number; resize?: { width: number; height: number } } | null {
   let w = width, h = height
+  if (grid && (grid.w > COARSE_GRID || grid.h > COARSE_GRID)) {
+    // A shape whose reduced ratio is coarse (a mount opening of 2418 x 4218 px is 403:703): landing on the grid by trimming alone would throw most of the picture away. Trim to the ratio (a sliver), then
+    // resample the WHOLE picture to the nearest grid size at or above it (a change of well under 1% in shape, no content added or removed): print preparation then has nothing to add.
+    const r = grid.w / grid.h
+    if (width / height > r) w = Math.round(height * r); else if (width / height < r) h = Math.round(width / r)
+    w = Math.min(width, Math.max(1, w)); h = Math.min(height, Math.max(1, h))
+    const trimFraction = Math.round(Math.max((width - w) / width, (height - h) / height) * 1e5) / 1e5
+    if (trimFraction > MAX_CONFORM_CROP + 1e-9) return null
+    const units = Math.max(1, Math.ceil(Math.min(w / grid.w, h / grid.h) - 1e-9))
+    const crop = { left: Math.floor((width - w) / 2), top: Math.floor((height - h) / 2), width: w, height: h }
+    return { method: w === width && h === height && units * grid.w === w ? 'native' : 'trim', crop, trimFraction, ...(units * grid.w !== w || units * grid.h !== h ? { resize: { width: units * grid.w, height: units * grid.h } } : {}) }
+  }
   if (grid) {
     // The print preparation step pads anything that is not an exact multiple of the product's reduced ratio (2:3 -> multiples of 2 x 3). Landing ON the grid by trimming a few pixels means it has nothing to add.
     const units = Math.floor(Math.min(width / grid.w, height / grid.h))
@@ -143,7 +157,8 @@ async function renderGeneration(deps: GiftDeps, rec: SessionRec, g: GenerationRe
     const fit = conformTo(md.width, md.height, p.requirements.pictureAspect, gridOf(p))
     if (!fit) throw new Error('aspect_mismatch')
     const img = sharp(raw).removeAlpha()
-    const png = await (fit.method === 'trim' ? img.extract(fit.crop) : img).png().toBuffer({ resolveWithObject: true })
+    const cropped = fit.method === 'trim' ? img.extract(fit.crop) : img
+    const png = await (fit.resize ? sharp(await cropped.png().toBuffer()).resize(fit.resize.width, fit.resize.height, { fit: 'fill', kernel: 'lanczos3' }) : cropped).png().toBuffer({ resolveWithObject: true })
     const sha = createHash('sha256').update(png.data).digest('hex')
     const masterPath = STORAGE.master(rec.id, g.id, 'png'), previewPath = STORAGE.preview(rec.id, g.id)
     const marked = await deps.watermark(png.data.toString('base64'))                       // throws rather than return an unmarked image
@@ -151,7 +166,7 @@ async function renderGeneration(deps: GiftDeps, rec: SessionRec, g: GenerationRe
     await deps.storage.put(previewPath, marked, 'image/jpeg'); files.push(previewPath)
     const record = {
       ...(out.generation ?? {}), productId: p.productId, geometryKey: g.geometry_key, requestedAspect: g.aspect, targetAspect: p.requirements.pictureAspect, durationMs: now(deps) - t0,
-      conform: { method: fit.method, trimFraction: fit.trimFraction, crop: fit.crop, from: { width: md.width, height: md.height } }, referenced: !!referenceB64,
+      conform: { method: fit.method, trimFraction: fit.trimFraction, crop: fit.crop, ...(fit.resize ? { resampledTo: fit.resize } : {}), from: { width: md.width, height: md.height } }, referenced: !!referenceB64,
     }
     const stored = await deps.store.completeGeneration(g.id, g.user_id, { master_path: masterPath, preview_path: previewPath, width: png.info.width, height: png.info.height, sha256: sha, record })
     if (!stored) await deps.storage.remove(files).catch(() => {})                         // the project was deleted between the check and now: leave nothing behind

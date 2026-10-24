@@ -29,7 +29,7 @@ GenerationView = {
   width, height, url, sha256,              // null until ready. url = large WATERMARKED preview (signed, 1 h). width/height = EXACTLY the product's aspect.
   kind: 'free'|'paid', accepted: boolean, acceptedAt,
   quality: {status:'passed'|'below_bar'|'unscored', attempts} | null,
-  conform: {method:'native'|'trim', trimFraction} | null,   // 'trim' = under 3% (usually under 1%) shaved from the edges to hit the exact aspect. Never an extension.
+  conform: {method:'native'|'trim', trimFraction} | null,   // 'trim' = at most 10% (0 to 1% for today's launch shapes, up to about 8% for mount openings and the card front) shaved from the edges to hit the exact aspect. Never an extension.
   retryable: boolean,                      // failed and the same idempotency key may be sent again
   createdAt }
 ```

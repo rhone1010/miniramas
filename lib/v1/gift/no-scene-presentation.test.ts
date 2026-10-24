@@ -45,10 +45,10 @@ afterEach(() => { for (const [k, n] of [['a', 'GIFT_NO_SCENE_PRESENTATION'], ['b
 describe('availability: three separate answers per product', () => {
   it('every launch product is purchasable for any artwork; shape and photography never decide it; the disabled ones say why', async () => {
     const r = rig(); const sid = await withFavorite(r); const a = await getProductAvailability(r.deps, U1, sid)
-    const launch = allProducts().filter(p => p.status === 'launch'); expect(launch).toHaveLength(32)
+    const launch = allProducts().filter(p => p.status === 'launch'); expect(launch).toHaveLength(40)          // 32 Print Shop products + the 8 Matted Frame and Framed Canvas squares
     for (const p of launch) { const x = a.products.find(y => y.productId === p.productId)!; expect(x, p.productId).toMatchObject({ purchasable: true, disabledReason: null, approval: { possible: true } }); expect(x.adaptation, p.productId).not.toBeNull() }
-    for (const id of ['matted:8x8', 'framed_canvas:12x12', 'mug:11oz', 'card:7x5']) expect(a.products.find(y => y.productId === id)).toMatchObject({ purchasable: false, adaptation: null, approval: { possible: false } })
-    expect(a.products.find(y => y.productId === 'matted:8x8')!.disabledReason).not.toBeNull()
+    for (const id of ['matted:12x18', 'framed_canvas:12x18', 'mug:11oz', 'card:7x5']) expect(a.products.find(y => y.productId === id)).toMatchObject({ purchasable: false, adaptation: null, approval: { possible: false } })
+    expect(a.products.find(y => y.productId === 'matted:12x18')!.disabledReason).not.toBeNull()
   })
   it('the preview basis is data: a scene where a photograph truthfully shows the configuration, otherwise the product-shaped artwork with a disclosure; neither changes purchasability', async () => {
     const r = rig(); const sid = await withFavorite(r); const a = await getProductAvailability(r.deps, U1, sid); const by = (id: string) => a.products.find(p => p.productId === id)!

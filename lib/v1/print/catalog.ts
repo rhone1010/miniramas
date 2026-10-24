@@ -161,7 +161,7 @@ export function catalogResponse(artwork?: { width: number; height: number } | nu
   const products: CatalogProduct[] = base.map(p => {
     const artworkFit = valid ? fitFor(artwork!, p) : undefined
     const { production: _internal, ...customerFacing } = p        // the production spec names suppliers and open questions: it is for engineering and the frozen order, never the public catalog
-    return { ...customerFacing, ...(artworkFit ? { artworkFit } : {}), selectable: p.status === 'launch' && (!artworkFit || artworkFit.fit !== 'unavailable') }
+    return { ...customerFacing, ...(artworkFit ? { artworkFit } : {}), selectable: p.status === 'launch' && (LAUNCH_FAMILIES as string[]).includes(p.family) && (!artworkFit || artworkFit.fit !== 'unavailable') }          // the PRINT SHOP sells only its own families, even once a Gift family is enabled
   })
   return {
     contractVersion: CATALOG_CONTRACT_VERSION, catalogVersion: catalogVersion(base), fitRules: { ...FIT_RULES },

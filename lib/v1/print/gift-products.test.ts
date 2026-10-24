@@ -3,9 +3,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import fs from 'node:fs'
 import { memoryJobStore, memoryStorage } from './upscale/store'
-import { allProducts, getProductBySku } from './catalog'
+import { allProducts, catalogResponse, getProductBySku } from './catalog'
 import { GIFT_ENABLED_FAMILIES, GIFT_MOCKUP_READY, GIFT_PRODUCT_HOLDS } from './gift-enablement'
-import { GIFT_PRODUCT_FAMILIES, SKU_MAP, getSku, getLaunchSku, type PrintFinish, type PrintSize } from './sku-map'
+import { GIFT_PRODUCT_FAMILIES, LAUNCH_FAMILIES, SKU_MAP, getSku, getLaunchSku, type PrintFinish, type PrintSize } from './sku-map'
 import { templateFor } from '../gift/mockup'
 
 const s = vi.hoisted(() => ({ place: vi.fn(), rt: null as any, gate: { flag: true, active: true, reason: null as any, problems: [] as string[] } }))
@@ -71,17 +71,21 @@ describe('the catalog agrees with Prodigi for every SKU', () => {
 })
 
 describe('launch gates', () => {
-  it('nothing is sold today: no gift family enabled, no mockup template approved, no unapproved price', () => {
-    expect(GIFT_ENABLED_FAMILIES).toEqual([]); expect(GIFT_MOCKUP_READY).toEqual([])
+  it('what is sold: only the Matted Frame and Framed Canvas SQUARES (approved prices, launched family); rectangles, the mug and the card wait on a price; framed canvas 8x12 on its Prodigi hold', () => {
+    expect(GIFT_ENABLED_FAMILIES).toEqual(['matted', 'framed_canvas']); expect(GIFT_MOCKUP_READY).toEqual([])
     for (const f of GIFT_PRODUCT_FAMILIES) for (const e of Object.values(SKU_MAP[f] ?? {}) as any[]) if (e.retailApproved === false) expect(e.retailCents).toBe(0)
-    expect(allProducts().filter(p => ['matted', 'framed_canvas', 'mug', 'card'].includes(p.family)).every(p => p.status === 'disabled' && (p.retailCents === null || p.retailCents > 0))).toBe(true)
+    const gift = allProducts().filter(p => ['matted', 'framed_canvas', 'mug', 'card'].includes(p.family))
+    expect(gift.filter(p => p.status === 'launch').map(p => p.productId).sort()).toEqual(['framed_canvas:12x12', 'framed_canvas:16x16', 'framed_canvas:20x20', 'framed_canvas:8x8', 'matted:12x12', 'matted:16x16', 'matted:20x20', 'matted:8x8'])
+    expect(gift.filter(p => p.status === 'launch').every(p => p.retailCents! > 0 && p.requirements.pictureAspect === 1)).toBe(true)
+    expect(gift.filter(p => p.status !== 'launch').every(p => p.retailCents === null && !!p.disabledReason)).toBe(true)
   })
   it('a family can only be marked mockup-ready if the renderer can actually pick its template', () => {
     for (const f of GIFT_MOCKUP_READY) for (const p of allProducts().filter(x => x.family === f)) expect(templateFor(p), p.productId).not.toBeNull()
   })
   it('the four launch families and the Print Shop are unchanged: the Print Shop still refuses a gift product', () => {
     for (const f of ['matted', 'framed_canvas', 'mug', 'card'] as PrintFinish[]) expect(() => getLaunchSku((f === 'mug' ? '11oz' : f === 'card' ? '7x5' : '8x8') as PrintSize, f)).toThrow('print_product_unavailable')
-    expect(allProducts().filter(p => p.status === 'launch').length).toBe(32)
+    expect(allProducts().filter(p => p.status === 'launch' && (LAUNCH_FAMILIES as string[]).includes(p.family)).length).toBe(32)
+    for (const c of (catalogResponse(null) as any).products.filter((p: any) => ['matted', 'framed_canvas'].includes(p.family))) expect(c.selectable, c.productId).toBe(false)          // the Print Shop never offers a Gift family, even a launched one
   })
 })
 

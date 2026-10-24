@@ -10,15 +10,15 @@ import { realSceneRenderer } from './mockup-real'
 import { launchCoverage } from './presentation'
 
 const describeReal = (id: string) => realSceneRenderer.describe(id)
-const launch = allProducts().filter(p => p.status === 'launch')
+const launch = allProducts().filter(p => p.status === 'launch' && ['fine_art', 'premium', 'canvas', 'framed'].includes(p.family))          // the Print Shop families (Gift-only families are sold through the availability contract)
 const by = <T,>(xs: T[], key: (x: T) => string) => xs.reduce<Record<string, T[]>>((m, x) => { (m[key(x)] ??= []).push(x); return m }, {})
 
 describe('product families, orientations, sizes and finishes from the existing catalog contract', () => {
   it('the catalog response is flat, every row names its family, label, size, orientation, status and selectable flag', () => {
     const c: any = catalogResponse(null)
     for (const p of c.products) expect(p, p.productId).toMatchObject({ productId: expect.any(String), family: expect.any(String), familyLabel: expect.any(String), size: expect.any(String), status: expect.stringMatching(/launch|disabled/), selectable: expect.any(Boolean), requirements: { skuOrientation: expect.stringMatching(/square|portrait|landscape|wrap|spread/) } })
-    expect(c.products.filter((p: any) => p.status === 'launch').every((p: any) => p.selectable === true)).toBe(true)
-    expect(c.products.filter((p: any) => p.status !== 'launch').every((p: any) => p.selectable === false)).toBe(true)
+    expect(c.products.filter((p: any) => p.status === 'launch' && ['fine_art', 'premium', 'canvas', 'framed'].includes(p.family)).every((p: any) => p.selectable === true)).toBe(true)
+    expect(c.products.filter((p: any) => p.status !== 'launch' || !['fine_art', 'premium', 'canvas', 'framed'].includes(p.family)).every((p: any) => p.selectable === false)).toBe(true)
   })
   it('launch families, each once, with these orientation/size options (square and portrait only: there is no landscape launch SKU)', () => {
     const fam = by(launch, p => p.family)
