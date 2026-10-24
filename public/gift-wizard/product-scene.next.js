@@ -1,3 +1,4 @@
+import {MUG,mugPanelRects} from './backend-contracts/print/production-profiles.js';
 // Projection functions copied unchanged from tools/product-mockup/compositor.next.cjs, lines 7–34 and 178–183.
 function solve(matrix, rhs) {
   const a = matrix.map((row, i) => [...row, rhs[i]]);
@@ -41,6 +42,20 @@ async function pixels(url){
  const context=canvas.getContext('2d',{willReadFrequently:true});context.drawImage(image,0,0);
  return {canvas,context,width:canvas.width,height:canvas.height,data:context.getImageData(0,0,canvas.width,canvas.height)};
 }
+// Display-only browser counterpart of product-layout.ts; production geometry is copied unchanged.
+function mugPreviewPixels(art){
+ const scale=MUG.mockupScale,W=Math.round(MUG.wrap.w*scale),H=Math.round(MUG.wrap.h*scale),half=Math.round(MUG.wrap.w/2*scale);
+ if(Math.abs(art.width/art.height-1)>.003)throw Error('mug_picture_shape_mismatch');
+ const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ const cover=(x,width,flip)=>{const k=Math.max(width/art.width,H/art.height),w=art.width*k,h=art.height*k;ctx.save();ctx.beginPath();ctx.rect(x,0,width,H);ctx.clip();if(flip){ctx.translate(x+width,0);ctx.scale(-1,1);x=0}ctx.drawImage(art.canvas,x+(width-w)/2,(H-h)/2,w,h);ctx.restore()};
+ cover(0,half,false);cover(half,W-half,true);
+ const soft=document.createElement('canvas');soft.width=W;soft.height=H;const sc=soft.getContext('2d');sc.filter='blur('+Math.max(1,45*scale)+'px)';sc.drawImage(canvas,0,0);ctx.drawImage(soft,0,0);
+ for(const r of mugPanelRects(scale))ctx.drawImage(art.canvas,r.x,r.y,r.w,r.h);
+ const shift=(((Math.round(W/2-MUG.mockupFaceCenterX*scale))%W)+W)%W;
+ const rolled=document.createElement('canvas');rolled.width=W;rolled.height=H;const rc=rolled.getContext('2d',{willReadFrequently:true});
+ rc.drawImage(canvas,W-shift,0,shift,H,0,0,shift,H);rc.drawImage(canvas,0,0,W-shift,H,shift,0,W-shift,H);
+ return {canvas:rolled,context:rc,width:W,height:H,data:rc.getImageData(0,0,W,H)};
+}
 // Display derivative only. The original generation, dimensions, hash and acceptance stay server-owned.
 export async function productScene(sourceImage,artworkUrl,physicalAspect){
  const key=sourceImage+'|'+artworkUrl+'|'+physicalAspect;if(cache.has(key))return cache.get(key);
@@ -48,9 +63,12 @@ export async function productScene(sourceImage,artworkUrl,physicalAspect){
  const baseURL=new URL('.',new URL(sourceImage,location.href));
  const response=await fetch(new URL('scene.next.json',baseURL));if(!response.ok)throw Error('scene_unavailable');
  const m=await response.json();if(m.status.startsWith('blocked'))throw Error('scene_unavailable');
- const [base,mask,art]=await Promise.all([pixels(new URL(m.sourceImage,baseURL)),pixels(new URL(m.artworkMask,baseURL)),pixels(artworkUrl)]);
- const b=m.maskBounds,ratio=m.mapping?2670/1110:(b.x1-b.x0)/(b.y1-b.y0),ar=art.width/art.height;
- if(Math.abs(ar/physicalAspect-1)>.02||Math.abs(ratio/physicalAspect-1)>.02)throw Error('scene_geometry_mismatch');
+ const [base,mask,picture]=await Promise.all([pixels(new URL(m.sourceImage,baseURL)),pixels(new URL(m.artworkMask,baseURL)),pixels(artworkUrl)]);
+ const art=m.mapping?mugPreviewPixels(picture):picture;
+ const displayAspect=m.mapping?MUG.wrap.w/MUG.wrap.h:physicalAspect;
+ if(Math.abs((picture.width/picture.height)/physicalAspect-1)>.02)throw Error('scene_geometry_mismatch');
+ const b=m.maskBounds,ratio=m.mapping?MUG.wrap.w/MUG.wrap.h:(b.x1-b.x0)/(b.y1-b.y0),ar=art.width/art.height;
+ if(Math.abs(ar/displayAspect-1)>.02||Math.abs(ratio/displayAspect-1)>.02)throw Error('scene_geometry_mismatch');
  if(base.width!==mask.width||base.height!==mask.height)throw Error('scene_mask_mismatch');
  const inverse=homography(m.cornersPixels,[[0,0],[1,0],[1,1],[0,1]]),output=base.data.data,original=new Uint8ClampedArray(output);
  // Fit without stretching: only the calibrated <=2% edge extension is mirrored.
