@@ -1,0 +1,42 @@
+{
+  "id": "beauty-framed_print_portrait",
+  "family": "framed",
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "sourceImage": "product_beauty_framed_print_portrait.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      259,
+      122
+    ],
+    [
+      764,
+      122
+    ],
+    [
+      764,
+      862
+    ],
+    [
+      259,
+      862
+    ]
+  ],
+  "maskBounds": {
+    "x0": 259,
+    "y0": 122,
+    "x1": 764,
+    "y1": 862
+  },
+  "surfaceAspectRatio": 0.6666666666666666,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "994726d284dc6762a61444d3a70da25b1337f3511a1354840266051a235c2cf5",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+  "frameMask": "frame-mask.svg",
+  "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+}

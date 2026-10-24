@@ -475,3 +475,13 @@ body #workspace #screen .tile img,body #workspace .studio-products img{border-ra
  .gift-entry-intro{padding:24px}
  .gift-pivot #workspace .gift-entry-card .actions button{width:auto}
 }
+
+/* Beauty photographs preserve their native ratio and match the square long side. */
+body.gift-pivot #workspace .studio-media img,body.gift-pivot #workspace #screen .gift-feature-image{aspect-ratio:auto;height:auto;object-fit:contain}
+@media(min-width:1001px){
+ body.gift-pivot #workspace .studio-media img{width:min(90%,calc(var(--stage-height) - 112px));max-height:none}
+ body.gift-pivot #workspace #screen .gift-feature-image{width:min(100%,calc(var(--stage-height) - 80px));max-height:none!important;height:auto}
+}
+@media(max-width:1000px){
+ body.gift-pivot #workspace .studio-media img{width:100%;max-height:none;height:auto}
+}

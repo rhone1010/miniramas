@@ -1,0 +1,42 @@
+{
+  "id": "beauty-framed_canvas_landscape",
+  "family": "framed_canvas",
+  "dimensions": [
+    1200,
+    896
+  ],
+  "sourceImage": "product_beauty_framed_canvas_landscape.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      146,
+      137
+    ],
+    [
+      1054,
+      137
+    ],
+    [
+      1054,
+      759
+    ],
+    [
+      146,
+      759
+    ]
+  ],
+  "maskBounds": {
+    "x0": 146,
+    "y0": 137,
+    "x1": 1054,
+    "y1": 759
+  },
+  "surfaceAspectRatio": 1.5,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "9c3f60af5120e4986c55af9cf21944ce6919d390e4ea6a1cdd73686dc9ea1bc0",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+  "frameMask": "frame-mask.svg",
+  "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+}

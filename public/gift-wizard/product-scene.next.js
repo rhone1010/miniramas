@@ -64,10 +64,11 @@ export async function productScene(sourceImage,artworkUrl,physicalAspect){
  const response=await fetch(new URL('scene.next.json',baseURL));if(!response.ok)throw Error('scene_unavailable');
  const m=await response.json();if(m.status.startsWith('blocked'))throw Error('scene_unavailable');
  const [base,mask,picture]=await Promise.all([pixels(new URL(m.sourceImage,baseURL)),pixels(new URL(m.artworkMask,baseURL)),pixels(artworkUrl)]);
- const art=m.mapping?mugPreviewPixels(picture):picture;
- const displayAspect=m.mapping?MUG.wrap.w/MUG.wrap.h:physicalAspect;
- if(Math.abs((picture.width/picture.height)/physicalAspect-1)>.02)throw Error('scene_geometry_mismatch');
- const b=m.maskBounds,ratio=m.mapping?MUG.wrap.w/MUG.wrap.h:(b.x1-b.x0)/(b.y1-b.y0),ar=art.width/art.height;
+ const fullWrap=m.artworkLayout==='full-wrap';
+ const art=m.mapping&&!fullWrap?mugPreviewPixels(picture):picture;
+ const displayAspect=fullWrap?m.surfaceAspectRatio:m.mapping?MUG.wrap.w/MUG.wrap.h:physicalAspect;
+ if(Math.abs((picture.width/picture.height)/(fullWrap?m.surfaceAspectRatio:physicalAspect)-1)>.02)throw Error('scene_geometry_mismatch');
+ const b=m.maskBounds,ratio=m.surfaceAspectRatio||(m.mapping?MUG.wrap.w/MUG.wrap.h:(b.x1-b.x0)/(b.y1-b.y0)),ar=art.width/art.height;
  if(Math.abs(ar/displayAspect-1)>.02||Math.abs(ratio/displayAspect-1)>.02)throw Error('scene_geometry_mismatch');
  if(base.width!==mask.width||base.height!==mask.height)throw Error('scene_mask_mismatch');
  const inverse=homography(m.cornersPixels,[[0,0],[1,0],[1,1],[0,1]]),output=base.data.data,original=new Uint8ClampedArray(output);

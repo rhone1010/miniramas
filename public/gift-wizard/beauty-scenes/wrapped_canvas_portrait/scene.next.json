@@ -1,0 +1,40 @@
+{
+  "id": "beauty-wrapped_canvas_portrait",
+  "family": "canvas",
+  "dimensions": [
+    2048,
+    2048
+  ],
+  "sourceImage": "product_beauty_wrapped_canvas_portrait.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      482,
+      245
+    ],
+    [
+      1565,
+      245
+    ],
+    [
+      1565,
+      1803
+    ],
+    [
+      482,
+      1803
+    ]
+  ],
+  "maskBounds": {
+    "x0": 482,
+    "y0": 245,
+    "x1": 1565,
+    "y1": 1803
+  },
+  "surfaceAspectRatio": 0.6666666666666666,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "af178aee1de3a7dcb83e163eeb560dcce54c3c86f16d4b70c8dc2f67845d910c",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+}

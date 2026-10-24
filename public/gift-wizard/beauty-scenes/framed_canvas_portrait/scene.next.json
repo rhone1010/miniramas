@@ -1,0 +1,42 @@
+{
+  "id": "beauty-framed_canvas_portrait",
+  "family": "framed_canvas",
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "sourceImage": "product_beauty_framed_canvas_portrait.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      280,
+      141
+    ],
+    [
+      742,
+      141
+    ],
+    [
+      742,
+      842
+    ],
+    [
+      280,
+      842
+    ]
+  ],
+  "maskBounds": {
+    "x0": 280,
+    "y0": 141,
+    "x1": 742,
+    "y1": 842
+  },
+  "surfaceAspectRatio": 0.6666666666666666,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "798fb219c94de1af440417e49f9414bb9f4cbe108d70a6e4c009b7a29eb71f84",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+  "frameMask": "frame-mask.svg",
+  "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+}

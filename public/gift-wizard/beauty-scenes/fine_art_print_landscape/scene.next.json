@@ -1,0 +1,40 @@
+{
+  "id": "beauty-fine_art_print_landscape",
+  "family": "fine_art",
+  "dimensions": [
+    1200,
+    896
+  ],
+  "sourceImage": "product_beauty_fine_art_print_landscape.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      189,
+      188
+    ],
+    [
+      1010,
+      188
+    ],
+    [
+      1010,
+      709
+    ],
+    [
+      189,
+      709
+    ]
+  ],
+  "maskBounds": {
+    "x0": 189,
+    "y0": 188,
+    "x1": 1010,
+    "y1": 709
+  },
+  "surfaceAspectRatio": 1.5,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "52d5713b473693a87c79a061c9f518d9f0c8584e28d109f789cc8de3637c4f90",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+}

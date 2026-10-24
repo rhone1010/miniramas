@@ -1,0 +1,56 @@
+{
+  "id": "beauty-mug",
+  "family": "mug",
+  "dimensions": [
+    2048,
+    2048
+  ],
+  "sourceImage": "product_beauty_mug.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      380,
+      455
+    ],
+    [
+      1420,
+      455
+    ],
+    [
+      1420,
+      1750
+    ],
+    [
+      380,
+      1750
+    ]
+  ],
+  "maskBounds": {
+    "x0": 380,
+    "y0": 455,
+    "x1": 1420,
+    "y1": 1750
+  },
+  "surfaceAspectRatio": 2.4054054054054053,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "0abc286f94502ae6dd3f48f45aa5035dfc7043d99a4714f004dea7981745a071",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+  "artworkLayout": "full-wrap",
+  "mapping": {
+    "type": "cylindrical",
+    "centerX": 0.5,
+    "radiusX": 0.5,
+    "top": {
+      "edgeY": 0,
+      "ellipseDepth": 0.05791505791505792
+    },
+    "bottom": {
+      "edgeY": 0.915057915057915,
+      "ellipseDepth": 0.06177606177606178
+    },
+    "assumedWrapAngleRadians": 6.283185307179586
+  },
+  "backendDependency": "Full wrap artwork with subject aligned to the visible face; no square-panel synthesis."
+}

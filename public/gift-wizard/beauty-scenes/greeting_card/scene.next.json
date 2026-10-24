@@ -1,0 +1,40 @@
+{
+  "id": "beauty-greeting_card",
+  "family": "card",
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "sourceImage": "product_beauty_greeting_card.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      259,
+      184
+    ],
+    [
+      744,
+      183
+    ],
+    [
+      744,
+      869
+    ],
+    [
+      259,
+      866
+    ]
+  ],
+  "maskBounds": {
+    "x0": 259,
+    "y0": 184,
+    "x1": 744,
+    "y1": 869
+  },
+  "surfaceAspectRatio": 0.7142857142857143,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "6899427424ed3734823bc051f9f55dd5019b9cb69dac2c5ad6dcb56fc3f28710",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "beauty-framed_print_landscape",
+  "family": "framed",
+  "dimensions": [
+    1200,
+    896
+  ],
+  "sourceImage": "product_beauty_framed_print_landscape.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      122,
+      127
+    ],
+    [
+      1079,
+      127
+    ],
+    [
+      1079,
+      777
+    ],
+    [
+      122,
+      777
+    ]
+  ],
+  "maskBounds": {
+    "x0": 122,
+    "y0": 127,
+    "x1": 1079,
+    "y1": 777
+  },
+  "surfaceAspectRatio": 1.5,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "7641abb072dd939c7825e5913e514d9caf553bf9d3050065c9621b2a3c4af4bd",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+  "frameMask": "frame-mask.svg",
+  "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+}

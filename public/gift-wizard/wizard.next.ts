@@ -1,4 +1,5 @@
 import {productScene} from './product-scene.next.js';
+import {beautyPhoto} from './beauty-scenes.next.js';
 import {giftCompositionEligibility} from '../product-studio/gift-composition-policy.next.js';
 import {mountStudio,familyPhoto,type StudioState} from '../product-studio/studio.next.js';
 import {LiveGift,purchased,canCraft} from './live.next.js';
@@ -318,7 +319,7 @@ async function readProductGeneration(){const owner=live;if(!owner||productGenera
 function selectedProduct(){const p=products.find(p=>p.id===studioState.productId);return {p,o:p?.options.find(o=>o.size===studioState.size)}}
 function generationPicture(g:GenerationView,productId=studioState.productId,size=studioState.size){
  const p=products.find(p=>p.id===productId),o=p?.options.find(o=>o.size===size);if(!p||!o||!g.url)return '';
- const source=productPhotography.get(p.id+':'+o.size)||(journeyDemo?asset(familyPhoto(p)):null),key=g.generationId+':'+p.id+':'+o.size;
+ const source=live&&purchased(live.session)?productPhotography.get(p.id+':'+o.size):beautyPhoto(p,o),key=g.generationId+':'+p.id+':'+o.size;
  if(scenePictures.has(key))return photo(scenePictures.get(key)!,p.label+' · '+o.label+' · personalized composition','gift-feature-image');
  if(source&&!scenePending.has(key)&&!sceneFailures.has(key)){
   scenePending.add(key);void productScene(source,g.url,o.imageWidthIn/o.imageHeightIn).then((url:string)=>{scenePictures.set(key,url)}).catch(()=>sceneFailures.add(key)).finally(()=>{scenePending.delete(key);if(['generation','acceptance','cart','checkout','complete','payment'].includes(view))render()});
@@ -381,9 +382,9 @@ function renderPivotEffects(){
 function renderPivotProducts(){
  pivotRail(studioState.step==='product'?'Choose<br>your Gift':'Choose<br>your Size');$('right').innerHTML='';$('back').hidden=true;
  const familyOrder=['fine_art','premium','framed','mug','matted','canvas','framed_canvas','card'];
- const choices=[...products].sort((a,b)=>familyOrder.indexOf(a.id)-familyOrder.indexOf(b.id)).map(p=>({...p,unavailableOptions:unavailableCatalogOptions.get(p.id),image:familyPhoto({id:p.id,image:asset(p.image)}),options:(p.options as CatalogOption[]).filter(o=>productAvailability.has(p.id+':'+o.size)||giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
+ const choices=[...products].sort((a,b)=>familyOrder.indexOf(a.id)-familyOrder.indexOf(b.id)).map(p=>({...p,unavailableOptions:unavailableCatalogOptions.get(p.id),image:beautyPhoto({id:p.id,image:asset(p.image)}),options:(p.options as CatalogOption[]).filter(o=>productAvailability.has(p.id+':'+o.size)||giftCompositionEligibility(p,o,pivotSubjectCount()).allowed)}));
  mountStudio($('screen'),{products:choices,state:studioState,navigationHost:$('left'),configurationHost:$('right'),
-  sizeHeading:'Choose a Size to Continue',requireSizeClick:true,detailsIntroHtml:(p,o)=>'<h3>Your Product</h3>'+((o as CatalogOption).familyNote?'<div class="product-guidance"><p>'+esc((o as CatalogOption).familyNote)+'</p></div>':''),detailsHtml:(p,o)=>{if(!o)return photo(p.image,p.label);const url=o?productPhotography.get(p.id+':'+o.size)||(journeyDemo&&o.imageWidthIn===o.imageHeightIn?asset(familyPhoto(p)):null):null;return url?photo(url,p.label):'<p role="status">Product photography unavailable.</p>'},previewHtml:p=>photo(p.image,p.label),canAdd:(p,o)=>p.available&&o.compatible!==false&&(journeyDemo||!!live?.session?.generations?.effectId&&['free','paid'].includes(live.session.generations.allowance.next)),onAdd:()=>journeyDemo?demoCraft():void craftProduct(),busy,addLabel:'Show me a Preview of My Art',
+  sizeHeading:'Choose a Size to Continue',requireSizeClick:true,detailsIntroHtml:(p,o)=>'<h3>Your Product</h3>'+((o as CatalogOption).familyNote?'<div class="product-guidance"><p>'+esc((o as CatalogOption).familyNote)+'</p></div>':''),detailsHtml:(p,o)=>{if(!o)return photo(p.image,p.label);const url=beautyPhoto(p,o);return url?photo(url,p.label):'<p role="status">Product photography unavailable.</p>'},previewHtml:p=>photo(p.image,p.label),canAdd:(p,o)=>p.available&&o.compatible!==false&&(journeyDemo||!!live?.session?.generations?.effectId&&['free','paid'].includes(live.session.generations.allowance.next)),onAdd:()=>journeyDemo?demoCraft():void craftProduct(),busy,addLabel:'Show me a Preview of My Art',
   onChange:s=>{studioState=s;requestAnimationFrame(sharedStageLayout);if(layoutReview)rememberPivotReview();else rememberView();$('left').querySelector('h1')!.innerHTML=s.step==='product'?'Choose<br>your Gift':'Choose<br>your Size';document.body.dataset.pivotStep=s.step;document.querySelectorAll('.progress li').forEach((el,i)=>{if(i===stage())el.setAttribute('aria-current','step');else el.removeAttribute('aria-current')});if(mobileLayout.matches){$('mobile-progress')?.remove();renderMobileProgress()}},
   onExit:()=>go('effects'),utilityHtml:''});
  document.body.dataset.pivotStep=studioState.step;
@@ -603,7 +604,7 @@ const paidGift=(s:SessionView)=>!!s.order.orderId&&!['none','checkout_open','can
 function entryCard(g:typeof entryGifts[number],paid:boolean){
  const d=g.detail,art=d?.generations?.items.filter(x=>x.status==='ready'&&x.url).at(-1)?.url||d?.batches.flatMap(b=>b.previews).find(p=>p.previewId===d.artworkPreviewId)?.url;
  const line=d?.lines[0],productId=line?.productId||d?.generations?.items.at(-1)?.productId,product=products.find(p=>p.id===productId?.split(':')[0]);
- return '<article class="gift-entry-card"><div class="gift-entry-images">'+(d?.source.photoUrl?photo(d.source.photoUrl,'Source photo'):'')+(art?photo(art,'Your artwork'):'')+(product?photo(asset(familyPhoto(product)),product.label):'')+'</div><h3>'+esc(product?.label||g.series||'Gift')+'</h3><p class="small">'+esc(g.createdAt?new Date(g.createdAt).toLocaleDateString():'')+(paid?' · '+esc(d?.order.state.replace(/_/g,' ')||''):'')+'</p><div class="actions"><button type="button" data-resume-gift="'+esc(g.sessionId)+'">'+(paid?'View Gift':'Continue Gift')+'</button>'+(!paid&&d?'<button type="button" data-delete-gift="'+esc(g.sessionId)+'">Delete</button>':'')+'</div></article>';
+ return '<article class="gift-entry-card"><div class="gift-entry-images">'+(d?.source.photoUrl?photo(d.source.photoUrl,'Source photo'):'')+(art?photo(art,'Your artwork'):'')+(product?photo(beautyPhoto(product),product.label):'')+'</div><h3>'+esc(product?.label||g.series||'Gift')+'</h3><p class="small">'+esc(g.createdAt?new Date(g.createdAt).toLocaleDateString():'')+(paid?' · '+esc(d?.order.state.replace(/_/g,' ')||''):'')+'</p><div class="actions"><button type="button" data-resume-gift="'+esc(g.sessionId)+'">'+(paid?'View Gift':'Continue Gift')+'</button>'+(!paid&&d?'<button type="button" data-delete-gift="'+esc(g.sessionId)+'">Delete</button>':'')+'</div></article>';
 }
 function renderEntry(){
  const account=params.get('account')==='gifts';

@@ -1,0 +1,43 @@
+{
+  "id": "beauty-matted_frame_portrait",
+  "family": "matted",
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "sourceImage": "product_beauty_matted_frame_portrait.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      315,
+      186
+    ],
+    [
+      708,
+      186
+    ],
+    [
+      708,
+      749
+    ],
+    [
+      315,
+      749
+    ]
+  ],
+  "maskBounds": {
+    "x0": 315,
+    "y0": 186,
+    "x1": 708,
+    "y1": 749
+  },
+  "surfaceAspectRatio": 0.6666666666666666,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "9b3c31294f4204aee30fb29020bffa557d504e7bee810bb71c00c2a76a8940b8",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+  "frameMask": "frame-mask.svg",
+  "matteMask": "matte-mask.svg",
+  "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+}

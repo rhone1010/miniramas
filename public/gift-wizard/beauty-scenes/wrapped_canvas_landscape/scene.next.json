@@ -1,0 +1,40 @@
+{
+  "id": "beauty-wrapped_canvas_landscape",
+  "family": "canvas",
+  "dimensions": [
+    1200,
+    896
+  ],
+  "sourceImage": "product_beauty_wrapped_canvas_landscape.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      123,
+      122
+    ],
+    [
+      1065,
+      122
+    ],
+    [
+      1065,
+      749
+    ],
+    [
+      123,
+      749
+    ]
+  ],
+  "maskBounds": {
+    "x0": 123,
+    "y0": 122,
+    "x1": 1065,
+    "y1": 749
+  },
+  "surfaceAspectRatio": 1.5,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "1f478a1bee83b4b973459de9e7199ecb9c7dde763689e0f9453a42c989a0174f",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "beauty-wrapped_canvas_sqaure",
+  "family": "canvas",
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "sourceImage": "product_beauty_wrapped_canvas_sqaure.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      157,
+      130
+    ],
+    [
+      857,
+      130
+    ],
+    [
+      857,
+      815
+    ],
+    [
+      157,
+      815
+    ]
+  ],
+  "maskBounds": {
+    "x0": 157,
+    "y0": 130,
+    "x1": 857,
+    "y1": 815
+  },
+  "surfaceAspectRatio": 1,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "fd8326441a3af789f31543bb906ee2a03c0c55bf87feadff542c2f397ed9e40a",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+}

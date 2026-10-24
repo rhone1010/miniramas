@@ -1,0 +1,725 @@
+{
+  "version": 1,
+  "scenes": [
+    {
+      "id": "beauty-fine_art_print_square",
+      "family": "fine_art",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_fine_art_print_square.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          170,
+          165
+        ],
+        [
+          853,
+          165
+        ],
+        [
+          853,
+          849
+        ],
+        [
+          170,
+          849
+        ]
+      ],
+      "maskBounds": {
+        "x0": 170,
+        "y0": 165,
+        "x1": 853,
+        "y1": 849
+      },
+      "surfaceAspectRatio": 1,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "a0c5cdad56ca70e2b8f2dc66961059ac7457958091934763d0c58586a45b457a",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+    },
+    {
+      "id": "beauty-fine_art_print_portrait",
+      "family": "fine_art",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_fine_art_print_portrait.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          260,
+          136
+        ],
+        [
+          759,
+          136
+        ],
+        [
+          759,
+          884
+        ],
+        [
+          260,
+          884
+        ]
+      ],
+      "maskBounds": {
+        "x0": 260,
+        "y0": 136,
+        "x1": 759,
+        "y1": 884
+      },
+      "surfaceAspectRatio": 0.6666666666666666,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "6fb1533c5b6cfe88451530916a0878dba2780b4e2bef3ec6182b20a816a15389",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+    },
+    {
+      "id": "beauty-fine_art_print_landscape",
+      "family": "fine_art",
+      "dimensions": [
+        1200,
+        896
+      ],
+      "sourceImage": "product_beauty_fine_art_print_landscape.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          189,
+          188
+        ],
+        [
+          1010,
+          188
+        ],
+        [
+          1010,
+          709
+        ],
+        [
+          189,
+          709
+        ]
+      ],
+      "maskBounds": {
+        "x0": 189,
+        "y0": 188,
+        "x1": 1010,
+        "y1": 709
+      },
+      "surfaceAspectRatio": 1.5,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "52d5713b473693a87c79a061c9f518d9f0c8584e28d109f789cc8de3637c4f90",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+    },
+    {
+      "id": "beauty-matted_frame_square",
+      "family": "matted",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_matted_frame_square.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          276,
+          272
+        ],
+        [
+          741,
+          272
+        ],
+        [
+          741,
+          748
+        ],
+        [
+          276,
+          748
+        ]
+      ],
+      "maskBounds": {
+        "x0": 276,
+        "y0": 272,
+        "x1": 741,
+        "y1": 748
+      },
+      "surfaceAspectRatio": 1,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "060042b20b8a69347cd7d2fb8c949ad38bdfad441516d7d9ce80eb1319a325de",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "matteMask": "matte-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-matted_frame_portrait",
+      "family": "matted",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_matted_frame_portrait.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          315,
+          186
+        ],
+        [
+          708,
+          186
+        ],
+        [
+          708,
+          749
+        ],
+        [
+          315,
+          749
+        ]
+      ],
+      "maskBounds": {
+        "x0": 315,
+        "y0": 186,
+        "x1": 708,
+        "y1": 749
+      },
+      "surfaceAspectRatio": 0.6666666666666666,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "9b3c31294f4204aee30fb29020bffa557d504e7bee810bb71c00c2a76a8940b8",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "matteMask": "matte-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-matted_frame_landscape",
+      "family": "matted",
+      "dimensions": [
+        1200,
+        896
+      ],
+      "sourceImage": "product_beauty_matted_frame_landscape.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          187,
+          168
+        ],
+        [
+          1017,
+          168
+        ],
+        [
+          1017,
+          742
+        ],
+        [
+          187,
+          742
+        ]
+      ],
+      "maskBounds": {
+        "x0": 187,
+        "y0": 168,
+        "x1": 1017,
+        "y1": 742
+      },
+      "surfaceAspectRatio": 1.5,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "280bc1501f0f17d96c4220fd3bce82291aa66ebadbf1b8dc80e7ab37cef3f1f0",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "matteMask": "matte-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-framed_canvas_square",
+      "family": "framed_canvas",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_framed_canvas_square.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          149,
+          126
+        ],
+        [
+          860,
+          126
+        ],
+        [
+          860,
+          839
+        ],
+        [
+          149,
+          839
+        ]
+      ],
+      "maskBounds": {
+        "x0": 149,
+        "y0": 126,
+        "x1": 860,
+        "y1": 839
+      },
+      "surfaceAspectRatio": 1,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "b197a066afa2f8e1e6839199eb1c0ddde706c4fd8d25f8a7c3944674890e9b9e",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-framed_canvas_portrait",
+      "family": "framed_canvas",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_framed_canvas_portrait.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          280,
+          141
+        ],
+        [
+          742,
+          141
+        ],
+        [
+          742,
+          842
+        ],
+        [
+          280,
+          842
+        ]
+      ],
+      "maskBounds": {
+        "x0": 280,
+        "y0": 141,
+        "x1": 742,
+        "y1": 842
+      },
+      "surfaceAspectRatio": 0.6666666666666666,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "798fb219c94de1af440417e49f9414bb9f4cbe108d70a6e4c009b7a29eb71f84",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-framed_canvas_landscape",
+      "family": "framed_canvas",
+      "dimensions": [
+        1200,
+        896
+      ],
+      "sourceImage": "product_beauty_framed_canvas_landscape.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          146,
+          137
+        ],
+        [
+          1054,
+          137
+        ],
+        [
+          1054,
+          759
+        ],
+        [
+          146,
+          759
+        ]
+      ],
+      "maskBounds": {
+        "x0": 146,
+        "y0": 137,
+        "x1": 1054,
+        "y1": 759
+      },
+      "surfaceAspectRatio": 1.5,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "9c3f60af5120e4986c55af9cf21944ce6919d390e4ea6a1cdd73686dc9ea1bc0",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-framed_print_square",
+      "family": "framed",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_framed_print_square.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          177,
+          162
+        ],
+        [
+          843,
+          162
+        ],
+        [
+          843,
+          821
+        ],
+        [
+          177,
+          821
+        ]
+      ],
+      "maskBounds": {
+        "x0": 177,
+        "y0": 162,
+        "x1": 843,
+        "y1": 821
+      },
+      "surfaceAspectRatio": 1,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "7b3ff54660718ea3c9d87c034bea0c137e2fded33e8650e3b51b8c658cd3fecb",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-framed_print_portrait",
+      "family": "framed",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_framed_print_portrait.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          259,
+          122
+        ],
+        [
+          764,
+          122
+        ],
+        [
+          764,
+          862
+        ],
+        [
+          259,
+          862
+        ]
+      ],
+      "maskBounds": {
+        "x0": 259,
+        "y0": 122,
+        "x1": 764,
+        "y1": 862
+      },
+      "surfaceAspectRatio": 0.6666666666666666,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "994726d284dc6762a61444d3a70da25b1337f3511a1354840266051a235c2cf5",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-framed_print_landscape",
+      "family": "framed",
+      "dimensions": [
+        1200,
+        896
+      ],
+      "sourceImage": "product_beauty_framed_print_landscape.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          122,
+          127
+        ],
+        [
+          1079,
+          127
+        ],
+        [
+          1079,
+          777
+        ],
+        [
+          122,
+          777
+        ]
+      ],
+      "maskBounds": {
+        "x0": 122,
+        "y0": 127,
+        "x1": 1079,
+        "y1": 777
+      },
+      "surfaceAspectRatio": 1.5,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "7641abb072dd939c7825e5913e514d9caf553bf9d3050065c9621b2a3c4af4bd",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "frameMask": "frame-mask.svg",
+      "finishPolicy": "Supplied photographic finish retained. Frame/matte masks provided for backend-supported finish integration."
+    },
+    {
+      "id": "beauty-wrapped_canvas_sqaure",
+      "family": "canvas",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_wrapped_canvas_sqaure.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          157,
+          130
+        ],
+        [
+          857,
+          130
+        ],
+        [
+          857,
+          815
+        ],
+        [
+          157,
+          815
+        ]
+      ],
+      "maskBounds": {
+        "x0": 157,
+        "y0": 130,
+        "x1": 857,
+        "y1": 815
+      },
+      "surfaceAspectRatio": 1,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "fd8326441a3af789f31543bb906ee2a03c0c55bf87feadff542c2f397ed9e40a",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+    },
+    {
+      "id": "beauty-wrapped_canvas_portrait",
+      "family": "canvas",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "sourceImage": "product_beauty_wrapped_canvas_portrait.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          482,
+          245
+        ],
+        [
+          1565,
+          245
+        ],
+        [
+          1565,
+          1803
+        ],
+        [
+          482,
+          1803
+        ]
+      ],
+      "maskBounds": {
+        "x0": 482,
+        "y0": 245,
+        "x1": 1565,
+        "y1": 1803
+      },
+      "surfaceAspectRatio": 0.6666666666666666,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "af178aee1de3a7dcb83e163eeb560dcce54c3c86f16d4b70c8dc2f67845d910c",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+    },
+    {
+      "id": "beauty-wrapped_canvas_landscape",
+      "family": "canvas",
+      "dimensions": [
+        1200,
+        896
+      ],
+      "sourceImage": "product_beauty_wrapped_canvas_landscape.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          123,
+          122
+        ],
+        [
+          1065,
+          122
+        ],
+        [
+          1065,
+          749
+        ],
+        [
+          123,
+          749
+        ]
+      ],
+      "maskBounds": {
+        "x0": 123,
+        "y0": 122,
+        "x1": 1065,
+        "y1": 749
+      },
+      "surfaceAspectRatio": 1.5,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "1f478a1bee83b4b973459de9e7199ecb9c7dde763689e0f9453a42c989a0174f",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+    },
+    {
+      "id": "beauty-greeting_card",
+      "family": "card",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sourceImage": "product_beauty_greeting_card.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          259,
+          184
+        ],
+        [
+          744,
+          183
+        ],
+        [
+          744,
+          869
+        ],
+        [
+          259,
+          866
+        ]
+      ],
+      "maskBounds": {
+        "x0": 259,
+        "y0": 184,
+        "x1": 744,
+        "y1": 869
+      },
+      "surfaceAspectRatio": 0.7142857142857143,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "6899427424ed3734823bc051f9f55dd5019b9cb69dac2c5ad6dcb56fc3f28710",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+    },
+    {
+      "id": "beauty-mug",
+      "family": "mug",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "sourceImage": "product_beauty_mug.jpeg",
+      "artworkMask": "artwork-mask.svg",
+      "cornersPixels": [
+        [
+          380,
+          455
+        ],
+        [
+          1420,
+          455
+        ],
+        [
+          1420,
+          1750
+        ],
+        [
+          380,
+          1750
+        ]
+      ],
+      "maskBounds": {
+        "x0": 380,
+        "y0": 455,
+        "x1": 1420,
+        "y1": 1750
+      },
+      "surfaceAspectRatio": 2.4054054054054053,
+      "projection": "photographed-plane",
+      "status": "display-only",
+      "productionPrintFile": false,
+      "sourceSha256": "0abc286f94502ae6dd3f48f45aa5035dfc7043d99a4714f004dea7981745a071",
+      "sourceRevision": "Owner-supplied beauty photographs 2026-10-24",
+      "artworkLayout": "full-wrap",
+      "mapping": {
+        "type": "cylindrical",
+        "centerX": 0.5,
+        "radiusX": 0.5,
+        "top": {
+          "edgeY": 0,
+          "ellipseDepth": 0.05791505791505792
+        },
+        "bottom": {
+          "edgeY": 0.915057915057915,
+          "ellipseDepth": 0.06177606177606178
+        },
+        "assumedWrapAngleRadians": 6.283185307179586
+      },
+      "backendDependency": "Full wrap artwork with subject aligned to the visible face; no square-panel synthesis."
+    }
+  ],
+  "sharedFamilies": {
+    "premium": "fine_art"
+  }
+}

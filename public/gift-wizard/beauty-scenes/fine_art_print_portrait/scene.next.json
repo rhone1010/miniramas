@@ -1,0 +1,40 @@
+{
+  "id": "beauty-fine_art_print_portrait",
+  "family": "fine_art",
+  "dimensions": [
+    1024,
+    1024
+  ],
+  "sourceImage": "product_beauty_fine_art_print_portrait.jpeg",
+  "artworkMask": "artwork-mask.svg",
+  "cornersPixels": [
+    [
+      260,
+      136
+    ],
+    [
+      759,
+      136
+    ],
+    [
+      759,
+      884
+    ],
+    [
+      260,
+      884
+    ]
+  ],
+  "maskBounds": {
+    "x0": 260,
+    "y0": 136,
+    "x1": 759,
+    "y1": 884
+  },
+  "surfaceAspectRatio": 0.6666666666666666,
+  "projection": "photographed-plane",
+  "status": "display-only",
+  "productionPrintFile": false,
+  "sourceSha256": "6fb1533c5b6cfe88451530916a0878dba2780b4e2bef3ec6182b20a816a15389",
+  "sourceRevision": "Owner-supplied beauty photographs 2026-10-24"
+}

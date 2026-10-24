@@ -1,0 +1,27 @@
+Gift Shop beauty scene handoff — 2026-10-24
+
+Frontend scope implemented
+- 17 owner-supplied JPEG files copied byte-for-byte to public/gift-wizard/beauty-scenes/.
+- Manifest: public/gift-wizard/beauty-scenes/manifest.next.json.
+- Each scene has scene.next.json, source JPEG and code-native artwork-mask.svg. Framed products also have frame-mask.svg; matted products have matte-mask.svg.
+- Import/calibration source: tools/product-scenes/import-beauty.next.py. Photo source dimensions retained (landscapes 1200x896, approximately 4:3).
+- Gift-only selector: public/gift-wizard/beauty-scenes.next.js. Premium aliases Fine Art photography, not SKU or price.
+- Shared Product Studio and legacy preview-first path unchanged. Paid sessions retain old scene lookup.
+- New unpaid generation review uses new scene projection. Production generation URL, ID, dimensions and sha256 are never replaced with display data.
+- Desktop/mobile photographs preserve native ratio; landscape long side matches the square side.
+
+CC integration dependency — no backend files modified here
+1. Consume the scene manifest in the existing server scene adapter and include source + SVG masks in renderer tracing/hash inputs. Do not add a separate catalog or resolver.
+2. Mug scene artworkLayout=full-wrap expects an actual 2670:1110 aspect wrap; it intentionally rejects legacy square generation input. Center of the supplied wrap is projected to the visible center of this scene. Align subjects to that face or supply explicit verified face-center metadata and coordinate frontend handling. No repeat/mirror/blur panel construction on this path. Rim/base mask geometry is display calibration, not proof of physical 1/8-inch margins; confirm those against supplier contract.
+3. Server card rendering must supply front artwork, not a full manufacturing spread, for the 5:7 photographed card face.
+4. Use authoritative surface dimensions to validate square, portrait and landscape artwork, not outer photograph dimensions. Homography maps onto the photographed plane; surfaceAspectRatio is separate from 2D pixel bounding ratio.
+5. Frame/matte masks are included, but browser retains supplied photographic finishes. Existing catalog black frame options must not be represented as natural wood without applying the approved existing finish renderer or an accurate matching scene. Finish integration remains required before release.
+6. Preserve existing paid/approved composition manifests, IDs and production assets. New display photography is not a new approval or production file.
+
+Verification
+- All 17 new scene masks loaded and composited in a real local browser with clearly labeled synthetic artwork; no paid API calls.
+- Actual Gift Wizard local walkthrough: selected Marionettes, Fine Art 8x8, then displayed personalized artwork inside the new photograph at desktop and 390px mobile. This was a labeled development fixture, not a real generation/payment. Desktop 1660px and mobile 390px reported no horizontal overflow. All 17 scene outputs retained source dimensions. Pixel comparison using matching CPU canvas contexts found zero changes outside artwork masks. Mug rejected square input with scene_geometry_mismatch.
+- Existing live UI suite: 111 passed initially; the one legacy-photo regression was corrected by retaining familyPhoto in the legacy adapter, and that affected test passed on rerun.
+
+Release status
+Frontend staged for integration. No claim of backend/full-wrap checkout verification. Do not present this as a completed deployed customer journey until CC dependencies are integrated and actual Preview responses are verified.
