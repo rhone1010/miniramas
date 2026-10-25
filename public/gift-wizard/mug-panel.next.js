@@ -45,7 +45,7 @@ export function mugSinglePanelPixels({base,mask,wrap,width,height,wrapWidth,wrap
  if(!isMugSingleLayout(placement?.layout)||placement.reverse!=='white'||placement.face!=='front'||placement.handle!=='right'||!['square','landscape'].includes(placement.composition))throw Error('mug_single_panel_required');
  const r=placement.viewRectPx;
  if(placement.viewPx.w!==wrapWidth||placement.viewPx.h!==wrapHeight||!r||![r.x,r.y,r.w,r.h].every(Number.isInteger)||r.x<0||r.y<0||r.w<=0||r.h<=0||r.x+r.w>wrapWidth||r.y+r.h>wrapHeight)throw Error('mug_placement_mismatch');
- const rendered=mugSurface({base,mask,wrap,width,height,wrapWidth,wrapHeight,geometry,centerX:.5});
+ const rendered=mugSurface({base,mask,wrap,width,height,wrapWidth,wrapHeight,geometry,centerX:.5,panelRect:r});
  const out=new Uint8ClampedArray(base);
  for(let i=0;i<out.length;i+=4){const k=mask[i]/255*mask[i+3]/255;for(let c=0;c<3;c++)out[i+c]=Math.round(base[i+c]*(1-k)+rendered[i+c]*k)}
  return out;
