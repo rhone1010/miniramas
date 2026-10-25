@@ -459,6 +459,8 @@ export async function verifyGenerationComposition(deps: GiftDeps, rec: SessionRe
   const frozen = (item?.frozen as { composition?: { artworkSha256?: string | null; frameColor?: string | null }; product?: { attributes?: Record<string, string> } } | undefined)
   if (frozen?.composition?.artworkSha256 && frozen.composition.artworkSha256 !== g.sha256) throw new GiftError('generation_changed')
   // THE FINISH IS PART OF WHAT WAS APPROVED: the colour the composition was approved for, the colour pinned at checkout and the colour sold (frozen into the order) must all be the same.
+  const pinnedLayout = (frozen?.composition as { layout?: string | null } | undefined)?.layout          // the layout the line was sold in is the layout approved (never reinterpreted with another version's sizes)
+  if (pinnedLayout && (c.plan as { layout?: string }).layout !== pinnedLayout) throw new GiftError('generation_changed')
   const approvedColor = (c.plan as { frameColor?: string }).frameColor
   if (approvedColor !== undefined && (frozen?.composition?.frameColor ?? approvedColor) !== approvedColor || (approvedColor !== undefined && frozen?.product?.attributes?.color !== undefined && frozen.product.attributes.color !== approvedColor)) throw new GiftError('finish_not_accepted')
   const bytes = await deps.storage.get(c.composed_path)

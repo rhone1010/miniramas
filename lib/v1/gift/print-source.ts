@@ -36,6 +36,8 @@ export async function loadApprovedCompositionWith(store: GiftStore, storage: Gif
     const sold = orderRow?.items[job.item_index]?.frozen as { composition?: { artworkSha256?: string | null; frameColor?: string | null }; product?: { attributes?: Record<string, string> } } | undefined
     const pin = sold?.composition
     if (pin?.artworkSha256 && pin.artworkSha256 !== digest) throw new Error('gift_generation_changed')
+    const soldLayout = (pin as { layout?: string | null } | undefined)?.layout
+    if (soldLayout && soldLayout !== (comp.plan as { layout?: string }).layout) throw new Error('gift_layout_changed')
     const approvedColor = (comp.plan as { frameColor?: string }).frameColor          // the finish approved is the finish sold and printed
     if (approvedColor !== undefined && ((pin?.frameColor ?? approvedColor) !== approvedColor || (sold?.product?.attributes?.color ?? approvedColor) !== approvedColor)) throw new Error('gift_finish_changed')
   }

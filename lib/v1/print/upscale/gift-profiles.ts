@@ -9,7 +9,7 @@ import sharp from 'sharp'
 import { preparePanelComposition } from '../asset-pipeline'
 import { compositionPlan } from '../geometry'
 import { buildCardSpread, buildMugFullWrap, buildMugSinglePanel, buildMugWrap, cardQaRegion, isMugFullWrapShape, mugFullWrapQaRegion, mugQaRegion } from '../product-layout'
-import { CARD, MUG, MUG_PANEL_SHAPES, MUG_SINGLE_PANEL, mugPanelShapeOf, type MugComposition } from '../production-profiles'
+import { CARD, MUG, MUG_PANEL_SHAPES, MUG_SINGLE_PANEL, MUG_SINGLE_PANEL_SHAPES, MUG_SINGLE_PANEL_V2, mugPanelShapeOf, type MugComposition, type MugSingleLayout } from '../production-profiles'
 import { validateOutput, type Dim } from './target'
 import type { ArtworkProfile } from './profiles'
 
@@ -49,10 +49,11 @@ const mugPanelProfiles: Record<MugComposition, ArtworkProfile> = {
   square: layoutProfile('mug_wrap', { ...MUG_PANEL_SHAPES.square }, { ...MUG.wrap }, p => buildMugWrap(p, 1), f => mugQaRegion(f, 'square')),
   landscape: layoutProfile('mug_wrap', { ...MUG_PANEL_SHAPES.landscape }, { ...MUG.wrap }, p => buildMugWrap(p, 1), f => mugQaRegion(f, 'landscape')),
 }
-const mugSinglePanelProfiles: Record<MugComposition, ArtworkProfile> = {
-  square: layoutProfile('mug_wrap', { ...MUG_PANEL_SHAPES.square }, { ...MUG.wrap }, p => buildMugSinglePanel(p, 1), f => mugQaRegion(f, 'square')),
-  landscape: layoutProfile('mug_wrap', { ...MUG_PANEL_SHAPES.landscape }, { ...MUG.wrap }, p => buildMugSinglePanel(p, 1), f => mugQaRegion(f, 'landscape')),
-}
+const singleProfiles = (layout: MugSingleLayout): Record<MugComposition, ArtworkProfile> => ({
+  square: layoutProfile('mug_wrap', { ...MUG_SINGLE_PANEL_SHAPES[layout].square }, { ...MUG.wrap }, p => buildMugSinglePanel(p, 1, layout), f => mugQaRegion(f, 'square', layout)),
+  landscape: layoutProfile('mug_wrap', { ...MUG_SINGLE_PANEL_SHAPES[layout].landscape }, { ...MUG.wrap }, p => buildMugSinglePanel(p, 1, layout), f => mugQaRegion(f, 'landscape', layout)),
+})
+const mugSinglePanelProfiles: Record<MugSingleLayout, Record<MugComposition, ArtworkProfile>> = { [MUG_SINGLE_PANEL]: singleProfiles(MUG_SINGLE_PANEL), [MUG_SINGLE_PANEL_V2]: singleProfiles(MUG_SINGLE_PANEL_V2) }
 const mugFullWrapProfile = layoutProfile('mug_wrap', { w: MUG.fullWrap.printable.w, h: MUG.fullWrap.printable.h }, { ...MUG.wrap }, p => buildMugFullWrap(p, 1), mugFullWrapQaRegion)
 /**
  * The mug's layouts, told apart by the shape of the picture the customer approved: a SQUARE or LANDSCAPE panel on the face (the square is every composition made before 2026-10-24, kept exactly
@@ -60,7 +61,7 @@ const mugFullWrapProfile = layoutProfile('mug_wrap', { w: MUG.fullWrap.printable
  */
 /** The layout frozen onto the job when it was prepared (settings_snapshot.layout, from the approved composition); a job without one is a mug made before the single panel and keeps the two-face layout. */
 const layoutOfJob = (job: { settings_snapshot?: Record<string, unknown> | null }): string | undefined => (job.settings_snapshot as { layout?: string } | null | undefined)?.layout
-const mugVariant = (w: number, h: number, layout?: string): ArtworkProfile => isMugFullWrapShape(w, h) ? mugFullWrapProfile : (layout === MUG_SINGLE_PANEL ? mugSinglePanelProfiles : mugPanelProfiles)[mugPanelShapeOf(w, h) ?? 'square']
+const mugVariant = (w: number, h: number, layout?: string): ArtworkProfile => isMugFullWrapShape(w, h) ? mugFullWrapProfile : (layout === MUG_SINGLE_PANEL || layout === MUG_SINGLE_PANEL_V2 ? mugSinglePanelProfiles[layout] : mugPanelProfiles)[mugPanelShapeOf(w, h) ?? 'square']
 export const mugWrapProfile: ArtworkProfile = {
   id: 'mug_wrap',
   async prepare(i) { const m = await sharp(i.source).metadata(); return mugVariant(m.width ?? 0, m.height ?? 0, layoutOfJob(i.job)).prepare(i) },

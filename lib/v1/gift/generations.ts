@@ -13,7 +13,7 @@ import sharp from 'sharp'
 import { createHash } from 'node:crypto'
 import { allProducts, type CanonicalProduct } from '../print/catalog'
 import { generationAspectFor, supportsFavoriteReference } from './aspects'
-import { MUG_COMPOSITIONS, MUG_PANEL_SHAPES, MUG_SINGLE_PANEL, mugSinglePanelPlacement, type MugComposition } from '../print/production-profiles'
+import { MUG_COMPOSITIONS, MUG_SINGLE_PANEL_SHAPES, MUG_SINGLE_PANEL_V2, isMugSingleLayout, mugSinglePanelPlacement, type MugComposition, type MugSingleLayout } from '../print/production-profiles'
 import { liveEffectIds } from './effects'
 import { MAX_CONFORM_CROP, STORAGE } from './policy'
 import { GiftError, fromStoreError, generationViewOf, getSessionView, owned, type GiftDeps } from './service'
@@ -38,7 +38,7 @@ export async function chooseEffect(deps: GiftDeps, userId: string, sessionId: st
  * (`composition`, default square). The 21:9 full wrap is not used.
  */
 export function generationShapeOf(p: CanonicalProduct, composition?: MugComposition | null): { w: number; h: number } {
-  return p.family === 'mug' ? MUG_PANEL_SHAPES[composition ?? 'square'] : p.requirements.picturePx
+  return p.family === 'mug' ? MUG_SINGLE_PANEL_SHAPES[MUG_SINGLE_PANEL_V2][composition ?? 'square'] : p.requirements.picturePx
 }
 export const generationAspectOf = (p: CanonicalProduct, composition?: MugComposition | null): number => { const s = generationShapeOf(p, composition); return Math.round((s.w / s.h) * 1e6) / 1e6 }
 /** Same shape = same composition = shared among products: 'a667' is 2:3, 'a1000' square, 'a1500' 3:2 (a mug panel and a print of the same shape share one generation). */
@@ -47,9 +47,9 @@ export const geometryKeyOf = (p: CanonicalProduct, composition?: MugComposition 
 export const geometryKeysOf = (p: CanonicalProduct): string[] => (p.family === 'mug' ? MUG_COMPOSITIONS.map(c => geometryKeyOf(p, c)) : [geometryKeyOf(p)])
 /** Which mug panel a stored generation (by its geometry key) is; null for any other product. */
 /** What a mug generation's composition plan records, so approval, cart, checkout and manufacturing all see the same layout, orientation and placement. */
-export function mugPlanFields(p: CanonicalProduct, key: string) {
+export function mugPlanFields(p: CanonicalProduct, key: string, layout: MugSingleLayout = MUG_SINGLE_PANEL_V2) {
   const composition = compositionOfKey(p, key) ?? 'square'
-  return { layout: MUG_SINGLE_PANEL, composition, placement: mugSinglePanelPlacement(composition) }
+  return { layout, composition, placement: mugSinglePanelPlacement(composition, layout) }
 }
 export const compositionOfKey = (p: CanonicalProduct, key: string): MugComposition | null => (p.family === 'mug' ? MUG_COMPOSITIONS.find(c => geometryKeyOf(p, c) === key) ?? null : null)
 
@@ -288,7 +288,7 @@ export async function correctGenerationLine(deps: GiftDeps, userId: string, rec:
     geometry_key: g.geometry_key, method: 'generated', source_composition_id: current.id, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
     nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
     plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: p.requirements.pictureAspect, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? mugPlanFields(p, g.geometry_key) : {}), ...(keepFinish ? { frameColor: keepFinish } : {}) },
+            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? mugPlanFields(p, g.geometry_key, isMugSingleLayout((current.plan as { layout?: unknown }).layout) ? (current.plan as { layout: MugSingleLayout }).layout : MUG_SINGLE_PANEL_V2) : {}), ...(keepFinish ? { frameColor: keepFinish } : {}) },
     ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
   })
 }

@@ -214,7 +214,7 @@ describe('beauty scenes and the mug full wrap stay tied to the same composition 
     expect(cartView.lines[0].generationId).toBe(fa.generationId); expect(r.store.compositions.find(c => c.line_id === 'a')).toMatchObject({ generation_id: fa.generationId, width: fa.width, height: fa.height })
   })
 
-  for (const shape of [{ composition: 'square', aspect: '1:1', w: 910, h: 910 }, { composition: 'landscape', aspect: '3:2', w: 900, h: 600 }] as const) {
+  for (const shape of [{ composition: 'square', aspect: '1:1', w: 1034, h: 1034 }, { composition: 'landscape', aspect: '3:2', w: 1122, h: 748 }] as const) {
     it(`the mug, ${shape.composition}: one picture panel from generation to the lab file, with the same generation id, size and sha256 all the way`, async () => {
       const { profileFor } = await import('../print/upscale/profiles')
       const r = rig(); vi.stubGlobal('fetch', r.fetchMock)
@@ -226,11 +226,11 @@ describe('beauty scenes and the mug full wrap stay tied to the same composition 
       expect(g.conform!.trimFraction).toBeLessThan(0.1)
       await acceptGeneration(r.gift, U1, sid, g.generationId)
       await setLines(r.gift, U1, sid, [{ lineId: 'm', productId: 'mug:11oz', copies: 1, generationId: g.generationId }])
-      const comp = r.store.compositions.find(c => c.line_id === 'm')!; expect(comp).toMatchObject({ status: 'approved', generation_id: g.generationId, width: g.width, height: g.height }); expect(comp.plan as any).toMatchObject({ artworkSha256: g.sha256, layout: 'mug_single_panel', composition: shape.composition, placement: { rectPx: { w: shape.w, h: shape.h }, face: 'front', reverse: 'white' } })
-      const order = await pay(r, sid); expect((order.items[0].frozen as any).composition).toMatchObject({ generationId: g.generationId, artworkSha256: g.sha256, width: g.width, height: g.height, layout: 'mug_single_panel', composition: shape.composition, placement: { rectPx: { w: shape.w, h: shape.h } } })          // layout and orientation are pinned with the sale
+      const comp = r.store.compositions.find(c => c.line_id === 'm')!; expect(comp).toMatchObject({ status: 'approved', generation_id: g.generationId, width: g.width, height: g.height }); expect(comp.plan as any).toMatchObject({ artworkSha256: g.sha256, layout: 'mug_single_panel_v2', composition: shape.composition, placement: { layoutVersion: 2, rectPx: { w: shape.w, h: shape.h }, face: 'front', reverse: 'white' } })
+      const order = await pay(r, sid); expect((order.items[0].frozen as any).composition).toMatchObject({ generationId: g.generationId, artworkSha256: g.sha256, width: g.width, height: g.height, layout: 'mug_single_panel_v2', composition: shape.composition, placement: { rectPx: { w: shape.w, h: shape.h } } })          // layout and orientation are pinned with the sale
       await finalizeOrder(r.gift, U1, sid); await releaseOrder(r.gift, { operator: 'test-operator', userId: U1, sessionId: sid })
       const bytes = await loadApprovedCompositionWith(r.store, r.gift.storage, { id: order.id }, { render_id: `gift:${sid}:m`, item_index: 0 }); expect(sha(bytes)).toBe(g.sha256)
-      const { approvedLayoutWith } = await import('./print-source'); expect(await approvedLayoutWith(r.store, { id: order.id }, { render_id: `gift:${sid}:m`, item_index: 0 })).toBe('mug_single_panel')          // what the print job freezes
+      const { approvedLayoutWith } = await import('./print-source'); expect(await approvedLayoutWith(r.store, { id: order.id }, { render_id: `gift:${sid}:m`, item_index: 0 })).toBe('mug_single_panel_v2')          // what the print job freezes
       // the lab file: the real mug profile places exactly this picture on the 2670 x 1110 file, both faces, changing nothing in it
       const job: any = { id: 'j', finish: 'mug', size: '11oz', sku: 'GLOBAL-MUG-W', settings_snapshot: { layout: (comp.plan as any).layout } }, profile = profileFor(job), p = await profile.prepare({ job, source: bytes, ppi: 300 })
       expect(p).toMatchObject({ width: g.width, height: g.height, outpainted: false }); expect((await sharp(p.working).raw().toBuffer()).equals(await sharp(bytes).removeAlpha().raw().toBuffer())).toBe(true)
@@ -246,7 +246,7 @@ describe('beauty scenes and the mug full wrap stay tied to the same composition 
     })
   }
 
-  it('an existing mug (no layout recorded with its job) keeps the two-face layout: the square on both faces', async () => {
+  it('an existing mug (no layout recorded, or the version-1 layout) keeps the two-face layout: the square on both faces', async () => {
     const { profileFor } = await import('../print/upscale/profiles')
     const picture = await sharp({ create: { width: 910, height: 910, channels: 3, background: '#b33' } }).png().toBuffer()
     const job: any = { id: 'j', finish: 'mug', size: '11oz', sku: 'GLOBAL-MUG-W', settings_snapshot: null }, profile = profileFor(job), p = await profile.prepare({ job, source: picture, ppi: 300 })

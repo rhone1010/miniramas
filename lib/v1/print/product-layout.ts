@@ -5,7 +5,7 @@
 // production-profiles.ts. Nothing here crops or distorts a picture: a picture whose shape is not the panel's shape is refused, never squeezed.
 
 import sharp from 'sharp'
-import { CARD, MUG, MUG_SINGLE_PANEL, cardLayout, mugPanelRectsFor, mugPanelShapeOf, type MugComposition, type MugLayout, type Rect } from './production-profiles'
+import { CARD, MUG, cardLayout, isMugSingleLayout, mugPanelRectsFor, mugPanelShapeOf, mugSinglePanelRect, mugViewShift, MUG_SINGLE_PANEL_V2, type MugComposition, type MugLayout, type MugSingleLayout, type Rect } from './production-profiles'
 
 /** A picture may differ from its panel's proportions by this much (rounding of a composed file), never more. */
 export const SHAPE_TOLERANCE = 0.003
@@ -41,10 +41,10 @@ export async function buildMugWrap(picture: Buffer, scale = 1): Promise<Buffer> 
  * The single-panel mug file: the ONE picture, whole, on the front face; white everywhere else (the reverse included). Nothing is duplicated, mirrored, washed or extended.
  * `scale` 1 is the 2670 x 1110 lab file; 0.5 the mockup size.
  */
-export async function buildMugSinglePanel(picture: Buffer, scale = 1): Promise<Buffer> {
+export async function buildMugSinglePanel(picture: Buffer, scale = 1, layout: MugSingleLayout = MUG_SINGLE_PANEL_V2): Promise<Buffer> {
   const pm = await sharp(picture).metadata(), shape = mugPanelShapeOf(pm.width ?? 0, pm.height ?? 0)
   if (!shape) throw new Error('mug_picture_shape_mismatch')
-  const r = mugPanelRectsFor(shape, scale)[1], W = Math.round(MUG.wrap.w * scale), H = Math.round(MUG.wrap.h * scale)
+  const r = mugSinglePanelRect(shape, layout, scale), W = Math.round(MUG.wrap.w * scale), H = Math.round(MUG.wrap.h * scale)
   return sharp({ create: { width: W, height: H, channels: 3, background: '#ffffff' } }).composite([{ input: await sized(picture, r, 'mug_picture_shape_mismatch'), left: r.x, top: r.y }]).png().toBuffer()
 }
 
@@ -87,8 +87,8 @@ export async function buildCardSpread(picture: Buffer, scale = 1): Promise<Buffe
 }
 
 /** The part of a finished file that is the PICTURE, for inspection (QA compares only this). */
-export async function mugQaRegion(final: Buffer, shape: MugComposition = 'square'): Promise<Buffer> {
-  const r = mugPanelRectsFor(shape, 1)[1]                                   // the face a right-handed mug shows; the other face is the same picture
+export async function mugQaRegion(final: Buffer, shape: MugComposition = 'square', layout?: MugLayout): Promise<Buffer> {
+  const r = isMugSingleLayout(layout) ? mugSinglePanelRect(shape, layout, 1) : mugPanelRectsFor(shape, 1)[1]                                   // the face a right-handed mug shows; the other face is the same picture
   return sharp(final).extract({ left: r.x, top: r.y, width: r.w, height: r.h }).jpeg({ quality: 95 }).toBuffer()
 }
 export async function cardQaRegion(final: Buffer): Promise<Buffer> {
@@ -103,8 +103,8 @@ export async function cardQaRegion(final: Buffer): Promise<Buffer> {
 export async function mockupInputFor(family: 'mug' | 'card', picture: Buffer, opts: { mugLayout?: MugLayout } = {}): Promise<Buffer> {
   if (family === 'mug') {
     const pm = await sharp(picture).metadata()
-    const wrap = opts.mugLayout === MUG_SINGLE_PANEL ? await buildMugSinglePanel(picture, MUG.mockupScale) : isMugFullWrapShape(pm.width ?? 0, pm.height ?? 0) ? await buildMugFullWrap(picture, MUG.mockupScale) : await buildMugWrap(picture, MUG.mockupScale), W = Math.round(MUG.wrap.w * MUG.mockupScale), H = Math.round(MUG.wrap.h * MUG.mockupScale)
-    const shift = (((Math.round(W / 2 - MUG.mockupFaceCenterX * MUG.mockupScale)) % W) + W) % W        // roll the wrap sideways (it is a circle): the right-handed face lands in the middle
+    const wrap = isMugSingleLayout(opts.mugLayout) ? await buildMugSinglePanel(picture, MUG.mockupScale, opts.mugLayout) : isMugFullWrapShape(pm.width ?? 0, pm.height ?? 0) ? await buildMugFullWrap(picture, MUG.mockupScale) : await buildMugWrap(picture, MUG.mockupScale), W = Math.round(MUG.wrap.w * MUG.mockupScale), H = Math.round(MUG.wrap.h * MUG.mockupScale)
+    const shift = mugViewShift(MUG.mockupScale)        // roll the wrap sideways (it is a circle): the right-handed face lands in the middle
     if (!shift) return wrap
     const tail = await sharp(wrap).extract({ left: W - shift, top: 0, width: shift, height: H }).png().toBuffer()
     const head = await sharp(wrap).extract({ left: 0, top: 0, width: W - shift, height: H }).png().toBuffer()
