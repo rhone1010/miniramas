@@ -15,11 +15,13 @@ function imageData(value: string): string | null {
 }
 export async function readRemedySource(userId:string,art:any) {
   if(art.kind!=='portfolio')return null
-  const {data:pf,error}=await db.from('portfolios').select('id,user_id,source_image,series,subject,composition')
+  const {data:pf,error}=await db.from('portfolios').select('id,user_id,source_image,source_sha256,source_deleted_at,series,subject,composition')
     .eq('id',art.portfolioId).eq('user_id',userId).maybeSingle()
   if(error||!pf)return null
   const source=imageData(pf.source_image)
-  return {portfolio:pf,source,sourceHash:source?hashRemedyIdentity(Buffer.from(source.split(',')[1],'base64').toString('base64')):null}
+  // After the 60-day retention the photograph is gone but its identity hash is kept, so repeat-refund detection still works; a redo then needs a new photograph.
+  const sourceHash=source?hashRemedyIdentity(Buffer.from(source.split(',')[1],'base64').toString('base64')):(pf.source_sha256||null)
+  return {portfolio:pf,source,sourceHash,retained:!!source}
 }
 
 // Reuses Concierge's existing API/model family and Collection's clean-original

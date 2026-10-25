@@ -62,7 +62,7 @@ export async function authorizeRemedyCase(user:{id:string,email?:string|null},ca
   alreadyRemediedArtwork:prior.some((p:any)=>p.artwork?.id===c.artwork.id&&['redo','refund','source_photo'].includes(p.authorized_remedy)),
   identityNeedsReview:!paymentVerified||!source?.sourceHash||!!source?.portfolio?.composition?.remedy?.case_id||
    (c.requested_remedy==='redo'&&!['portraits','pets'].includes(source?.portfolio?.series)),
-  paymentVerified,eligibleCents,evidence:evidence.classification})
+  paymentVerified,eligibleCents,evidence:evidence.classification,sourceRetained:source?.retained})
  return rpc('authorize_make_it_right_case',{p_case:caseId,p_user:user.id,p_decision:{...decision,
   identity_keys:[...new Set(identityKeys)],source_hash:source?.sourceHash||null,evidence,
   refund_allocations:decision.remedy==='refund'?allocations:[]}})

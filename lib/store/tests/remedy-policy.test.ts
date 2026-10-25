@@ -17,11 +17,16 @@ it('holds repeat artwork and uncertain related identities for review',()=>{
  expect(decideRemedy({...base,alreadyRemediedArtwork:true}).remedy).toBe('review')
  expect(decideRemedy({...base,identityNeedsReview:true}).remedy).toBe('review')
 })
-it('uses subsequent evidence for the approved remedy outcomes',()=>{
- expect(decideRemedy({...base,firstGoodwill:false,evidence:'likely_failure'})).toMatchObject({remedy:'refund',amountCents:391,consumeGoodwill:false})
- expect(decideRemedy({...base,firstGoodwill:false,evidence:'source_limitation'}).remedy).toBe('source_photo')
- expect(decideRemedy({...base,firstGoodwill:false,evidence:'meets_effect'}).remedy).toBe('redo')
- expect(decideRemedy({...base,firstGoodwill:false,evidence:'uncertain'}).remedy).toBe('redo')
+it('uses subsequent evidence for the non-cash outcomes',()=>{
+ const redo={...base,requested:'redo' as const,firstGoodwill:false}
+ expect(decideRemedy({...redo,evidence:'source_limitation'}).remedy).toBe('source_photo')
+ expect(decideRemedy({...redo,evidence:'meets_effect'}).remedy).toBe('redo')
+ expect(decideRemedy({...redo,evidence:'uncertain'}).remedy).toBe('redo')
+ expect(decideRemedy({...redo,evidence:'likely_failure'}).remedy).toBe('redo')
+})
+it('pays one automatic goodwill refund per customer: every later refund claim goes to review, whatever the evidence',()=>{
+ for(const evidence of ['likely_failure','source_limitation','meets_effect','uncertain'] as const)
+  expect(decideRemedy({...base,firstGoodwill:false,evidence})).toEqual({remedy:'review',source:'subsequent_review',amountCents:0,consumeGoodwill:false})
 })
 it('does not consume goodwill when the customer asks to talk',()=>{
  expect(decideRemedy({...base,requested:'contact'})).toMatchObject({remedy:'contact',consumeGoodwill:false,amountCents:0})

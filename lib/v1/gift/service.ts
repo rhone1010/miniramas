@@ -617,12 +617,38 @@ async function sweepLateFiles(deps: GiftDeps, sessionId: string): Promise<void> 
 }
 
 /** Sweep: expired, unpinned sessions lose their source photo, masters, previews and rows. Paid packs are never touched. */
-export async function purgeExpired(deps: GiftDeps, limit = 25): Promise<{ purged: number; failed: number }> {
-  let purged = 0, failed = 0
+export async function purgeExpired(deps: GiftDeps, limit = 25): Promise<{ purged: number; failed: number; held: number }> {
+  let purged = 0, failed = 0, held = 0
   for (const rec of await deps.store.expiredSessions(iso(now(deps)), limit)) {
-    try { await removeObjects(deps, rec); await deps.store.deleteSession(rec.id); purged++ } catch { failed++ }
+    try {
+      if (await deps.store.sessionHasOpenDispute(rec.id)) { held++; continue }          // an open dispute suspends every deletion
+      await removeObjects(deps, rec); await deps.store.deleteSession(rec.id); purged++
+    } catch { failed++ }
   }
-  return { purged, failed }
+  return { purged, failed, held }
+}
+
+/**
+ * SOURCE PHOTOGRAPH RETENTION (approved policy): the customer's photograph is deleted 60 days after they approved their artwork. Only the photograph goes: the masters, previews, compositions and
+ * approved manufacturing files stay, and so do the rows and the photograph's sha256 (a hash, not the picture). An open dispute suspends the deletion. Idempotent and safe to retry: the object is
+ * removed first and the path cleared after, so a failure between the two leaves a session that is simply found again; removing a missing object is not an error.
+ * `apply: false` only reports what would be deleted. Nothing is signed for a source photograph anywhere, so no outstanding URL can reach it.
+ */
+export async function purgeApprovedSources(deps: GiftDeps, opts: { apply: boolean; limit?: number } = { apply: false }): Promise<{ due: number; deleted: number; held: number; failed: number; ids: string[] }> {
+  const cutoff = iso(now(deps) - RETENTION.sourceDays * DAY)
+  let due = 0, deleted = 0, held = 0, failed = 0; const ids: string[] = []
+  for (const rec of await deps.store.approvedSourcesDue(cutoff, opts.limit ?? 50)) {
+    try {
+      if (!rec.source_path) continue
+      if (await deps.store.sessionHasOpenDispute(rec.id)) { held++; continue }
+      due++; ids.push(rec.id)
+      if (!opts.apply) continue
+      await deps.storage.remove([rec.source_path])
+      await deps.store.patchSession(rec.id, rec.user_id, { source_path: null })
+      deleted++
+    } catch { failed++ }
+  }
+  return { due, deleted, held, failed, ids }
 }
 
 /** Resume a batch: only previews that are not ready run, and nothing is reserved or charged. */

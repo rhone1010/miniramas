@@ -107,6 +107,8 @@ export const MAX_COPIES = 20
  *   - Paid preview packs are financial records and are never deleted by cleanup; they belong to the user, not the session.
  */
 export const RETENTION = {
+  /** Source photographs are deleted this many days after the qualifying event (approved policy 2026-10-25). */
+  sourceDays: 60,
   /** Idle time before an unpinned session expires (each batch or edit extends it to at least this far ahead). */
   sessionIdleDays: 7,
   /** Hard ceiling from creation, whatever the activity. */

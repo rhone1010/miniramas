@@ -109,6 +109,10 @@ export interface GiftStore extends GenerationStore {
   fulfillPack(userId: string, stripeSessionId: string, amountCents: number): Promise<string>
   expiredSessions(nowIso: string, limit: number): Promise<SessionRec[]>
   deleteSession(id: string): Promise<void>
+  /** 060 (source photograph retention): sessions still holding a source photograph whose customer approval (final approval, else release) is at or before `cutoffIso`. */
+  approvedSourcesDue(cutoffIso: string, limit: number): Promise<SessionRec[]>
+  /** 060: an open dispute on this session: an open refund request, or an unresolved Make It Right case on its artwork (or one not scoped to a single artwork). Suspends every deletion. */
+  sessionHasOpenDispute(sessionId: string): Promise<boolean>
 
   // ── 048 ──
   linkOrder(sessionId: string, userId: string, orderId: string, disclosureVersion: string): Promise<void>
@@ -226,6 +230,11 @@ export function supabaseGiftStore(db: any): GiftStore {
       return (await one(db.from('gift_sessions').select('*').eq('status', 'active').is('pinned_at', null).lt('expires_at', nowIso).limit(limit))) ?? []
     },
     async deleteSession(id) { await one(db.from('gift_sessions').delete().eq('id', id)) },
+    async approvedSourcesDue(cutoffIso, limit) {
+      return (await one(db.from('gift_sessions').select('*').eq('status', 'active').not('source_path', 'is', null)
+        .or(`final_approved_at.lt.${cutoffIso},and(final_approved_at.is.null,approved_at.lt.${cutoffIso})`).limit(limit))) ?? []
+    },
+    async sessionHasOpenDispute(sessionId) { return (await rpc('retention_gift_session_disputed', { p_session: sessionId })) === true },
 
     async linkOrder(sessionId, userId, orderId, v) { await rpc('gift_link_order', { p_session: sessionId, p_user: userId, p_order: orderId, p_version: v }) },
     async getOrder(orderId) { return await one(db.from('print_orders').select(ORDER_COLS).eq('id', orderId).maybeSingle()) },
@@ -303,6 +312,8 @@ export function memoryGiftStore(clock: () => number = Date.now) {
   const freeGrants: Array<{ user_id: string; source_sha256: string; session_id: string | null; batch_id?: string; generation_id?: string; at: number }> = []     // the free-batch ledger: survives session deletion
   const portfolios: MemoryPortfolio[] = [], refunds = new Map<string, { order_id: string; amount: number }>()
   const refundRequests = new Map<string, { id: string; session_id: string; status: 'requested' | 'refunded' | 'declined' }>()
+  /** Tests: sessions with an unresolved Make It Right case (the memory stand-in for support_messages). */
+  const disputedSessions = new Set<string>()
   const repairClaims = new Map<string, { token: string; expiresAt: number }>()
   const compositionJobs = new Map<string, CompositionJobRec & { token: string }>()
   const jobKey = (s: string, p: string, g: string) => s + '|' + p + '|' + g
@@ -379,6 +390,13 @@ export function memoryGiftStore(clock: () => number = Date.now) {
       const id = randomUUID(); packs.push({ id, user_id: userId, stripe_session_id: stripeSessionId, amount_cents: amountCents, status: 'paid' }); return id
     },
     async expiredSessions(nowIso, limit) { return [...sessions.values()].filter(s => s.status === 'active' && !s.pinned_at && s.expires_at < nowIso).slice(0, limit).map(s => structuredClone(s)) },
+    async approvedSourcesDue(cutoffIso, limit) {
+      return [...sessions.values()].filter(x => x.status === 'active' && !!x.source_path && (x.final_approved_at ?? x.approved_at) != null && (x.final_approved_at ?? x.approved_at)! < cutoffIso).slice(0, limit).map(x => structuredClone(x))
+    },
+    async sessionHasOpenDispute(sessionId) {
+      const x = sessions.get(sessionId)
+      return disputedSessions.has(sessionId) || (!!x?.refund_requested_at && !x.refunded_at) || [...refundRequests.values()].some(r => r.session_id === sessionId && r.status === 'requested')
+    },
     async deleteSession(id) {
       sessions.delete(id)
       for (const list of [batches, previews, lines, compositions] as Array<Array<{ session_id: string }>>) for (let i = list.length - 1; i >= 0; i--) if (list[i].session_id === id) list.splice(i, 1)
@@ -553,5 +571,5 @@ export function memoryGiftStore(clock: () => number = Date.now) {
     },
     async releaseSession(orderId) { const s = [...sessions.values()].find(x => x.order_id === orderId); if (s?.pinned_at) { s.pinned_at = null; s.expires_at = iso(clock() + 7 * 864e5) } },
   }
-  return Object.assign(store, { ownedArtwork, sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests, compositionJobs, generations: gen.generations })
+  return Object.assign(store, { ownedArtwork, sessions, batches, previews, packs, orders, lines, compositions, portfolios, refunds, refundRequests, disputedSessions, compositionJobs, generations: gen.generations })
 }

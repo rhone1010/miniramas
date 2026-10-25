@@ -15,6 +15,10 @@
     {
       "path": "/api/v1/gift/cleanup",
       "schedule": "37 3 * * *"
+    },
+    {
+      "path": "/api/v1/retention/cleanup",
+      "schedule": "47 3 * * *"
     }
   ]
 }
