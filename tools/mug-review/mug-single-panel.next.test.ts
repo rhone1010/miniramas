@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';import sharp from 'sharp';import fs from 'node:fs/promises';
+import {mugSinglePanelPixels} from '../../public/gift-wizard/mug-panel.next.js';
+import {mockupInputFor} from '../../lib/v1/print/product-layout';import {mugSinglePanelPlacement,MUG_PANEL_SHAPES} from '../../lib/v1/print/production-profiles';
+test('single-panel beauty uses exact backend view and preserves photographic background',async()=>{
+ const root='public/gift-wizard/beauty-scenes/mug/';const base=await sharp(root+'product_beauty_mug.jpeg').ensureAlpha().raw().toBuffer({resolveWithObject:true}),mask=await sharp(root+'artwork-mask.svg').ensureAlpha().raw().toBuffer();const geometry=JSON.parse(await fs.readFile(root+'surface.next.json','utf8'));
+ for(const composition of ['square','landscape'] as const){const shape=MUG_PANEL_SHAPES[composition],picture=await sharp({create:{width:shape.w,height:shape.h,channels:3,background:'#c42'}}).png().toBuffer();const view=await mockupInputFor('mug',picture,{mugLayout:'mug_single_panel'}),wrap=await sharp(view).ensureAlpha().raw().toBuffer({resolveWithObject:true}),placement=mugSinglePanelPlacement(composition),before=Buffer.from(wrap.data);
+ const args={base:base.data,mask,wrap:wrap.data,width:base.info.width,height:base.info.height,wrapWidth:wrap.info.width,wrapHeight:wrap.info.height,geometry,placement};const out=mugSinglePanelPixels(args);assert.deepEqual(wrap.data,before);let changed=0;for(let i=0;i<out.length;i+=4){if(mask[i]===0)assert.equal(out[i],base.data[i]);else if(out[i]!==base.data[i])changed++}assert.ok(changed>10000);assert.throws(()=>mugSinglePanelPixels({...args,placement:{...placement,layout:'mug_two_face'}}),/single_panel_required/);assert.throws(()=>mugSinglePanelPixels({...args,wrapWidth:100}),/placement_mismatch/);
+ }
+});

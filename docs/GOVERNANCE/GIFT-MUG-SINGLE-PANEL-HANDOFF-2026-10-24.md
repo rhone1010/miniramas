@@ -17,3 +17,9 @@ Frontend prepared: public/gift-wizard/mug-panel.next.js. It preserves the approv
 Local visual review: http://127.0.0.1:54327/panel.html. Explicit development-only placement until the backend contract is ready. Not connected to live acceptance or checkout yet.
 
 2026-10-25 integration: bdb418b4 supplies square/landscape generation.options and composition POST. Remaining blocker: gift-profiles.ts routes both to buildMugWrap, which composites two panels (including a mirrored duplicate) onto a blurred wash. New orders require one panel on white and a white reverse, under a distinct persisted layout version so existing paid square mugs remain unchanged. Supply matching preview input/placement for that version before frontend single-panel activation.
+
+2026-10-25 resolution: bb876e25 supplies mug_single_panel and exact placement. Frontend now composites the supplied 1335×555 beauty view with the existing cylindrical mapping, retains the original background, and displays one view. Legacy inputs without placement retain their original renderer. Square/Landscape choices are taken from availability.
+
+Verification: real local create/effect/generation/preview/accept/lines handlers with in-memory storage and clearly labeled simulated model output. Desktop square and 390px landscape reached explicit acceptance, cart and checkout entry. Refresh retained the landscape cart. Only two generation POSTs occurred, each carrying the selected composition. No payment or external order submitted. Pixel preservation, backend placement, legacy print behavior, renderer bundle and mocked checkout identity checks passed.
+
+Contract port (2026-10-25): lib/v1/print/production-profiles.ts lines 1–210 → public/gift-wizard/backend-contracts/print/production-profiles.ts lines 1–210. 210 lines in / 210 out; byte-identical; no deviations. JavaScript compiled from that TypeScript contract.

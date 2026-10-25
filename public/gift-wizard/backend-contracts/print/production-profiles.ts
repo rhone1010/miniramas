@@ -34,6 +34,16 @@ export const MUG = {
   panel: { w: 910, h: 910 },
   /** Distance from the top of the file to the top of the panel. (liten_policy: a conservative margin, because top/bottom coverage is unverified for this SKU) */
   panelTop: 100,
+  /**
+   * THE FULL-WRAP COMPOSITION (2026-10-24, the product-first mug): ONE picture across the whole wrap, no panel, no repetition, no mirror, no wash.
+   *   printable     the part of the lab file that carries picture: the full width, inside an unprinted band of about 1/8 inch (0.125 in x 300 dpi = 37.5 px, 38 px) at the rim and at the base.
+   *                 (liten_policy: the owner's request. It sits INSIDE Prodigi's printable area, 2670 x 1110 (prodigi_api), so it never asks for more than the lab prints; the mug is white
+   *                 ceramic, so a white band is "unprinted". Prodigi guarantees top-to-bottom coverage only for H-MUG-W; the band is the margin that makes that question not matter.)
+   *   subjectX      where the picture's centre (its subjects) lands in the FILE: the middle of the face a right-handed mug shows (prodigi_template, 2069). The picture is rolled by `rollPx`
+   *                 (a circle: the part that would pass the right edge continues at the left edge), so nothing is cut, mirrored or invented.
+   *   The picture's own two edges meet at x = rollPx (behind the mug for a right-handed viewer, 180 degrees from the visible face). The handle seam stays at the file's edges, as Prodigi's template requires.
+   */
+  fullWrap: { unprintedMarginIn: 0.125, marginPx: 38, printable: { x: 0, y: 38, w: 2670, h: 1034 }, subjectX: 2069, rollPx: 734 },
   /** The scale a mockup wrap is built at. 1/2 keeps 2670:1110 exact (1335 x 555). */
   mockupScale: 0.5,
   /** The mockup template shows the mug with the handle on the RIGHT, so the face it shows is the one at x = 2069. The wrap is rolled so that face is in the middle of the file (where the cylindrical mapping looks). */
@@ -44,6 +54,44 @@ export const MUG = {
     'Whether Prodigi\'s lab applies any bleed loss at the top or bottom edge.',
   ],
 } as const
+
+/**
+ * THE MUG PICTURE PANELS (2026-10-24: the full wrap is NOT used; the customer chooses a SQUARE or LANDSCAPE panel shown whole on the face; there is no portrait mug). Sizes in lab-file pixels at 300 dpi (liten_policy):
+ * the square panel is the existing 910 x 910 (kept exactly, existing orders are unchanged); landscape is 3:2 (900 x 600, 3 x 2 in). All sit inside the
+ * face window of our preview renderer (about 930 px) and inside the 38 px design margins; the picture is placed on BOTH template faces, vertically centred.
+ */
+export const MUG_PANEL_SHAPES = { square: { w: 910, h: 910 }, landscape: { w: 900, h: 600 } } as const
+export type MugComposition = keyof typeof MUG_PANEL_SHAPES
+export const MUG_COMPOSITIONS = ['square', 'landscape'] as const
+/** Which panel a picture is, by its shape (within 0.3%), or null. */
+export function mugPanelShapeOf(w: number, h: number): MugComposition | null {
+  if (!(w > 0 && h > 0)) return null
+  return MUG_COMPOSITIONS.find(k => Math.abs(w / h / (MUG_PANEL_SHAPES[k].w / MUG_PANEL_SHAPES[k].h) - 1) <= 0.003) ?? null
+}
+/** The two face rectangles (lab-file pixels, scaled) of a panel shape: centred on the template faces, vertically centred (the square keeps its legacy top of 100). */
+export function mugPanelRectsFor(shape: MugComposition, scale = 1): Rect[] {
+  const r = (v: number) => Math.round(v * scale), s = MUG_PANEL_SHAPES[shape], top = shape === 'square' ? MUG.panelTop : Math.round((MUG.wrap.h - s.h) / 2)
+  return MUG.faceCentersX.map(cx => ({ x: r(cx - s.w / 2), y: r(top), w: r(s.w), h: r(s.h) }))
+}
+
+/**
+ * THE SINGLE-PANEL MUG LAYOUT (2026-10-25, 'mug_single_panel'): ONE picture panel on ONE face (the face a right-handed mug shows, handle on the right); the reverse and everything else in the lab file stay WHITE.
+ * Nothing is duplicated, mirrored or washed. Every product-first (generation) mug uses it. Mugs made before it keep their layout: the square on BOTH faces with the soft wash ('mug_two_face'), decided by the layout
+ * frozen with the order, never by the picture's shape.
+ */
+export const MUG_SINGLE_PANEL = 'mug_single_panel' as const
+export const MUG_TWO_FACE = 'mug_two_face' as const
+export type MugLayout = typeof MUG_SINGLE_PANEL | typeof MUG_TWO_FACE
+/** Where the single panel sits in the 2670 x 1110 print file (and, rolled so the front face is in the middle, in the 1335 x 555 view the preview and the browser beauty shot use). */
+export function mugSinglePanelPlacement(shape: MugComposition) {
+  const rect = mugPanelRectsFor(shape, 1)[1], s = MUG.mockupScale, vw = Math.round(MUG.wrap.w * s), vh = Math.round(MUG.wrap.h * s), vr = { w: Math.round(rect.w * s), h: Math.round(rect.h * s) }
+  return {
+    layout: MUG_SINGLE_PANEL, composition: shape, orientation: shape, face: 'front' as const, handle: 'right' as const, reverse: 'white' as const,
+    panelPx: { w: rect.w, h: rect.h }, filePx: { w: MUG.wrap.w, h: MUG.wrap.h }, rectPx: { x: rect.x, y: rect.y, w: rect.w, h: rect.h },
+    viewPx: { w: vw, h: vh }, viewRectPx: { x: Math.round(vw / 2 - vr.w / 2), y: Math.round(rect.y * s), ...vr },
+  }
+}
+export type MugSinglePanelPlacement = ReturnType<typeof mugSinglePanelPlacement>
 
 /** The panel rectangles (in lab-file pixels) on the two faces. */
 export function mugPanelRects(scale = 1): Rect[] {

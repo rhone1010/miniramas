@@ -1,6 +1,7 @@
 import { frameColors, frameFinishes } from './frame-finishes.next.js';
 import { framePhotograph, productScene } from './product-scene.next.js';
 import { mugBeautyViews, mugReview } from './mug-beauty.next.js';
+import { mugSinglePanelPreview } from './mug-panel.next.js';
 import { beautyPhoto } from './beauty-scenes.next.js';
 import { giftCompositionEligibility } from '../product-studio/gift-composition-policy.next.js';
 import { mountStudio, familyPhoto } from '../product-studio/studio.next.js';
@@ -887,7 +888,7 @@ finally {
 } }
 function selectedProduct() { const p = products.find(p => p.id === studioState.productId); return { p, o: p?.options.find(o => o.size === studioState.size) }; }
 function generationPreviewKey(g, p, o, color) { return live.id + ':generation:' + g.generationId + ':' + g.sha256 + ':' + p.id + ':' + o.size + ':' + (color || ''); }
-function beautyCacheKey(key, v) { return key + ':beauty:' + v.beauty?.sceneId + ':' + v.beautyInput?.url; }
+function beautyCacheKey(key, v) { return key + ':beauty:' + v.beauty?.sceneId + ':' + v.beautyInput?.url + ':' + JSON.stringify(v.beautyInput?.placement || null); }
 function generationPreviewReady(g) {
     if (journeyDemo || live && purchased(live.session))
         return true;
@@ -942,7 +943,7 @@ function serverGenerationPicture(g, p, o, color = selectedFinish(p, o)) {
         if (sceneFailures.has(cacheKey))
             return failed();
         if (!scenePending.has(cacheKey)) {
-            const picture = p.id === 'mug' && input.kind === 'mug_full_wrap_view' ? mugBeautyViews(input.url).then(mug => { mugPictures.set(cacheKey, mug); return mug.front; }) : productScene(source, input.url, input.aspect, frame?.selected);
+            const picture = p.id === 'mug' && input.kind === 'mug_full_wrap_view' ? (input.placement?.layout === 'mug_single_panel' ? mugSinglePanelPreview(input) : mugBeautyViews(input.url).then(mug => { mugPictures.set(cacheKey, mug); return mug.front; })) : productScene(source, input.url, input.aspect, frame?.selected);
             scenePending.add(cacheKey);
             void picture.then((url) => scenePictures.set(cacheKey, url)).catch(() => sceneFailures.add(cacheKey)).finally(() => { scenePending.delete(cacheKey); if (live === owner && ['generation', 'acceptance', 'cart', 'checkout', 'complete', 'payment'].includes(view))
                 render(); });
@@ -967,7 +968,8 @@ function generationPicture(g, productId = studioState.productId, size = studioSt
     }
     return photo(g.url, 'Your exact composition', 'gift-feature-image') + '<p class="small" role="status">' + (!source || sceneFailures.has(key) ? 'Product photography is not available for this configuration. Your exact artwork is shown.' : 'Preparing your product photograph…') + '</p>';
 }
-function generationDetails() { const { p, o } = selectedProduct(); return '<h2>' + esc(p?.label || 'Your Gift') + '</h2><p>' + esc(o?.label || '') + '</p><p>' + esc(Object.entries({ ...o?.attributes, ...(p && o && selectedFinish(p, o) ? { color: journeyDemo ? generationFrameColors[selectedGeneration()?.generationId || ''] || selectedFinish(p, o) : selectedFinish(p, o) } : {}) }).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><p>' + esc(effects().find(e => e.id === session.effectIds[0])?.label || '') + '</p>'; }
+function mugCompositionText(g) { const c = mugOptions().find(o => o.geometryKey === g?.geometryKey)?.composition; return c ? ({ square: 'Square', landscape: 'Landscape' }[c]) : ''; }
+function generationDetails() { const { p, o } = selectedProduct(); return '<h2>' + esc(p?.label || 'Your Gift') + '</h2><p>' + esc([o?.label, p?.id === 'mug' ? mugCompositionText(selectedGeneration()) : ''].filter(Boolean).join(' · ')) + '</p><p>' + esc(Object.entries({ ...o?.attributes, ...(p && o && selectedFinish(p, o) ? { color: journeyDemo ? generationFrameColors[selectedGeneration()?.generationId || ''] || selectedFinish(p, o) : selectedFinish(p, o) } : {}) }).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><p>' + esc(effects().find(e => e.id === session.effectIds[0])?.label || '') + '</p>'; }
 function changeGenerationSelection() { go('effects'); }
 function renderProductGeneration() {
     const g = selectedGeneration(), a = live?.session?.generations?.allowance;
@@ -990,7 +992,7 @@ function renderCompositionAcceptance() {
     pivotRail('Approve<br>Composition');
     $('screen').innerHTML = g ? generationPicture(g) : '';
     $('right').innerHTML = generationDetails() + '<p>Review the people, details and arrangement in your artwork. Accept this exact composition to continue.</p>' + (compositionAccepted(g) ? '<p role="status">Composition accepted. Payment and manufacturing release are separate.</p>' : '') + secondary('review-again', 'Back to Image');
-    primary(compositionAccepted(g) ? 'Add to Cart' : studioState.productId === 'mug' ? 'Accept Complete Wrap' : 'Accept Composition', () => { if (journeyDemo) {
+    primary(compositionAccepted(g) ? 'Add to Cart' : 'Accept Composition', () => { if (journeyDemo) {
         if (!g)
             return;
         if (!g.accepted) {
@@ -1132,7 +1134,7 @@ function renderPivotProducts() {
     const familyOrder = ['fine_art', 'premium', 'framed', 'mug', 'matted', 'canvas', 'framed_canvas', 'card'];
     const choices = [...products].sort((a, b) => familyOrder.indexOf(a.id) - familyOrder.indexOf(b.id)).map(p => ({ ...p, unavailableOptions: unavailableCatalogOptions.get(p.id), image: beautyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => productAvailability.has(p.id + ':' + o.size) || giftCompositionEligibility(p, o, pivotSubjectCount()).allowed) }));
     mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
-        sizeHeading: 'Choose a Size to Continue', requireSizeClick: true, detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => detailPhotograph(p, o), configurationHtml: (p, o) => mugConfiguration(p) + frameConfiguration(p, o), onConfiguration: color => { if (color.startsWith('mug:')) {
+        sizeHeading: 'Choose a Size to Continue', requireSizeClick: true, showCatalogAspect: p => p.id !== 'mug', detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(p.id === 'mug' ? o.familyNote.replace(' with a full image wrap', '') : o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => detailPhotograph(p, o), configurationHtml: (p, o) => mugConfiguration(p) + frameConfiguration(p, o), onConfiguration: color => { if (color.startsWith('mug:')) {
             const composition = color.slice(4);
             if (mugOptions().some(o => o.supported && o.composition === composition)) {
                 try {
