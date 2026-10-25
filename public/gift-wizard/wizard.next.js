@@ -801,12 +801,31 @@ let productGenerationPending = false, productGenerationTimer;
 function selectedGeneration() { if (journeyDemo)
     return demoItems.find(g => g.generationId === selectedGenerationId) || demoItems.at(-1); return live?.session?.generations?.items.find(g => g.generationId === selectedGenerationId) || live?.session?.generations?.items.at(-1); }
 function generationLineImage(l) { const g = (journeyDemo ? demoItems : live?.session?.generations?.items)?.find(g => g.generationId === l.generationId); return g?.url ? generationPicture(g, l.productId, l.size, l.frameColor) : '<p role="status">This product preview could not load.</p>'; }
-function productIntentKey() { return 'liten-gift-generation:' + live.id + ':' + live.session.generations.effectId + ':' + studioState.productId + ':' + studioState.size; }
+function mugOptions() { return productAvailability.get('mug:11oz')?.generation.options || []; }
+function selectedMugOption() {
+    let choice = null;
+    try {
+        choice = sessionStorage.getItem('gift-mug-composition:' + live?.id);
+    }
+    catch { }
+    const current = live?.session?.generations?.items.filter(g => g.productId === 'mug:11oz').at(-1);
+    return mugOptions().find(o => o.supported && (choice ? o.composition === choice : o.geometryKey === current?.geometryKey)) || mugOptions().find(o => o.supported);
+}
+function matchesMugComposition(g) { return studioState.productId !== 'mug' || g.geometryKey === selectedMugOption()?.geometryKey; }
+function mugConfiguration(p) {
+    if (p.id !== 'mug' || live?.session && purchased(live.session))
+        return '';
+    const selected = selectedMugOption();
+    return '<div class="sizes" aria-label="Square or Landscape">' + mugOptions().map(o => '<button type="button" data-configuration="mug:' + o.composition + '" aria-pressed="' + (selected === o) + '" ' + (!o.supported ? 'disabled' : '') + '>' + ({ square: 'Square', landscape: 'Landscape' }[o.composition]) + '</button>').join('') + '</div>';
+}
+function productIntentKey() { return 'liten-gift-generation:' + live.id + ':' + live.session.generations.effectId + ':' + studioState.productId + ':' + studioState.size + (studioState.productId === 'mug' ? ':' + selectedMugOption()?.composition : ''); }
 async function craftProduct(retry = false) {
     if (!live || busy || productGenerationPending || live.session?.flow !== 'generations')
         return;
+    if (studioState.productId === 'mug' && !selectedMugOption())
+        return;
     if (!retry) {
-        const ready = live.session.generations?.items.find(g => g.productId === studioState.productId + ':' + studioState.size && g.status === 'ready' && g.url && g.sha256);
+        const ready = live.session.generations?.items.find(g => g.productId === studioState.productId + ':' + studioState.size && g.status === 'ready' && g.url && g.sha256 && matchesMugComposition(g));
         if (ready) {
             selectedGenerationId = ready.generationId;
             go('generation');
@@ -828,7 +847,7 @@ async function craftProduct(retry = false) {
     view = 'generation';
     render();
     try {
-        const r = await owner.api.generateProduct(owner.id, { productId: studioState.productId + ':' + studioState.size, idempotencyKey: intent, mode: retry ? 'new' : 'reuse_or_generate' });
+        const r = await owner.api.generateProduct(owner.id, { productId: studioState.productId + ':' + studioState.size, idempotencyKey: intent, mode: retry ? 'new' : 'reuse_or_generate', ...(studioState.productId === 'mug' ? { composition: selectedMugOption().composition } : {}) });
         if (live !== owner)
             return;
         owner.accept(r.session);
@@ -1113,7 +1132,16 @@ function renderPivotProducts() {
     const familyOrder = ['fine_art', 'premium', 'framed', 'mug', 'matted', 'canvas', 'framed_canvas', 'card'];
     const choices = [...products].sort((a, b) => familyOrder.indexOf(a.id) - familyOrder.indexOf(b.id)).map(p => ({ ...p, unavailableOptions: unavailableCatalogOptions.get(p.id), image: beautyPhoto({ id: p.id, image: asset(p.image) }), options: p.options.filter(o => productAvailability.has(p.id + ':' + o.size) || giftCompositionEligibility(p, o, pivotSubjectCount()).allowed) }));
     mountStudio($('screen'), { products: choices, state: studioState, navigationHost: $('left'), configurationHost: $('right'),
-        sizeHeading: 'Choose a Size to Continue', requireSizeClick: true, detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => detailPhotograph(p, o), configurationHtml: (p, o) => frameConfiguration(p, o), onConfiguration: color => { const { p, o } = selectedProduct(); if (!p || !o || !finishOptions(p, o).includes(color))
+        sizeHeading: 'Choose a Size to Continue', requireSizeClick: true, detailsIntroHtml: (p, o) => '<h3>Your Product</h3>' + (o.familyNote ? '<div class="product-guidance"><p>' + esc(o.familyNote) + '</p></div>' : ''), detailsHtml: (p, o) => detailPhotograph(p, o), configurationHtml: (p, o) => mugConfiguration(p) + frameConfiguration(p, o), onConfiguration: color => { if (color.startsWith('mug:')) {
+            const composition = color.slice(4);
+            if (mugOptions().some(o => o.supported && o.composition === composition)) {
+                try {
+                    sessionStorage.setItem('gift-mug-composition:' + live?.id, composition);
+                }
+                catch { }
+            }
+            return;
+        } const { p, o } = selectedProduct(); if (!p || !o || !finishOptions(p, o).includes(color))
             return; if (journeyDemo) {
             previewFrameColors[p.id] = color;
             demoAccepted = false;
@@ -1122,7 +1150,7 @@ function renderPivotProducts() {
         else {
             frameDrafts[p.id + ':' + o.size] = color;
             rememberView();
-        } o.attributes = { ...o.attributes, color }; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && (journeyDemo || !!live?.session?.generations?.effectId && (['free', 'paid'].includes(live.session.generations.allowance.next) || live.session.generations.items.some(g => g.status === 'ready' && g.productId === p.id + ':' + o.size))), onAdd: () => journeyDemo ? demoCraft() : void craftProduct(), busy, addLabel: 'Show me a Preview of My Art',
+        } o.attributes = { ...o.attributes, color }; }, previewHtml: p => photo(p.image, p.label), canAdd: (p, o) => p.available && o.compatible !== false && (journeyDemo || !!live?.session?.generations?.effectId && (['free', 'paid'].includes(live.session.generations.allowance.next) || live.session.generations.items.some(g => g.status === 'ready' && g.productId === p.id + ':' + o.size && matchesMugComposition(g)))), onAdd: () => journeyDemo ? demoCraft() : void craftProduct(), busy, addLabel: 'Show me a Preview of My Art',
         onChange: s => { studioState = s; const { p, o } = selectedProduct(); if (p && o) {
             const color = selectedFinish(p, o);
             if (color)

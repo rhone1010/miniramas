@@ -6,7 +6,7 @@ export function giftCompositionEligibility(product, option, subjectCount) {
     const pictureRatio = w / h;
     // Generation aspect never changes the catalog's physical wrap or card geometry.
     if (product.id === 'mug')
-        return { allowed: true, reason: null, aspect: '21:9', pictureRatio, placement: 'primary_visible_area' };
+        return { allowed: true, reason: null, aspect: 'catalog', pictureRatio, placement: 'picture' };
     if (product.id === 'card')
         return { allowed: true, reason: null, aspect: 'catalog', pictureRatio, placement: 'picture' };
     const matches = (ratio) => Math.abs(pictureRatio / ratio - 1) <= 0.02;

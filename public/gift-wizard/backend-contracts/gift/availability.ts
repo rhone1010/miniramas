@@ -41,12 +41,15 @@ export interface ProductAvailability {
    */
   blockers: string[]
   /** The product-first generation for THIS product and the series of this session: the ratio asked of NB2.1, how much of the picture is trimmed to reach the exact shape (fraction per axis), or why it cannot. */
-  generation: { supported: true; requestedAspect: string; trimFraction: number; geometryKey: string } | { supported: false; reason: 'no_ratio_within_bound_for_series' | 'not_a_launch_candidate' }
+  generation: ({ supported: true; requestedAspect: string; trimFraction: number; geometryKey: string } | { supported: false; reason: 'no_ratio_within_bound_for_series' | 'not_a_launch_candidate' }) & {
+    /** Mug only: the two picture compositions the customer can choose (send `composition` to POST .../generations), each with what the series can make. null for every other product. The top-level fields describe the first supported one (square, landscape). */
+    options?: Array<{ composition: 'square' | 'landscape'; picturePx: { w: number; h: number }; supported: boolean; requestedAspect?: string; trimFraction?: number; geometryKey?: string; reason?: string }> | null
+  }
   frameColors: { supported: string[]; default: string; selected: string } | null
   /** Which display-only beauty photograph may show this configuration (finish, orientation and opening all match), the artwork input it needs, or why none (lib/v1/gift/beauty-scenes.ts). */
   beauty: import('./beauty-scenes').BeautyRouting
   /** The manufacturing configuration the backend sends to Prodigi. Fixed by LITEN, not customer-selectable; `unexposed` lists what Prodigi offers that is deliberately not offered. */
-  configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number; generationPicturePx: { w: number; h: number }; generationAspect: number; layout: 'flat' | 'mug_full_wrap' | 'card_spread' }
+  configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number; generationPicturePx: { w: number; h: number }; generationAspect: number; layout: 'flat' | 'mug_panel' | 'card_spread' }
 }
 
 export interface AvailabilityView {

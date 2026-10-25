@@ -62,7 +62,7 @@ export class GiftBackend {
   return v;
  }
  chooseEffect(id:string,effectId:string){return this.session('POST',sessionPath(id)+'/effect',{effectId})}
- async generateProduct(id:string,body:{productId:string;idempotencyKey:string;mode:'reuse_or_generate'|'new'}){const v=await this.request<{generation:GenerationView;session:SessionView}>('POST',sessionPath(id)+'/generations',body);assertSession(v.session);return v}
+ async generateProduct(id:string,body:{productId:string;idempotencyKey:string;mode:'reuse_or_generate'|'new';composition?:'square'|'landscape'}){const v=await this.request<{generation:GenerationView;session:SessionView}>('POST',sessionPath(id)+'/generations',body);assertSession(v.session);return v}
  async acceptGeneration(id:string,gid:string){const v=await this.request<{generation:GenerationView;session:SessionView}>('POST',sessionPath(id)+'/generations/'+segment(gid)+'/accept');assertSession(v.session);return v}
  startBatch(id:string,b:BatchRequest):Promise<BatchResponse>{return this.request('POST',sessionPath(id)+'/batches',{idempotencyKey:b.idempotencyKey,effectIds:b.effectIds})}
  retryBatch(id:string,n:number):Promise<BatchResponse>{if(!Number.isInteger(n)||n<1)throw new GiftApiError('invalid_batch_index',0);return this.request('POST',sessionPath(id)+'/batches/'+n+'/retry')}

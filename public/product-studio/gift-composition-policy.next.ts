@@ -14,7 +14,7 @@ export function giftCompositionEligibility(product:Pick<StudioProduct,'id'>,opti
  if(!Number.isFinite(w)||!Number.isFinite(h)||w<=0||h<=0)return {allowed:false,reason:'invalid_catalog_geometry',aspect:null,pictureRatio:null,placement:'picture'};
  const pictureRatio=w/h;
  // Generation aspect never changes the catalog's physical wrap or card geometry.
- if(product.id==='mug')return {allowed:true,reason:null,aspect:'21:9',pictureRatio,placement:'primary_visible_area'};
+ if(product.id==='mug')return {allowed:true,reason:null,aspect:'catalog',pictureRatio,placement:'picture'};
  if(product.id==='card')return {allowed:true,reason:null,aspect:'catalog',pictureRatio,placement:'picture'};
  const matches=(ratio:number)=>Math.abs(pictureRatio/ratio-1)<=0.02;
  const aspect:GiftCompositionAspect|null=matches(1)?'1:1':matches(2/3)?'2:3':matches(3/2)?'3:2':null;

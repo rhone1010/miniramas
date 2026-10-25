@@ -19,9 +19,9 @@ test('real catalog keeps all eight families, prices, finishes and SKU availabili
  assert.equal(JSON.stringify(catalog),before);
  const p=catalog.products.find(p=>p.id==='matted');const row=giftCompositionOptions(p,p.options,1)[0];assert.equal(row.composition.allowed,true);assert.equal(row.option.compatible,false);assert.equal(p.available,false);
 });
-test('mug generation aspect and visible-area placement never replace physical wrap geometry',()=>{
+test('mug composition is delegated to availability without imposing a wrap generation aspect',()=>{
  const p=catalog.products.find(p=>p.id==='mug'),o=p.options[0],r=eligible(p,o,5);
- assert.equal(r.aspect,'21:9');assert.equal(r.placement,'primary_visible_area');assert.equal(r.pictureRatio,8.9/3.7);assert.notEqual(r.pictureRatio,21/9);assert.equal(p.available,false);
+ assert.equal(r.aspect,'catalog');assert.equal(r.placement,'picture');assert.equal(r.pictureRatio,8.9/3.7);assert.notEqual(r.pictureRatio,21/9);assert.equal(p.available,false);
 });
 test('card uses its actual verified orientation instead of wall-art aspect rules',()=>{
  const p=catalog.products.find(p=>p.id==='card'),r=eligible(p,p.options[0],5);
