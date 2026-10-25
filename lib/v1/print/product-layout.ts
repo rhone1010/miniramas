@@ -5,7 +5,7 @@
 // production-profiles.ts. Nothing here crops or distorts a picture: a picture whose shape is not the panel's shape is refused, never squeezed.
 
 import sharp from 'sharp'
-import { CARD, MUG, cardLayout, mugPanelRects, type Rect } from './production-profiles'
+import { CARD, MUG, cardLayout, mugPanelRectsFor, mugPanelShapeOf, type MugComposition, type Rect } from './production-profiles'
 
 /** A picture may differ from its panel's proportions by this much (rounding of a composed file), never more. */
 export const SHAPE_TOLERANCE = 0.003
@@ -25,7 +25,9 @@ async function sized(picture: Buffer, rect: Rect, code: string): Promise<Buffer>
  */
 export async function buildMugWrap(picture: Buffer, scale = 1): Promise<Buffer> {
   const W = Math.round(MUG.wrap.w * scale), H = Math.round(MUG.wrap.h * scale), half = Math.round(MUG.wrap.w / 2 * scale)
-  const rects = mugPanelRects(scale)
+  const pm = await sharp(picture).metadata(), shape = mugPanelShapeOf(pm.width ?? 0, pm.height ?? 0)         // square, portrait or landscape; anything else is refused, never squeezed
+  if (!shape) throw new Error('mug_picture_shape_mismatch')
+  const rects = mugPanelRectsFor(shape, scale)
   const panels = await Promise.all(rects.map(r => sized(picture, r, 'mug_picture_shape_mismatch')))
   const left = await sharp(picture).resize(half, H, { fit: 'cover' }).png().toBuffer()
   const right = await sharp(picture).flop().resize(W - half, H, { fit: 'cover' }).png().toBuffer()
@@ -74,8 +76,8 @@ export async function buildCardSpread(picture: Buffer, scale = 1): Promise<Buffe
 }
 
 /** The part of a finished file that is the PICTURE, for inspection (QA compares only this). */
-export async function mugQaRegion(final: Buffer): Promise<Buffer> {
-  const r = mugPanelRects(1)[1]                                   // the face a right-handed mug shows; the other face is the same picture
+export async function mugQaRegion(final: Buffer, shape: MugComposition = 'square'): Promise<Buffer> {
+  const r = mugPanelRectsFor(shape, 1)[1]                                   // the face a right-handed mug shows; the other face is the same picture
   return sharp(final).extract({ left: r.x, top: r.y, width: r.w, height: r.h }).jpeg({ quality: 95 }).toBuffer()
 }
 export async function cardQaRegion(final: Buffer): Promise<Buffer> {

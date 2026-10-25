@@ -14,6 +14,7 @@ import { planFor } from './composition-plan'
 import { GIFT_ENABLED_FAMILIES, GIFT_PRODUCT_HOLDS } from '../print/gift-enablement'
 import { resolveBeautyScene } from './beauty-scenes'
 import { FRAME_COLOR_DEFAULT, frameColorsFor, lineFrameColor } from './frame-colors'
+import { MUG_COMPOSITIONS, MUG_PANEL_SHAPES } from '../print/production-profiles'
 import { generationAspectOf, generationShapeOf, generationTargetFor } from './generations'
 import { GiftError, owned, type GiftDeps } from './service'
 import { approvedSceneFor, noScenePresentation, representationFields, type PreviewBasis } from './presentation'
@@ -61,7 +62,10 @@ export interface ProductAvailability {
    */
   blockers: string[]
   /** The product-first generation for THIS product and the series of this session: the ratio asked of NB2.1, how much of the picture is trimmed to reach the exact shape (fraction per axis), or why it cannot. */
-  generation: { supported: true; requestedAspect: string; trimFraction: number; geometryKey: string } | { supported: false; reason: 'no_ratio_within_bound_for_series' | 'not_a_launch_candidate' }
+  generation: ({ supported: true; requestedAspect: string; trimFraction: number; geometryKey: string } | { supported: false; reason: 'no_ratio_within_bound_for_series' | 'not_a_launch_candidate' }) & {
+    /** Mug only: the two picture compositions the customer can choose (send `composition` to POST .../generations), each with what the series can make. null for every other product. The top-level fields describe the first supported one (square, landscape). */
+    options?: Array<{ composition: 'square' | 'landscape'; picturePx: { w: number; h: number }; supported: boolean; requestedAspect?: string; trimFraction?: number; geometryKey?: string; reason?: string }> | null
+  }
   /** Frame colour (Classic Frame, Matted Frame, Framed Canvas; null for every other product): the exact Prodigi values this product is sold in, the default, and the colour currently selected for this session's line of the product (the default when none). */
   frameColors: { supported: string[]; default: string; selected: string } | null
   /** Which display-only beauty photograph may show this configuration (finish, orientation and opening all match), the artwork input it needs, or why none (lib/v1/gift/beauty-scenes.ts). */
@@ -69,7 +73,7 @@ export interface ProductAvailability {
   /** The manufacturing configuration the backend sends to Prodigi. Fixed by LITEN, not customer-selectable; `unexposed` lists what Prodigi offers that is deliberately not offered. */
   configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number
     /** The shape of the picture a GENERATION for this product has (equals picturePx except the mug: the full-wrap band 2670 x 1034, with the 1/8 inch unprinted rim and base inside the 2670 x 1110 lab file). */
-    generationPicturePx: { w: number; h: number }; generationAspect: number; layout: 'flat' | 'mug_full_wrap' | 'card_spread' }
+    generationPicturePx: { w: number; h: number }; generationAspect: number; layout: 'flat' | 'mug_panel' | 'card_spread' }
 }
 
 export interface AvailabilityView {
@@ -93,12 +97,20 @@ export function blockersOf(p: CanonicalProduct): string[] {
   if (!GIFT_ENABLED_FAMILIES.includes(p.family)) b.push('family_not_launched')
   return b.length ? b : [p.disabledReason ?? 'not_launched']
 }
+function genOne(t: NonNullable<ReturnType<typeof generationTargetFor>>) {
+  const ext = Math.max(ratioOf(t.aspect) / t.targetAspect, t.targetAspect / ratioOf(t.aspect)) - 1
+  return { requestedAspect: t.aspect, trimFraction: Math.round((1 - 1 / (1 + ext)) * 1e4) / 1e4, geometryKey: t.geometryKey }
+}
 function genOf(p: CanonicalProduct, series: Series | null, people: number | null): ProductAvailability['generation'] {
   if (p.disabledReason === 'not_a_launch_candidate') return { supported: false, reason: 'not_a_launch_candidate' }
+  if (p.family === 'mug') {
+    const options = MUG_COMPOSITIONS.map(composition => { const t = generationTargetFor(p, series, people, composition); return t ? { composition, picturePx: { ...MUG_PANEL_SHAPES[composition] }, supported: true, ...genOne(t) } : { composition, picturePx: { ...MUG_PANEL_SHAPES[composition] }, supported: false, reason: 'no_ratio_within_bound_for_series' } })
+    const first = options.find(o => o.supported) as (typeof options)[number] & { requestedAspect: string; trimFraction: number; geometryKey: string } | undefined
+    return first ? { supported: true, requestedAspect: first.requestedAspect, trimFraction: first.trimFraction, geometryKey: first.geometryKey, options } : { supported: false, reason: 'no_ratio_within_bound_for_series', options }
+  }
   const t = generationTargetFor(p, series, people)
   if (!t) return { supported: false, reason: 'no_ratio_within_bound_for_series' }
-  const ext = Math.max(ratioOf(t.aspect) / t.targetAspect, t.targetAspect / ratioOf(t.aspect)) - 1
-  return { supported: true, requestedAspect: t.aspect, trimFraction: Math.round((1 - 1 / (1 + ext)) * 1e4) / 1e4, geometryKey: t.geometryKey }
+  return { supported: true, ...genOne(t) }
 }
 
 export async function getProductAvailability(deps: GiftDeps, userId: string, sessionId: string): Promise<AvailabilityView> {
@@ -126,7 +138,7 @@ export async function getProductAvailability(deps: GiftDeps, userId: string, ses
       beauty: resolveBeautyScene(p, selectedColor(p)),
       frameColors: frameColorsFor(p) ? { supported: [...frameColorsFor(p)!], default: FRAME_COLOR_DEFAULT, selected: selectedColor(p)! } : null,
       generation: genOf(p, rec.series, rec.analysis.peopleCount ?? null),
-      configuration: { artworkProfile: p.artworkProfile, skuOrientation: p.requirements.skuOrientation, fixedAttributes: p.attributes, unexposed: p.unexposedOptions, picturePx: p.requirements.picturePx, finalPx: p.requirements.finalPx, pictureAspect: p.requirements.pictureAspect, generationPicturePx: generationShapeOf(p), generationAspect: generationAspectOf(p), layout: p.family === 'mug' ? 'mug_full_wrap' : p.family === 'card' ? 'card_spread' : 'flat' },
+      configuration: { artworkProfile: p.artworkProfile, skuOrientation: p.requirements.skuOrientation, fixedAttributes: p.attributes, unexposed: p.unexposedOptions, picturePx: p.requirements.picturePx, finalPx: p.requirements.finalPx, pictureAspect: p.requirements.pictureAspect, generationPicturePx: generationShapeOf(p), generationAspect: generationAspectOf(p), layout: p.family === 'mug' ? 'mug_panel' : p.family === 'card' ? 'card_spread' : 'flat' },
     }
   })
   const orient = (o: 'square' | 'portrait' | 'landscape') => { const ids = products.filter(x => x.purchasable && x.configuration.skuOrientation === o).map(x => x.productId); return { supported: ids.length > 0, reason: ids.length ? null : `no_${o}_sku_verified_with_prodigi`, productIds: ids } }

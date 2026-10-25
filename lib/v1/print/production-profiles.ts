@@ -55,6 +55,25 @@ export const MUG = {
   ],
 } as const
 
+/**
+ * THE MUG PICTURE PANELS (2026-10-24: the full wrap is NOT used; the customer chooses a SQUARE or LANDSCAPE panel shown whole on the face; there is no portrait mug). Sizes in lab-file pixels at 300 dpi (liten_policy):
+ * the square panel is the existing 910 x 910 (kept exactly, existing orders are unchanged); landscape is 3:2 (900 x 600, 3 x 2 in). All sit inside the
+ * face window of our preview renderer (about 930 px) and inside the 38 px design margins; the picture is placed on BOTH template faces, vertically centred.
+ */
+export const MUG_PANEL_SHAPES = { square: { w: 910, h: 910 }, landscape: { w: 900, h: 600 } } as const
+export type MugComposition = keyof typeof MUG_PANEL_SHAPES
+export const MUG_COMPOSITIONS = ['square', 'landscape'] as const
+/** Which panel a picture is, by its shape (within 0.3%), or null. */
+export function mugPanelShapeOf(w: number, h: number): MugComposition | null {
+  if (!(w > 0 && h > 0)) return null
+  return MUG_COMPOSITIONS.find(k => Math.abs(w / h / (MUG_PANEL_SHAPES[k].w / MUG_PANEL_SHAPES[k].h) - 1) <= 0.003) ?? null
+}
+/** The two face rectangles (lab-file pixels, scaled) of a panel shape: centred on the template faces, vertically centred (the square keeps its legacy top of 100). */
+export function mugPanelRectsFor(shape: MugComposition, scale = 1): Rect[] {
+  const r = (v: number) => Math.round(v * scale), s = MUG_PANEL_SHAPES[shape], top = shape === 'square' ? MUG.panelTop : Math.round((MUG.wrap.h - s.h) / 2)
+  return MUG.faceCentersX.map(cx => ({ x: r(cx - s.w / 2), y: r(top), w: r(s.w), h: r(s.h) }))
+}
+
 /** The panel rectangles (in lab-file pixels) on the two faces. */
 export function mugPanelRects(scale = 1): Rect[] {
   const r = (v: number) => Math.round(v * scale)

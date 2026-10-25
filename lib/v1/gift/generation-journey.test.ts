@@ -214,35 +214,63 @@ describe('beauty scenes and the mug full wrap stay tied to the same composition 
     expect(cartView.lines[0].generationId).toBe(fa.generationId); expect(r.store.compositions.find(c => c.line_id === 'a')).toMatchObject({ generation_id: fa.generationId, width: fa.width, height: fa.height })
   })
 
-  it('the mug: one full-wrap composition from generation to the lab file, with the same generation id, size and sha256 all the way', async () => {
-    const { getProductPreview } = await import('./product-preview'); const { realSceneRenderer } = await import('./mockup-real'); const { profileFor } = await import('../print/upscale/profiles')
+  for (const shape of [{ composition: 'square', aspect: '1:1', w: 910, h: 910 }, { composition: 'landscape', aspect: '3:2', w: 900, h: 600 }] as const) {
+    it(`the mug, ${shape.composition}: one picture panel from generation to the lab file, with the same generation id, size and sha256 all the way`, async () => {
+      const { profileFor } = await import('../print/upscale/profiles')
+      const r = rig(); vi.stubGlobal('fetch', r.fetchMock)
+      const v = await createSession(r.gift, { userId: U1, imageB64: await photo() }); const sid = v.sessionId
+      await chooseEffect(r.gift, U1, sid, liveEffectIds('portraits')[0])
+      const out = await startGeneration(r.gift, U1, sid, { productId: 'mug:11oz', composition: shape.composition, idempotencyKey: key(1) }); const g = out.generation
+      expect(r.calls[0].body).toMatchObject({ output_aspect_ratio: shape.aspect, product_composition: true })                    // the model is asked for the panel ratio directly (never a wrap ratio)
+      expect(g).toMatchObject({ status: 'ready' }); expect(g.width! * shape.h).toBe(g.height! * shape.w)                          // exactly the panel's shape
+      expect(g.conform!.trimFraction).toBeLessThan(0.1)
+      await acceptGeneration(r.gift, U1, sid, g.generationId)
+      await setLines(r.gift, U1, sid, [{ lineId: 'm', productId: 'mug:11oz', copies: 1, generationId: g.generationId }])
+      const comp = r.store.compositions.find(c => c.line_id === 'm')!; expect(comp).toMatchObject({ status: 'approved', generation_id: g.generationId, width: g.width, height: g.height }); expect(comp.plan as any).toMatchObject({ artworkSha256: g.sha256, layout: 'mug_panel', composition: shape.composition })
+      const order = await pay(r, sid); expect((order.items[0].frozen as any).composition).toMatchObject({ generationId: g.generationId, artworkSha256: g.sha256, width: g.width, height: g.height })
+      await finalizeOrder(r.gift, U1, sid); await releaseOrder(r.gift, { operator: 'test-operator', userId: U1, sessionId: sid })
+      const bytes = await loadApprovedCompositionWith(r.store, r.gift.storage, { id: order.id }, { render_id: `gift:${sid}:m`, item_index: 0 }); expect(sha(bytes)).toBe(g.sha256)
+      // the lab file: the real mug profile places exactly this picture on the 2670 x 1110 file, both faces, changing nothing in it
+      const job: any = { id: 'j', finish: 'mug', size: '11oz', sku: 'GLOBAL-MUG-W' }, profile = profileFor(job), p = await profile.prepare({ job, source: bytes, ppi: 300 })
+      expect(p).toMatchObject({ width: g.width, height: g.height, outpainted: false }); expect((await sharp(p.working).raw().toBuffer()).equals(await sharp(bytes).removeAlpha().raw().toBuffer())).toBe(true)
+      const f = await profile.finish({ job: { ...job, input_w: g.width, input_h: g.height, required_front_w: p.requiredFront.w, required_front_h: p.requiredFront.h }, image: bytes, upscaled: false, targetMp: 8 } as any)
+      expect(await sharp(f.jpeg).metadata()).toMatchObject({ width: 2670, height: 1110 })
+    })
+  }
+
+  it('the mug: a portrait or unknown composition is refused, and a composition on another product is refused', async () => {
     const r = rig(); vi.stubGlobal('fetch', r.fetchMock)
-    const sceneRender = vi.fn(async (i: { artwork: Buffer }) => ({ png: await sharp({ create: { width: 1254, height: 1254, channels: 3, background: '#789' } }).png().toBuffer(), width: 1254, height: 1254, templateRevision: 'rev-1', visualizationKey: 'k', metadata: {} }))
-    ;(r.gift as any).mockup = { revision: async () => 'cal', render: vi.fn(), scenes: { describe: (id: string) => realSceneRenderer.describe(id), revision: async () => 'rev-1', render: sceneRender } }
     const v = await createSession(r.gift, { userId: U1, imageB64: await photo() }); const sid = v.sessionId
     await chooseEffect(r.gift, U1, sid, liveEffectIds('portraits')[0])
-    const out = await startGeneration(r.gift, U1, sid, { productId: 'mug:11oz', idempotencyKey: key(1) }); const g = out.generation
-    expect(r.calls[0].body).toMatchObject({ output_aspect_ratio: '21:9', product_composition: true })                    // the model is asked for the wide wrap ratio directly
-    expect(g).toMatchObject({ status: 'ready', geometryKey: 'a2582' }); expect(g.width! % 1335 === 0 && g.height! % 517 === 0 && g.width! / 1335 === g.height! / 517).toBe(true)          // an exact whole multiple of the wrap's 1335:517 grid
-    expect(g.conform!.trimFraction).toBeGreaterThan(0.09); expect(g.conform!.trimFraction).toBeLessThan(0.1)
-    const view = await getProductPreview(r.gift, U1, sid, 'mug:11oz', { generationId: g.generationId })
-    expect(view).toMatchObject({ status: 'ready', renderer: 'scene', sceneId: 'ceramic-mug' })
-    expect((view as any).beauty).toMatchObject({ sceneId: 'beauty-mug', input: { kind: 'mug_full_wrap_view' } })
-    const mi = (view as any).beautyInput; expect(mi).toMatchObject({ kind: 'mug_full_wrap_view', generationId: g.generationId, sha256: g.sha256, width: 1335, height: 555 })          // the 2670:1110 wrap view, not the raw 2670 x 1034 band and not a rendered photograph
-    expect(await sharp(r.files.get(mi.url.replace('https://signed.test/', ''))!).metadata()).toMatchObject({ width: 1335, height: 555 })
-    const given = sceneRender.mock.calls[0][0].artwork, gm = await sharp(given).metadata()
-    expect([gm.width, gm.height]).toEqual([1335, 555])                                                                  // the rolled full wrap the scene maps onto the cylinder (a VIEW, not the print file)
-    await acceptGeneration(r.gift, U1, sid, g.generationId)
-    await setLines(r.gift, U1, sid, [{ lineId: 'm', productId: 'mug:11oz', copies: 1, generationId: g.generationId }])
-    const comp = r.store.compositions.find(c => c.line_id === 'm')!; expect(comp).toMatchObject({ status: 'approved', generation_id: g.generationId, width: g.width, height: g.height, geometry_key: 'a2582' }); expect((comp.plan as any)).toMatchObject({ artworkSha256: g.sha256, layout: 'mug_full_wrap' })
-    const order = await pay(r, sid); expect((order.items[0].frozen as any).composition).toMatchObject({ generationId: g.generationId, artworkSha256: g.sha256, width: g.width, height: g.height })
-    await finalizeOrder(r.gift, U1, sid); await releaseOrder(r.gift, { operator: 'test-operator', userId: U1, sessionId: sid })
-    const bytes = await loadApprovedCompositionWith(r.store, r.gift.storage, { id: order.id }, { render_id: `gift:${sid}:m`, item_index: 0 }); expect(sha(bytes)).toBe(g.sha256)
-    // the lab file: the real mug profile builds the full wrap from exactly this picture
-    const job: any = { id: 'j', finish: 'mug', size: '11oz', sku: 'GLOBAL-MUG-W' }, profile = profileFor(job), p = await profile.prepare({ job, source: bytes, ppi: 300 })
-    expect(p).toMatchObject({ width: g.width, height: g.height, requiredFront: { w: 2670, h: 1034 }, outpainted: false }); expect((await sharp(p.working).raw().toBuffer()).equals(await sharp(bytes).removeAlpha().raw().toBuffer())).toBe(true)
-    const f = await profile.finish({ job: { ...job, input_w: g.width, input_h: g.height, required_front_w: 2670, required_front_h: 1034 }, image: g.width! >= 2670 ? bytes : await sharp(bytes).resize(2672, 1035).png().toBuffer(), upscaled: g.width! < 2670, targetMp: 8 })
-    expect(await sharp(f.jpeg).metadata()).toMatchObject({ width: 2670, height: 1110 })
+    await expect(startGeneration(r.gift, U1, sid, { productId: 'mug:11oz', composition: 'portrait' as any, idempotencyKey: key(1) })).rejects.toMatchObject({ code: 'invalid_composition' })
+    await expect(startGeneration(r.gift, U1, sid, { productId: 'matted:12x18', composition: 'square' as any, idempotencyKey: key(2) })).rejects.toMatchObject({ code: 'invalid_composition' })
+    expect(r.calls.length).toBe(0)                                                                                              // nothing reached a model
+  })
+
+  it('Groups, five people, Action Figures: the mug is selectable and its generation goes to the Groups handler with a normal Groups format', async () => {
+    const { getProductAvailability } = await import('./availability')
+    const r = rig(); vi.stubGlobal('fetch', r.fetchMock)
+    ;(r.gift as any).analyze = async () => ({ status: 'supported', series: 'groups', peopleCount: 5 })
+    const v = await createSession(r.gift, { userId: U1, imageB64: await photo() }); const sid = v.sessionId
+    const av = await getProductAvailability(r.gift, U1, sid); const mug = av.products.find(x => x.productId === 'mug:11oz')!
+    expect(mug.purchasable).toBe(true); expect((mug.generation as any).supported).toBe(true)
+    expect(((mug.generation as any).options as any[]).map(o => [o.composition, o.supported, o.requestedAspect])).toEqual([['square', true, '1:1'], ['landscape', true, '3:2']])
+    await chooseEffect(r.gift, U1, sid, 'action_figures')
+    for (const [i, c] of (['square', 'landscape'] as const).entries()) {
+      const out = await startGeneration(r.gift, U1, sid, { productId: 'mug:11oz', composition: c, idempotencyKey: key(10 + i) }); expect(out.generation.status).toBe('ready')
+    }
+    expect(r.fetchMock.mock.calls.map(c => String(c[0]))).toEqual(Array(2).fill(expect.stringContaining('/api/v1/groups/generate')))
+    expect(r.calls.map(c => c.body)).toMatchObject([{ format: '1:1', subject_count: 5, effect_id: 'action_figures' }, { format: '3:2', subject_count: 5, effect_id: 'action_figures' }])
+    expect(r.calls.some(c => JSON.stringify(c.body).includes('21:9'))).toBe(false)
+  })
+
+  it('Groups, twelve people: only the landscape mug is supported (square is outside the head-count formats)', async () => {
+    const { getProductAvailability } = await import('./availability')
+    const r = rig(); ;(r.gift as any).analyze = async () => ({ status: 'supported', series: 'groups', peopleCount: 12 })
+    const v = await createSession(r.gift, { userId: U1, imageB64: await photo() })
+    const mug = (await getProductAvailability(r.gift, U1, v.sessionId)).products.find(x => x.productId === 'mug:11oz')!
+    expect(((mug.generation as any).options as any[]).map(o => [o.composition, o.supported])).toEqual([['square', false], ['landscape', true]])
+    expect(mug.generation).toMatchObject({ supported: true, requestedAspect: '3:2' })
   })
 })
 
