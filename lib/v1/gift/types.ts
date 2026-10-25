@@ -495,7 +495,7 @@ export type ProductPreviewView =
       beauty?: import('./beauty-scenes').BeautyRouting
       /** The frame colour this preview was made for (frame products; null otherwise). Part of the cache key: another colour is another preview. */
       frameColor?: string | null
-      beautyInput?: { kind: 'generation_picture' | 'mug_full_wrap_view'; url: string; urlExpiresAt: string; width: number; height: number; aspect: number; generationId: string; sha256: string } | null
+      beautyInput?: { kind: 'generation_picture' | 'mug_full_wrap_view'; url: string; urlExpiresAt: string; width: number; height: number; aspect: number; generationId: string; sha256: string; /** Mugs: the one panel's exact place in this view (viewRectPx) and in the print file (rectPx); the reverse is white. */ placement?: import('../print/production-profiles').MugSinglePanelPlacement } | null
     } & PreviewRepresentation
   | {
       contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'adaptation_required'; reason: 'shape_needs_composition'; sessionId: string; productId: string; sku: string; favoriteId: string

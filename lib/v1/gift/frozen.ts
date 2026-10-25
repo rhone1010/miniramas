@@ -24,6 +24,10 @@ export const FROZEN_SNAPSHOT_VERSION = 1
 export interface CompositionPin { compositionId: string; previewId: string; attempt: number; repairSeq: number; artworkSha256: string | null; width: number | null; height: number | null; sku: string | null; approvedAt: string | null
   /** Generations flow: the accepted generation this composition IS; artworkSha256 is then the sha256 of its stored picture, re-checked at Final Approval and before print preparation. */
   generationId?: string | null
+  /** Mugs from the generations flow: the layout ('mug_single_panel'), the orientation chosen ('square' | 'landscape') and where the panel sits. Absent on every mug made before layouts were recorded (those print the two-face layout). */
+  layout?: string | null
+  composition?: string | null
+  placement?: Record<string, unknown> | null
   /** Frame colour the line was sold in (frame products only); equals frozen.product.attributes.color. */
   frameColor?: string | null }
 

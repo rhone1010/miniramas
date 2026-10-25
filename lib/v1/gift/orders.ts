@@ -79,6 +79,9 @@ const orderReturnUrl = (origin: string, returnPath: unknown): string => {
   return `${origin}${returnPath}?gift_order_session={CHECKOUT_SESSION_ID}`
 }
 
+/** The layout facts of a generation composition (mugs), pinned with the order line. */
+const pinLayout = (plan: Record<string, unknown>) => (typeof plan.layout === 'string' ? { layout: plan.layout, composition: typeof plan.composition === 'string' ? plan.composition : null, placement: (plan.placement as Record<string, unknown> | undefined) ?? null } : {})
+
 export async function createGiftCheckout(
   deps: GiftOrderDeps & { gift: GiftDeps },
   input: { user: { id: string }; sessionId: string; origin: string; body: Partial<GiftCheckoutRequest> },
@@ -137,7 +140,7 @@ export async function createGiftCheckout(
         if (!g || g.status !== 'ready' || !g.accepted_at || !g.sha256 || g.sha256 !== (c.plan as { artworkSha256?: string }).artworkSha256) throw new GiftError('compositions_not_approved')
       }
       pins.set(x.line.lineId, { compositionId: c.id, previewId: c.preview_id, attempt: c.attempt, repairSeq: c.repair_seq ?? 0, artworkSha256: typeof c.plan.artworkSha256 === 'string' ? c.plan.artworkSha256 : null,
-        width: c.width, height: c.height, sku: x.product.sku, approvedAt: c.approved_at, ...(c.generation_id ? { generationId: c.generation_id } : {}), ...(x.color ? { frameColor: x.color } : {}) })
+        width: c.width, height: c.height, sku: x.product.sku, approvedAt: c.approved_at, ...(c.generation_id ? { generationId: c.generation_id } : {}), ...pinLayout(c.plan), ...(x.color ? { frameColor: x.color } : {}) })
     }
   }
   const itemsCents = lines.reduce((n, x) => n + x.product.retailCents! * x.line.copies, 0)

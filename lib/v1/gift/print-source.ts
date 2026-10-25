@@ -46,3 +46,19 @@ export async function loadApprovedComposition(order: Pick<PrintOrderRow, 'id'>, 
   const [{ supabaseAdmin }, { supabaseGiftStore }, { supabaseGiftStorage }] = await Promise.all([import('@/lib/supabase'), import('./store'), import('./real')])
   return loadApprovedCompositionWith(supabaseGiftStore(supabaseAdmin), supabaseGiftStorage(supabaseAdmin), order, job)
 }
+
+/** The layout the customer's approved composition for this line was made in (plan.layout), or null for a composition made before layouts were recorded. */
+export async function approvedLayoutWith(store: GiftStore, order: Pick<PrintOrderRow, 'id'>, job: Pick<AssetJob, 'render_id' | 'item_index'>): Promise<string | null> {
+  const parsed = parseGiftRenderId(job.render_id)
+  if (!parsed) return null
+  const session = await store.sessionForOrder(order.id)
+  if (!session?.artwork_preview_id) return null
+  const line = (await store.orderLines(order.id)).find(l => l.line_index === job.item_index)
+  const comp = line ? (await store.listCompositions(session.id)).find(c => c.line_id === line.line_id && c.preview_id === session.artwork_preview_id && c.status === 'approved') : null
+  const layout = (comp?.plan as { layout?: string } | undefined)?.layout
+  return typeof layout === 'string' ? layout : null
+}
+export async function approvedLayout(order: Pick<PrintOrderRow, 'id'>, job: Pick<AssetJob, 'render_id' | 'item_index'>): Promise<string | null> {
+  const [{ supabaseAdmin }, { supabaseGiftStore }] = await Promise.all([import('@/lib/supabase'), import('./store')])
+  return approvedLayoutWith(supabaseGiftStore(supabaseAdmin), order, job)
+}
