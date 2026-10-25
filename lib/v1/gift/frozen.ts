@@ -14,7 +14,7 @@
 //
 // Pure functions, no I/O, so Codex can copy this file and tests run without a database.
 
-import { MUG } from '../print/production-profiles'
+import { MUG, mugPanelShapeOf } from '../print/production-profiles'
 import { allProducts, catalogVersion, type CanonicalProduct } from '../print/catalog'
 import type { OrderLineRec, SessionRec } from './store'
 
@@ -53,7 +53,7 @@ export function compositionFitsProduct(c: { width: number | null; height: number
   if (typeof recorded === 'string' && recorded !== product.sku) return false
   if (!c.width || !c.height) return true
   const a = c.width / c.height, { finalPx, picturePx } = product.requirements
-  if (product.family === 'mug' && Math.abs(a / (MUG.fullWrap.printable.w / MUG.fullWrap.printable.h) - 1) <= 0.003) return true          // the full-wrap composition (2670 x 1034 band) is the mug's own shape
+  if (product.family === 'mug' && (mugPanelShapeOf(c.width, c.height) || Math.abs(a / (MUG.fullWrap.printable.w / MUG.fullWrap.printable.h) - 1) <= 0.003)) return true          // the square or landscape mug panel (or the unused full wrap) is the mug's own shape
   return [finalPx, picturePx].some(t => Math.abs(a / (t.w / t.h) - 1) <= 0.02)
 }
 

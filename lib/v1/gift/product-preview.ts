@@ -28,7 +28,7 @@ import { planFor } from './composition-plan'
 import { allProducts, getProductBySku, type CanonicalProduct } from '../print/catalog'
 import { aspectCompatibility } from '../print/geometry'
 import { STORAGE } from './policy'
-import { generationShapeOf, geometryKeyOf } from './generations'
+import { compositionOfKey, generationShapeOf, geometryKeysOf } from './generations'
 import { resolveBeautyScene } from './beauty-scenes'
 import { resolveFrameColor, withFrameColor } from './frame-colors'
 import { noScenePresentation, representationFields } from './presentation'
@@ -105,11 +105,11 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
     if (!generation) throw new GiftError('generation_not_found')
     if (generation.status !== 'ready' || !generation.master_path || !generation.width || !generation.height || !generation.sha256) throw new GiftError('generation_not_ready')
     if (generation.effect_id !== fav.effect_id) throw new GiftError('stale_composition')
-    if (generation.geometry_key !== geometryKeyOf(product)) throw new GiftError('composition_geometry_mismatch')
+    if (!geometryKeysOf(product).includes(generation.geometry_key)) throw new GiftError('composition_geometry_mismatch')
     fav = { ...fav, id: generation.id, master_path: generation.master_path, width: generation.width, height: generation.height }
   }
 
-  const { w: pw, h: ph } = generation ? generationShapeOf(product) : product.requirements.picturePx, pictureAspect = pw / ph, favoriteAspect = fav.width / fav.height
+  const { w: pw, h: ph } = generation ? generationShapeOf(product, compositionOfKey(product, generation.geometry_key)) : product.requirements.picturePx, pictureAspect = pw / ph, favoriteAspect = fav.width / fav.height
   const { extension } = aspectCompatibility(fav.width, fav.height, pw, ph)
   const far = !generation && extension > FREE_BAND
   const plan = far && rec.series ? planFor(product, { series: rec.series, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }) : null

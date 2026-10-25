@@ -143,7 +143,7 @@ export async function chooseEffectH(req: Request, user: Authed, deps: GiftDeps, 
 /** POST /api/v1/gift/sessions/{id}/generations { productId, idempotencyKey, mode? } -> 200 { status:'ok' } when delivered, 202 { status:'partial' } while in progress (poll or repeat the same key). */
 export async function startGenerationH(req: Request, user: Authed, deps: GiftDeps, id: string) {
   const b = await body(req); if (!b) return json({ error: 'invalid_json' }, 400)
-  try { const out = await startGeneration(deps, user.id, id, { productId: b.productId, idempotencyKey: b.idempotencyKey, mode: b.mode }); return json(out, out.status === 'ok' ? 200 : 202) } catch (e) { return fail(e) }
+  try { const out = await startGeneration(deps, user.id, id, { productId: b.productId, idempotencyKey: b.idempotencyKey, mode: b.mode, composition: b.composition }); return json(out, out.status === 'ok' ? 200 : 202) } catch (e) { return fail(e) }
 }
 export async function listGenerationsH(user: Authed, deps: GiftDeps, id: string) {
   try { return json(await listGenerations(deps, user.id, id)) } catch (e) { return fail(e) }

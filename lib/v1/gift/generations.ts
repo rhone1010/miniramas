@@ -13,7 +13,7 @@ import sharp from 'sharp'
 import { createHash } from 'node:crypto'
 import { allProducts, type CanonicalProduct } from '../print/catalog'
 import { generationAspectFor, supportsFavoriteReference } from './aspects'
-import { MUG } from '../print/production-profiles'
+import { MUG_COMPOSITIONS, MUG_PANEL_SHAPES, type MugComposition } from '../print/production-profiles'
 import { liveEffectIds } from './effects'
 import { MAX_CONFORM_CROP, STORAGE } from './policy'
 import { GiftError, fromStoreError, generationViewOf, getSessionView, owned, type GiftDeps } from './service'
@@ -33,17 +33,24 @@ export async function chooseEffect(deps: GiftDeps, userId: string, sessionId: st
   return getSessionView(deps, userId, rec.id)
 }
 
-/** The shape of the picture a generation for this product must have: the product's picture area, except the mug, whose picture is the full-wrap band (2670 x 1034), not the old square panel. */
-export function generationShapeOf(p: CanonicalProduct): { w: number; h: number } {
-  return p.family === 'mug' ? { w: MUG.fullWrap.printable.w, h: MUG.fullWrap.printable.h } : p.requirements.picturePx
+/**
+ * The shape of the picture a generation for this product must have: the product's picture area, except the mug, whose picture is a SQUARE or LANDSCAPE panel the customer chooses
+ * (`composition`, default square). The 21:9 full wrap is not used.
+ */
+export function generationShapeOf(p: CanonicalProduct, composition?: MugComposition | null): { w: number; h: number } {
+  return p.family === 'mug' ? MUG_PANEL_SHAPES[composition ?? 'square'] : p.requirements.picturePx
 }
-export const generationAspectOf = (p: CanonicalProduct): number => { const s = generationShapeOf(p); return Math.round((s.w / s.h) * 1e6) / 1e6 }
-/** Same shape = same composition = shared among products: 'a667' is 2:3, 'a1000' square, 'a2582' the mug's full wrap. */
-export const geometryKeyOf = (p: CanonicalProduct): string => 'a' + Math.round(generationAspectOf(p) * 1000)
+export const generationAspectOf = (p: CanonicalProduct, composition?: MugComposition | null): number => { const s = generationShapeOf(p, composition); return Math.round((s.w / s.h) * 1e6) / 1e6 }
+/** Same shape = same composition = shared among products: 'a667' is 2:3, 'a1000' square, 'a1500' 3:2 (a mug panel and a print of the same shape share one generation). */
+export const geometryKeyOf = (p: CanonicalProduct, composition?: MugComposition | null): string => 'a' + Math.round(generationAspectOf(p, composition) * 1000)
+/** Every geometry key a product can be made in: one for most products, the three panels for the mug. */
+export const geometryKeysOf = (p: CanonicalProduct): string[] => (p.family === 'mug' ? MUG_COMPOSITIONS.map(c => geometryKeyOf(p, c)) : [geometryKeyOf(p)])
+/** Which mug panel a stored generation (by its geometry key) is; null for any other product. */
+export const compositionOfKey = (p: CanonicalProduct, key: string): MugComposition | null => (p.family === 'mug' ? MUG_COMPOSITIONS.find(c => geometryKeyOf(p, c) === key) ?? null : null)
 
 /** The product's picture shape as the smallest whole-number ratio (2400 x 3600 -> 2 x 3), the grid an exact picture lands on. */
-export function gridOf(p: CanonicalProduct): { w: number; h: number } {
-  const { w, h } = generationShapeOf(p)
+export function gridOf(p: CanonicalProduct, composition?: MugComposition | null): { w: number; h: number } {
+  const { w, h } = generationShapeOf(p, composition)
   const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
   const d = gcd(w, h) || 1
   return { w: w / d, h: h / d }
@@ -56,12 +63,15 @@ const purchasable = (p: CanonicalProduct) => p.status === 'launch' && p.retailCe
  * The exact picture a generation for this product must be, or null when the series cannot make that shape without extending. Pure.
  * `aspect` is the ratio requested from the model (a ratio the series' route admits that is within MAX_CONFORM_CROP of the product's shape).
  */
-export function generationTargetFor(p: CanonicalProduct, series: SessionRec['series'], peopleCount: number | null): { geometryKey: string; targetAspect: number; aspect: string } | null {
+export function generationTargetFor(p: CanonicalProduct, series: SessionRec['series'], peopleCount: number | null, composition?: MugComposition | null): { geometryKey: string; targetAspect: number; aspect: string; composition: MugComposition | null } | null {
   if (!series) return null
-  const target = generationAspectOf(p)
+  // The mug without a stated composition takes the first one the series can make (square, then landscape): Groups allow different ratios at different head counts.
+  if (p.family === 'mug' && !composition) { for (const c of MUG_COMPOSITIONS) { const t = generationTargetFor(p, series, peopleCount, c); if (t) return t } return null }
+  const c = p.family === 'mug' ? composition! : null
+  const target = generationAspectOf(p, c)
   const gen = generationAspectFor(series, peopleCount, target)
   if (!gen || 1 - 1 / (1 + gen.extensionFraction) > MAX_CONFORM_CROP + 1e-9) return null          // what must be trimmed (not the extension ratio) is bounded
-  return { geometryKey: geometryKeyOf(p), targetAspect: target, aspect: gen.aspect }
+  return { geometryKey: geometryKeyOf(p, c), targetAspect: target, aspect: gen.aspect, composition: c }
 }
 
 /**
@@ -98,7 +108,7 @@ export function conformTo(width: number, height: number, target: number, grid?: 
   return { method: w === width && h === height ? 'native' : 'trim', crop, trimFraction }
 }
 
-export interface GenerationRequest { productId: unknown; idempotencyKey: unknown; mode?: unknown }
+export interface GenerationRequest { productId: unknown; idempotencyKey: unknown; mode?: unknown; /** Mug only: 'square' | 'landscape' (omitted = the first the series can make). */ composition?: unknown }
 export interface GenerationOutcome { status: 'ok' | 'partial'; generation: GenerationView; reused: boolean; session: SessionView; retryAfterSeconds?: number }
 
 export async function startGeneration(deps: GiftDeps, userId: string, sessionId: string, req: GenerationRequest): Promise<GenerationOutcome> {
@@ -109,7 +119,8 @@ export async function startGeneration(deps: GiftDeps, userId: string, sessionId:
   const p = productOf(req.productId)
   if (!p || !purchasable(p)) throw new GiftError('product_not_available')
   if (!rec.series) throw new GiftError('unsupported_subject')
-  const t = generationTargetFor(p, rec.series, rec.analysis.peopleCount ?? null)
+  if (req.composition !== undefined && req.composition !== null && (p.family !== 'mug' || !(MUG_COMPOSITIONS as readonly unknown[]).includes(req.composition))) throw new GiftError('invalid_composition', p.family === 'mug' ? { supported: [...MUG_COMPOSITIONS] } : undefined)
+  const t = generationTargetFor(p, rec.series, rec.analysis.peopleCount ?? null, (req.composition as MugComposition | undefined) ?? null)
   if (!t) throw new GiftError('product_aspect_unsupported')
   const existing = await deps.store.listGenerations(rec.id).catch(e => fromStoreError(e))
   const repeat = existing.find(g => g.idempotency_key === req.idempotencyKey)
@@ -162,7 +173,8 @@ async function renderGeneration(deps: GiftDeps, rec: SessionRec, g: GenerationRe
     const raw = Buffer.from(out.imageB64, 'base64')
     const md = await sharp(raw).metadata()
     if (!md.width || !md.height) throw new Error('master_unreadable')
-    const fit = conformTo(md.width, md.height, generationAspectOf(p), gridOf(p))
+    const comp = compositionOfKey(p, g.geometry_key)
+    const fit = conformTo(md.width, md.height, generationAspectOf(p, comp), gridOf(p, comp))
     if (!fit) throw new Error('aspect_mismatch')
     const img = sharp(raw).removeAlpha()
     const cropped = fit.method === 'trim' ? img.extract(fit.crop) : img
@@ -173,7 +185,7 @@ async function renderGeneration(deps: GiftDeps, rec: SessionRec, g: GenerationRe
     await deps.storage.put(masterPath, png.data, 'image/png'); files.push(masterPath)
     await deps.storage.put(previewPath, marked, 'image/jpeg'); files.push(previewPath)
     const record = {
-      ...(out.generation ?? {}), productId: p.productId, geometryKey: g.geometry_key, requestedAspect: g.aspect, targetAspect: generationAspectOf(p), durationMs: now(deps) - t0,
+      ...(out.generation ?? {}), productId: p.productId, geometryKey: g.geometry_key, requestedAspect: g.aspect, targetAspect: generationAspectOf(p, comp), durationMs: now(deps) - t0,
       conform: { method: fit.method, trimFraction: fit.trimFraction, crop: fit.crop, ...(fit.resize ? { resampledTo: fit.resize } : {}), from: { width: md.width, height: md.height } }, referenced: !!referenceB64,
     }
     const stored = await deps.store.completeGeneration(g.id, g.user_id, { master_path: masterPath, preview_path: previewPath, width: png.info.width, height: png.info.height, sha256: sha, record })
@@ -225,7 +237,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
     if (g.status !== 'ready' || !g.master_path || !g.preview_path || !g.sha256) throw new GiftError('generation_not_ready')
     if (!g.accepted_at) throw new GiftError('generation_not_accepted')
     if (g.effect_id !== anchor.effect_id) throw new GiftError('stale_composition')
-    if (g.geometry_key !== geometryKeyOf(p)) throw new GiftError('composition_geometry_mismatch')
+    if (!geometryKeysOf(p).includes(g.geometry_key)) throw new GiftError('composition_geometry_mismatch')
     const live = comps.filter(c => c.line_id === l.lineId && c.preview_id === rec.artwork_preview_id && (c.status === 'ready' || c.status === 'approved'))
     plans.push({ line: l, g, keep: live.find(c => c.generation_id === g.id && c.status === 'approved' && (c.plan as { frameColor?: string }).frameColor === (l.frameColor ?? undefined)) ?? null })          // same picture AND same finish
   }
@@ -239,7 +251,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
       geometry_key: g.geometry_key, method: 'generated', source_composition_id: null, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
       nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
       plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: (g.generation as { targetAspect?: number } | null)?.targetAspect ?? null, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId, ...(line.productId.startsWith('mug:') ? { layout: 'mug_full_wrap' } : {}), ...(line.frameColor ? { frameColor: line.frameColor } : {}) },
+              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId, ...(line.productId.startsWith('mug:') ? { layout: 'mug_panel', composition: compositionOfKey(productOf(line.productId)!, g.geometry_key) } : {}), ...(line.frameColor ? { frameColor: line.frameColor } : {}) },
       ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
     })
     await deps.store.patchComposition(row.id, { approved_at: at })
@@ -253,7 +265,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
 export async function correctGenerationLine(deps: GiftDeps, userId: string, rec: SessionRec, line: { line_id: string; product_id: string }, current: CompositionRec, phase: 'draft' | 'purchased'): Promise<void> {
   const keepFinish = (current.plan as { frameColor?: string }).frameColor
   const p = productOf(line.product_id); if (!p || !rec.series) throw new GiftError('product_not_available')
-  const t = generationTargetFor(p, rec.series, rec.analysis.peopleCount ?? null); if (!t) throw new GiftError('product_aspect_unsupported')
+  const t = generationTargetFor(p, rec.series, rec.analysis.peopleCount ?? null, compositionOfKey(p, current.geometry_key ?? '')); if (!t) throw new GiftError('product_aspect_unsupported')
   if (phase !== 'purchased') throw new GiftError('order_payment_required')           // before payment the customer simply generates again (it is part of the allowance)
   let r
   try { r = await deps.store.reserveCorrection({ sessionId: rec.id, userId, key: `correction-${line.line_id}`.slice(0, 80), productId: p.productId, geometryKey: t.geometryKey, aspect: t.aspect }) } catch (e) { fromStoreError(e) }
@@ -271,7 +283,7 @@ export async function correctGenerationLine(deps: GiftDeps, userId: string, rec:
     geometry_key: g.geometry_key, method: 'generated', source_composition_id: current.id, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
     nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
     plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: p.requirements.pictureAspect, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? { layout: 'mug_full_wrap' } : {}), ...(keepFinish ? { frameColor: keepFinish } : {}) },
+            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? { layout: 'mug_panel', composition: compositionOfKey(p, g.geometry_key) } : {}), ...(keepFinish ? { frameColor: keepFinish } : {}) },
     ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
   })
 }
