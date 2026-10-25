@@ -1,3 +1,4 @@
+import {isMugSingleLayout} from './backend-contracts/print/production-profiles.js';
 import {frameColors,frameFinishes} from './frame-finishes.next.js';
 import {framePhotograph,productScene} from './product-scene.next.js';
 import {mugBeautyViews,mugReview} from './mug-beauty.next.js';
@@ -369,7 +370,7 @@ function serverGenerationPicture(g:GenerationView,p:Product,o:CatalogOption,colo
   }
   if(sceneFailures.has(cacheKey))return failed();
   if(!scenePending.has(cacheKey)){
-   const picture=p.id==='mug'&&input.kind==='mug_full_wrap_view'?(input.placement?.layout==='mug_single_panel'?mugSinglePanelPreview(input):mugBeautyViews(input.url).then(mug=>{mugPictures.set(cacheKey,mug);return mug.front})):productScene(source,input.url,input.aspect,frame?.selected);
+   const picture=p.id==='mug'&&input.kind==='mug_full_wrap_view'?(isMugSingleLayout(input.placement?.layout)?mugSinglePanelPreview(input):mugBeautyViews(input.url).then(mug=>{mugPictures.set(cacheKey,mug);return mug.front})):productScene(source,input.url,input.aspect,frame?.selected);
    scenePending.add(cacheKey);void picture.then((url:string)=>scenePictures.set(cacheKey,url)).catch(()=>sceneFailures.add(cacheKey)).finally(()=>{scenePending.delete(cacheKey);if(live===owner&&['generation','acceptance','cart','checkout','complete','payment'].includes(view))render()});
   }
   return '<p role="status">Preparing product preview…</p>';

@@ -1,3 +1,4 @@
+import {isMugSingleLayout} from './backend-contracts/print/production-profiles.js';
 import {mugSurface} from './mug-surface.next.js';
 /** Display-only masked single-panel mug. No print layout or artwork mutation. */
 export function mugPanelPixels({base,mask,art,width,height,artWidth,artHeight,panel}){
@@ -41,7 +42,7 @@ export async function mugPanelPreview(artworkUrl,panel){
 
 /** Composite CC's already-placed, front-centered view. Placement is validated, never recreated. */
 export function mugSinglePanelPixels({base,mask,wrap,width,height,wrapWidth,wrapHeight,geometry,placement}){
- if(placement?.layout!=='mug_single_panel'||placement.reverse!=='white'||placement.face!=='front'||placement.handle!=='right'||!['square','landscape'].includes(placement.composition))throw Error('mug_single_panel_required');
+ if(!isMugSingleLayout(placement?.layout)||placement.reverse!=='white'||placement.face!=='front'||placement.handle!=='right'||!['square','landscape'].includes(placement.composition))throw Error('mug_single_panel_required');
  const r=placement.viewRectPx;
  if(placement.viewPx.w!==wrapWidth||placement.viewPx.h!==wrapHeight||!r||![r.x,r.y,r.w,r.h].every(Number.isInteger)||r.x<0||r.y<0||r.w<=0||r.h<=0||r.x+r.w>wrapWidth||r.y+r.h>wrapHeight)throw Error('mug_placement_mismatch');
  const rendered=mugSurface({base,mask,wrap,width,height,wrapWidth,wrapHeight,geometry,centerX:.5});

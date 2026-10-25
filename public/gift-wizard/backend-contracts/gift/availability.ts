@@ -49,7 +49,7 @@ export interface ProductAvailability {
   /** Which display-only beauty photograph may show this configuration (finish, orientation and opening all match), the artwork input it needs, or why none (lib/v1/gift/beauty-scenes.ts). */
   beauty: import('./beauty-scenes').BeautyRouting
   /** The manufacturing configuration the backend sends to Prodigi. Fixed by LITEN, not customer-selectable; `unexposed` lists what Prodigi offers that is deliberately not offered. */
-  configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number; generationPicturePx: { w: number; h: number }; generationAspect: number; layout: 'flat' | 'mug_single_panel' | 'card_spread' }
+  configuration: { artworkProfile: 'flat_print' | 'mug_wrap' | 'card_spread' | null; skuOrientation: string; fixedAttributes: Record<string, string>; unexposed: Record<string, string[]>; picturePx: { w: number; h: number }; finalPx: { w: number; h: number }; pictureAspect: number; generationPicturePx: { w: number; h: number }; generationAspect: number; layout: 'flat' | 'mug_single_panel_v2' | 'card_spread' }
 }
 
 export interface AvailabilityView {

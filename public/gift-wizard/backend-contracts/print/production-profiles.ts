@@ -79,16 +79,35 @@ export function mugPanelRectsFor(shape: MugComposition, scale = 1): Rect[] {
  * Nothing is duplicated, mirrored or washed. Every product-first (generation) mug uses it. Mugs made before it keep their layout: the square on BOTH faces with the soft wash ('mug_two_face'), decided by the layout
  * frozen with the order, never by the picture's shape.
  */
-export const MUG_SINGLE_PANEL = 'mug_single_panel' as const
+export const MUG_SINGLE_PANEL = 'mug_single_panel' as const              // version 1: 910 / 900 x 600 panels. Frozen: compositions, orders and print jobs recorded with it keep these dimensions.
+export const MUG_SINGLE_PANEL_V2 = 'mug_single_panel_v2' as const        // version 2 (2026-10-25, the approved larger coverage): 1034 square / 1122 x 748 landscape. Every NEW mug composition.
 export const MUG_TWO_FACE = 'mug_two_face' as const
-export type MugLayout = typeof MUG_SINGLE_PANEL | typeof MUG_TWO_FACE
-/** Where the single panel sits in the 2670 x 1110 print file (and, rolled so the front face is in the middle, in the 1335 x 555 view the preview and the browser beauty shot use). */
-export function mugSinglePanelPlacement(shape: MugComposition) {
-  const rect = mugPanelRectsFor(shape, 1)[1], s = MUG.mockupScale, vw = Math.round(MUG.wrap.w * s), vh = Math.round(MUG.wrap.h * s), vr = { w: Math.round(rect.w * s), h: Math.round(rect.h * s) }
+export type MugLayout = typeof MUG_SINGLE_PANEL | typeof MUG_SINGLE_PANEL_V2 | typeof MUG_TWO_FACE
+export type MugSingleLayout = typeof MUG_SINGLE_PANEL | typeof MUG_SINGLE_PANEL_V2
+export const isMugSingleLayout = (l: unknown): l is MugSingleLayout => l === MUG_SINGLE_PANEL || l === MUG_SINGLE_PANEL_V2
+/** The picture each layout version shows (design placements inside the existing printable file, not manufacturer-certified handle clearances). */
+export const MUG_SINGLE_PANEL_SHAPES = {
+  [MUG_SINGLE_PANEL]: MUG_PANEL_SHAPES,
+  [MUG_SINGLE_PANEL_V2]: { square: { w: 1034, h: 1034 }, landscape: { w: 1122, h: 748 } },
+} as const
+/** The panel's rectangle in the print file (scale 1) or in a scaled copy of it. Always on the front face, centred on column 2069 and vertically centred; the version decides the size. */
+export function mugSinglePanelRect(shape: MugComposition, layout: MugSingleLayout = MUG_SINGLE_PANEL_V2, scale = 1): Rect {
+  if (layout === MUG_SINGLE_PANEL) return mugPanelRectsFor(shape, scale)[1]
+  const s = MUG_SINGLE_PANEL_SHAPES[layout][shape], r = (v: number) => Math.round(v * scale)
+  return { x: r(MUG.mockupFaceCenterX - s.w / 2), y: r((MUG.wrap.h - s.h) / 2), w: r(s.w), h: r(s.h) }
+}
+/** How far the wrap is rolled sideways in the preview view so the front face lands in the middle (the SAME operation mockupInputFor performs). */
+export function mugViewShift(scale: number = MUG.mockupScale): number {
+  const W = Math.round(MUG.wrap.w * scale)
+  return (((Math.round(W / 2 - MUG.mockupFaceCenterX * scale)) % W) + W) % W
+}
+/** Where the single panel sits in the 2670 x 1110 print file and, after the sideways roll, in the 1335 x 555 view the preview and the browser beauty shot use (derived from the real layout operation, not restated). */
+export function mugSinglePanelPlacement(shape: MugComposition, layout: MugSingleLayout = MUG_SINGLE_PANEL_V2) {
+  const rect = mugSinglePanelRect(shape, layout, 1), s = MUG.mockupScale, W = Math.round(MUG.wrap.w * s), H = Math.round(MUG.wrap.h * s), vr = mugSinglePanelRect(shape, layout, s)
   return {
-    layout: MUG_SINGLE_PANEL, composition: shape, orientation: shape, face: 'front' as const, handle: 'right' as const, reverse: 'white' as const,
+    layout, layoutVersion: layout === MUG_SINGLE_PANEL ? 1 : 2, composition: shape, orientation: shape, face: 'front' as const, handle: 'right' as const, reverse: 'white' as const,
     panelPx: { w: rect.w, h: rect.h }, filePx: { w: MUG.wrap.w, h: MUG.wrap.h }, rectPx: { x: rect.x, y: rect.y, w: rect.w, h: rect.h },
-    viewPx: { w: vw, h: vh }, viewRectPx: { x: Math.round(vw / 2 - vr.w / 2), y: Math.round(rect.y * s), ...vr },
+    viewPx: { w: W, h: H }, viewRectPx: { x: (vr.x + mugViewShift(s)) % W, y: vr.y, w: vr.w, h: vr.h },
   }
 }
 export type MugSinglePanelPlacement = ReturnType<typeof mugSinglePanelPlacement>
