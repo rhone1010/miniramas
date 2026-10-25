@@ -1,5 +1,6 @@
 import {frameColors,frameFinishes} from './frame-finishes.next.js';
 import {framePhotograph,productScene} from './product-scene.next.js';
+import {mugBeautyViews,mugReview} from './mug-beauty.next.js';
 import {beautyPhoto} from './beauty-scenes.next.js';
 import {giftCompositionEligibility} from '../product-studio/gift-composition-policy.next.js';
 import {mountStudio,familyPhoto,type StudioState} from '../product-studio/studio.next.js';
@@ -347,10 +348,15 @@ function serverGenerationPicture(g:GenerationView,p:Product,o:CatalogOption,colo
  if(v.beauty?.sceneId){
   const source=beautySource(v.beauty),input=v.beautyInput,frame=v.beauty.frame,cacheKey=beautyCacheKey(key,v);
   if(!source||!input||input.kind!==v.beauty.input.kind||Math.abs(input.aspect/(input.width/input.height)-1)>.005||frame&&(frame.selected!==color||frame.recolor.toColor!==color||frame.recolor.mask!=='frame-mask.svg'||frame.recolor.folder!==v.beauty.folder||!frame.supported.includes(color!)))return failed();
-  if(scenePictures.has(cacheKey))return photo(scenePictures.get(cacheKey)!,p.label+' · '+o.label+' · '+(color||'')+' · personalized composition','gift-feature-image');
+  if(scenePictures.has(cacheKey)){
+   const mug=mugPictures.get(cacheKey);
+   if(mug&&['generation','acceptance'].includes(view))return mugReview(mug);
+   return photo(scenePictures.get(cacheKey)!,p.label+' · '+o.label+' · '+(color||'')+' · personalized composition','gift-feature-image');
+  }
   if(sceneFailures.has(cacheKey))return failed();
   if(!scenePending.has(cacheKey)){
-   scenePending.add(cacheKey);void productScene(source,input.url,input.aspect,frame?.selected).then((url:string)=>scenePictures.set(cacheKey,url)).catch(()=>sceneFailures.add(cacheKey)).finally(()=>{scenePending.delete(cacheKey);if(live===owner&&['generation','acceptance','cart','checkout','complete','payment'].includes(view))render()});
+   const picture=p.id==='mug'&&input.kind==='mug_full_wrap_view'?mugBeautyViews(input.url).then(mug=>{mugPictures.set(cacheKey,mug);return mug.front}):productScene(source,input.url,input.aspect,frame?.selected);
+   scenePending.add(cacheKey);void picture.then((url:string)=>scenePictures.set(cacheKey,url)).catch(()=>sceneFailures.add(cacheKey)).finally(()=>{scenePending.delete(cacheKey);if(live===owner&&['generation','acceptance','cart','checkout','complete','payment'].includes(view))render()});
   }
   return '<p role="status">Preparing product preview…</p>';
  }
@@ -386,7 +392,7 @@ function renderCompositionAcceptance(){
  const g=selectedGeneration();pivotRail('Approve<br>Composition');
  $('screen').innerHTML=g?generationPicture(g):'';
  $('right').innerHTML=generationDetails()+'<p>Review the people, details and arrangement in your artwork. Accept this exact composition to continue.</p>'+(compositionAccepted(g)?'<p role="status">Composition accepted. Payment and manufacturing release are separate.</p>':'')+secondary('review-again','Back to Image');
- primary(compositionAccepted(g)?'Add to Cart':'Accept Composition',()=>{if(journeyDemo){if(!g)return;if(!g.accepted){g.accepted=true;demoAccepted=true;render();return}session.lines=[...session.lines.filter(l=>l.id!==editId),{id:editId||crypto.randomUUID(),productId:studioState.productId,size:studioState.size,copies:studioState.copies,generationId:g.generationId}];editId=null;go('cart');return}void acceptProductGeneration()},!g||g.status!=='ready'||!generationPreviewReady(g));
+ primary(compositionAccepted(g)?'Add to Cart':studioState.productId==='mug'?'Accept Complete Wrap':'Accept Composition',()=>{if(journeyDemo){if(!g)return;if(!g.accepted){g.accepted=true;demoAccepted=true;render();return}session.lines=[...session.lines.filter(l=>l.id!==editId),{id:editId||crypto.randomUUID(),productId:studioState.productId,size:studioState.size,copies:studioState.copies,generationId:g.generationId}];editId=null;go('cart');return}void acceptProductGeneration()},!g||g.status!=='ready'||!generationPreviewReady(g));
  $('review-again').onclick=()=>go('generation');($('back') as HTMLButtonElement).disabled=false;$('back').onclick=()=>go('generation');
 }
 function demoCraft(){
@@ -630,6 +636,7 @@ const layoutReview=layoutViews.some(v=>v===layoutName);
 const journeyDemo=layoutReview&&params.get('journey')==='1';
 let demoItems:GenerationView[]=[],demoAccepted=false;
 const scenePictures=new Map<string,string>();
+const mugPictures=new Map<string,{front:string;back:string;wrap:string}>();
 const scenePending=new Set<string>();
 const sceneFailures=new Set<string>();
 let pivotMode=layoutReview?params.get('pivot')==='1':params.get('fixture')!=='1';

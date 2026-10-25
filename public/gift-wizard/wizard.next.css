@@ -489,3 +489,12 @@ body.gift-pivot #workspace .studio-media img,body.gift-pivot #workspace #screen 
 /* Gift-only finish choices use the existing option treatment without stretching. */
 .gift-pivot #workspace #right .studio-panel .frame-finishes{display:flex;flex-wrap:wrap}
 .gift-pivot #workspace #right .studio-panel .frame-finishes button{width:auto;flex:0 0 auto;padding-left:16px;padding-right:16px}
+
+/* Both views share one print wrap; no view change alters the composition. */
+.gift-pivot #workspace #screen .mug-review{width:100%;align-self:start}
+.gift-pivot #workspace #screen .mug-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.gift-pivot #workspace #screen .mug-pair figure{margin:0;text-align:center}
+.gift-pivot #workspace #screen .mug-review img{display:block;width:100%;height:auto;max-height:none;object-fit:contain;border:0;box-shadow:none;background:transparent}
+.gift-pivot #workspace #screen .mug-review figcaption,.gift-pivot #workspace #screen .mug-review summary{font-size:22px}
+.gift-pivot #workspace #screen .mug-review summary{cursor:pointer;padding:12px 16px}
+@media(max-width:600px){.gift-pivot #workspace #screen .mug-pair{grid-template-columns:minmax(0,1fr)}}

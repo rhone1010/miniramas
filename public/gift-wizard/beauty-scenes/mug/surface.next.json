@@ -1,0 +1,8 @@
+{
+ "status":"display-only; physical sample not verified",
+ "reference":"product_beauty_mug.jpeg, 2048 x 2048",
+ "body":{"centerX":0.440625,"radiusX":0.254375,"top":{"edgeY":0.2375,"ellipseDepth":0.020625},"bottom":{"edgeY":0.80875,"ellipseDepth":0.040625}},
+ "lightingSampleY":0.2625,
+ "wrapAngleRadians":6.283185307179586,
+ "geometrySource":"Existing cylindrical renderer; body landmarks traced on owner photograph. Face centers supplied by production-profiles MUG, not subject count."
+}

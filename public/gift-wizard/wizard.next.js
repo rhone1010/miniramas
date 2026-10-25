@@ -1,5 +1,6 @@
 import { frameColors, frameFinishes } from './frame-finishes.next.js';
 import { framePhotograph, productScene } from './product-scene.next.js';
+import { mugBeautyViews, mugReview } from './mug-beauty.next.js';
 import { beautyPhoto } from './beauty-scenes.next.js';
 import { giftCompositionEligibility } from '../product-studio/gift-composition-policy.next.js';
 import { mountStudio, familyPhoto } from '../product-studio/studio.next.js';
@@ -913,13 +914,18 @@ function serverGenerationPicture(g, p, o, color = selectedFinish(p, o)) {
         const source = beautySource(v.beauty), input = v.beautyInput, frame = v.beauty.frame, cacheKey = beautyCacheKey(key, v);
         if (!source || !input || input.kind !== v.beauty.input.kind || Math.abs(input.aspect / (input.width / input.height) - 1) > .005 || frame && (frame.selected !== color || frame.recolor.toColor !== color || frame.recolor.mask !== 'frame-mask.svg' || frame.recolor.folder !== v.beauty.folder || !frame.supported.includes(color)))
             return failed();
-        if (scenePictures.has(cacheKey))
+        if (scenePictures.has(cacheKey)) {
+            const mug = mugPictures.get(cacheKey);
+            if (mug && ['generation', 'acceptance'].includes(view))
+                return mugReview(mug);
             return photo(scenePictures.get(cacheKey), p.label + ' · ' + o.label + ' · ' + (color || '') + ' · personalized composition', 'gift-feature-image');
+        }
         if (sceneFailures.has(cacheKey))
             return failed();
         if (!scenePending.has(cacheKey)) {
+            const picture = p.id === 'mug' && input.kind === 'mug_full_wrap_view' ? mugBeautyViews(input.url).then(mug => { mugPictures.set(cacheKey, mug); return mug.front; }) : productScene(source, input.url, input.aspect, frame?.selected);
             scenePending.add(cacheKey);
-            void productScene(source, input.url, input.aspect, frame?.selected).then((url) => scenePictures.set(cacheKey, url)).catch(() => sceneFailures.add(cacheKey)).finally(() => { scenePending.delete(cacheKey); if (live === owner && ['generation', 'acceptance', 'cart', 'checkout', 'complete', 'payment'].includes(view))
+            void picture.then((url) => scenePictures.set(cacheKey, url)).catch(() => sceneFailures.add(cacheKey)).finally(() => { scenePending.delete(cacheKey); if (live === owner && ['generation', 'acceptance', 'cart', 'checkout', 'complete', 'payment'].includes(view))
                 render(); });
         }
         return '<p role="status">Preparing product preview…</p>';
@@ -965,7 +971,7 @@ function renderCompositionAcceptance() {
     pivotRail('Approve<br>Composition');
     $('screen').innerHTML = g ? generationPicture(g) : '';
     $('right').innerHTML = generationDetails() + '<p>Review the people, details and arrangement in your artwork. Accept this exact composition to continue.</p>' + (compositionAccepted(g) ? '<p role="status">Composition accepted. Payment and manufacturing release are separate.</p>' : '') + secondary('review-again', 'Back to Image');
-    primary(compositionAccepted(g) ? 'Add to Cart' : 'Accept Composition', () => { if (journeyDemo) {
+    primary(compositionAccepted(g) ? 'Add to Cart' : studioState.productId === 'mug' ? 'Accept Complete Wrap' : 'Accept Composition', () => { if (journeyDemo) {
         if (!g)
             return;
         if (!g.accepted) {
@@ -1500,6 +1506,7 @@ const layoutReview = layoutViews.some(v => v === layoutName);
 const journeyDemo = layoutReview && params.get('journey') === '1';
 let demoItems = [], demoAccepted = false;
 const scenePictures = new Map();
+const mugPictures = new Map();
 const scenePending = new Set();
 const sceneFailures = new Set();
 let pivotMode = layoutReview ? params.get('pivot') === '1' : params.get('fixture') !== '1';
