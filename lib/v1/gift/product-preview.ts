@@ -29,6 +29,7 @@ import { allProducts, getProductBySku, type CanonicalProduct } from '../print/ca
 import { aspectCompatibility } from '../print/geometry'
 import { STORAGE } from './policy'
 import { compositionOfKey, generationShapeOf, geometryKeysOf } from './generations'
+import { MUG_SINGLE_PANEL, mugSinglePanelPlacement } from '../print/production-profiles'
 import { resolveBeautyScene } from './beauty-scenes'
 import { resolveFrameColor, withFrameColor } from './frame-colors'
 import { noScenePresentation, representationFields } from './presentation'
@@ -127,7 +128,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const calibratedRevision = legacyCalibrated && templateId ? await deps.mockup.revision(templateId) : 'artwork-v1'
   const useScene = !!(scenes && choice?.scene && sceneRevision)
   const identity = sha(JSON.stringify({
-    v: 1, contract: MOCKUP_CONTRACT_VERSION, sessionId: rec.id, favoriteId: fav.id, generationSha256: generation?.sha256 ?? null, master: fav.master_path, sku: product.sku, productId: product.productId, finalPx: product.requirements.finalPx, picturePx: product.requirements.picturePx,
+    v: 1, contract: MOCKUP_CONTRACT_VERSION, ...(generation && product.family === 'mug' ? { mugLayout: MUG_SINGLE_PANEL } : {}), sessionId: rec.id, favoriteId: fav.id, generationSha256: generation?.sha256 ?? null, master: fav.master_path, sku: product.sku, productId: product.productId, finalPx: product.requirements.finalPx, picturePx: product.requirements.picturePx,
     attributes: Object.fromEntries(Object.entries(product.attributes).sort()), renderer: useScene ? { scene: choice!.scene!.sceneId, revision: sceneRevision, representation: SCENE_REPRESENTATION_VERSION } : legacyCalibrated ? { template: templateId, revision: calibratedRevision } : { artwork: 'v1' }, variant: provisional ? 'provisional-contain-1:' + PROVISIONAL_SURROUND : 'watermarked',
   }))
   const path = `${STORAGE.productPreviewDir(rec.id)}${product.productId.replace(/[^\w-]/g, '_')}-${identity.slice(0, 16)}.jpg`
@@ -146,7 +147,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const signInput = async (w: number, h: number) => {
     if (!generation || !beauty?.sceneId) return null
     const url = await deps.storage.signedUrl(inputPath, MOCKUP_URL_SECONDS); if (!url) return null
-    return { kind: beauty.input.kind, url, urlExpiresAt: new Date((deps.clock ?? Date.now)() + MOCKUP_URL_SECONDS * 1000).toISOString(), width: w, height: h, aspect: beauty.input.aspect, generationId: generation.id, sha256: generation.sha256! }
+    return { kind: beauty.input.kind, url, urlExpiresAt: new Date((deps.clock ?? Date.now)() + MOCKUP_URL_SECONDS * 1000).toISOString(), width: w, height: h, aspect: beauty.input.aspect, generationId: generation.id, sha256: generation.sha256!, ...(product.family === 'mug' ? { placement: mugSinglePanelPlacement(compositionOfKey(product, generation.geometry_key) ?? 'square') } : {}) }
   }
   const withBeauty = async (v: ProductPreviewView, input: { w: number; h: number } | null): Promise<ProductPreviewView> => (generation ? { ...(v as any), beauty, beautyInput: input ? await signInput(input.w, input.h) : null } : v)
   const hit = await sign()
@@ -161,7 +162,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const masterBytes = await deps.storage.get(fav.master_path)                             // CLEAN master: memory only, never returned, never stored next to the preview
   if (!masterBytes) throw new GiftError('generation_unavailable')
   const shaped = generation ? { picture: await sharp(masterBytes).png().toBuffer(), fit: 'exact' as const } : provisional ? { picture: (await containedPicture(masterBytes, product)).picture, fit: 'exact' as const } : await productShapedPicture(masterBytes, product)
-  const flat = await mockupArtwork(shaped.picture, product)
+  const flat = await mockupArtwork(shaped.picture, product, generation && product.family === 'mug' ? { mugLayout: MUG_SINGLE_PANEL } : {})
   let png: Buffer | null = null, width = 0, height = 0, renderer: 'scene' | 'calibrated' | 'artwork' = legacyCalibrated ? 'calibrated' : 'artwork', sceneId: string | null = null
   if (useScene) {
     let stage = 'scene_representation'

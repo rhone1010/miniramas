@@ -41,8 +41,10 @@ describe('availability: exact blockers and configuration for the four families',
     expect(by('card:7x5-gloss')).toMatchObject({ blockers: ['not_a_launch_candidate'], generation: { supported: false, reason: 'not_a_launch_candidate' } })
     // the generation each can have (Portraits): the ratio asked of NB2.1 and the sliver trimmed to reach the exact shape
     expect(by('mug:11oz').generation).toMatchObject({ supported: true, requestedAspect: '1:1', trimFraction: 0 })          // the mug picture is a square or a landscape panel; the first supported is the square
-    expect(by('mug:11oz').configuration).toMatchObject({ layout: 'mug_panel', generationPicturePx: { w: 910, h: 910 } })
+    expect(by('mug:11oz').configuration).toMatchObject({ layout: 'mug_single_panel', generationPicturePx: { w: 910, h: 910 } })
     expect((by('mug:11oz').generation as any).options.map((o: any) => [o.composition, o.supported, o.requestedAspect])).toEqual([['square', true, '1:1'], ['landscape', true, '3:2']])
+    expect((by('mug:11oz').generation as any).options.map((o: any) => o.placement.rectPx)).toEqual([{ x: 1614, y: 100, w: 910, h: 910 }, { x: 1619, y: 255, w: 900, h: 600 }])          // the exact place of the one panel in the print file
+    expect((by('mug:11oz').generation as any).options.map((o: any) => o.placement.viewRectPx)).toEqual([{ x: 440, y: 50, w: 455, h: 455 }, { x: 443, y: 128, w: 450, h: 300 }])          // and in the 1335 x 555 view
     expect(by('framed_canvas:12x18').generation).toMatchObject({ supported: true, requestedAspect: '2:3', trimFraction: 0 })
     expect(by('card:7x5').generation).toMatchObject({ supported: true, requestedAspect: '3:4' }); expect((by('card:7x5').generation as any).trimFraction).toBeLessThan(0.06)
     expect(by('matted:12x18').generation).toMatchObject({ supported: true, requestedAspect: '9:16' }); expect((by('matted:12x18').generation as any).trimFraction).toBeLessThan(0.03)

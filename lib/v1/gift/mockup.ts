@@ -28,6 +28,7 @@ import { GiftError, owned, type GiftDeps } from './service'
 import { compositionFitsProduct } from './frozen'
 import { scopeOf } from './scope'
 import { mockupInputFor } from '../print/product-layout'
+import type { MugLayout } from '../print/production-profiles'
 import { getProductBySku, type CanonicalProduct } from '../print/catalog'
 import { resolveScene, prepareSceneArtwork, sceneRepresentationId, SCENE_REPRESENTATION_VERSION, type SceneRenderer } from './scenes'
 import { noScenePresentation, representationFields } from './presentation'
@@ -105,8 +106,8 @@ export async function pictureArea(artwork: Buffer, product: CanonicalProduct): P
 }
 
 /** What the renderer is shown: the picture area of a flat or wrapped product, the full wrap for the mug, the front picture for the card. */
-export async function mockupArtwork(artwork: Buffer, product: CanonicalProduct): Promise<Buffer> {
-  if (product.family === 'mug' || product.family === 'card') return mockupInputFor(product.family, artwork)
+export async function mockupArtwork(artwork: Buffer, product: CanonicalProduct, opts: { mugLayout?: MugLayout } = {}): Promise<Buffer> {
+  if (product.family === 'mug' || product.family === 'card') return mockupInputFor(product.family, artwork, opts)
   return pictureArea(artwork, product)
 }
 

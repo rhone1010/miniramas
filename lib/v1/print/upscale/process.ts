@@ -48,6 +48,8 @@ export interface ProcessDeps {
   /** The customer's stored original, as base64. */
   loadSource(job: AssetJob): Promise<Buffer>
   loadSettings(job: AssetJob): Promise<ResolvedSettings>
+  /** The layout the approved picture was sold in (gift mugs: 'mug_single_panel'); frozen with the settings so every later step of the job uses the same one. Absent = the layout that existed before layouts were recorded. */
+  layoutOf?(job: AssetJob): Promise<string | null>
   provider(name: 'replicate' | 'pruna'): UpscaleProvider
   inspect(input: { reference: Buffer; result: Buffer; context: { series?: string; effect?: string } }): Promise<UpscaleQa>
   context?(job: AssetJob): { series?: string; effect?: string } | Promise<{ series?: string; effect?: string }>
@@ -139,10 +141,10 @@ async function prepare(deps: ProcessDeps, job: AssetJob, save: Save): Promise<St
   let j = job
   if (!j.settings_snapshot) {
     const resolved = await deps.loadSettings(j)
-    const s = resolved.settings
+    const s = resolved.settings, layout = deps.layoutOf ? await deps.layoutOf(j) : null
     j = await save({
       status: 'preparing', provider: s.provider, settings_hash: settingsHash(s), settings_version: resolved.version,
-      settings_snapshot: { ...Object.fromEntries(SETTING_KEYS.map(k => [k, s[k]])), resolved_from: resolved.sources } as Record<string, unknown>,
+      settings_snapshot: { ...Object.fromEntries(SETTING_KEYS.map(k => [k, s[k]])), resolved_from: resolved.sources, ...(layout ? { layout } : {}) } as Record<string, unknown>,
     }, 'settings_frozen', `${resolved.sources.join('>')} v${resolved.version}`)
   }
   const s = frozen(j)

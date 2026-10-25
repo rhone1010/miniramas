@@ -82,6 +82,7 @@ export function productionDeps(orderCache = new Map<string, PrintOrderRow | null
       if (!res.ok) throw new Error('fetch render failed: ' + res.status)
       return Buffer.from(await res.arrayBuffer())
     },
+    layoutOf: async job => job.source_kind === 'gift' ? (await import('../../gift/print-source')).approvedLayout(await orderOf(job.order_id) ?? { id: job.order_id }, job) : null,
     loadSettings: job => loadSettings({ from: (t: string) => supabaseAdmin.from(t) as any }, job.sku, job.finish),
     provider: name => makeProvider(name),
     inspect: input => inspectUpscale(input),

@@ -74,6 +74,25 @@ export function mugPanelRectsFor(shape: MugComposition, scale = 1): Rect[] {
   return MUG.faceCentersX.map(cx => ({ x: r(cx - s.w / 2), y: r(top), w: r(s.w), h: r(s.h) }))
 }
 
+/**
+ * THE SINGLE-PANEL MUG LAYOUT (2026-10-25, 'mug_single_panel'): ONE picture panel on ONE face (the face a right-handed mug shows, handle on the right); the reverse and everything else in the lab file stay WHITE.
+ * Nothing is duplicated, mirrored or washed. Every product-first (generation) mug uses it. Mugs made before it keep their layout: the square on BOTH faces with the soft wash ('mug_two_face'), decided by the layout
+ * frozen with the order, never by the picture's shape.
+ */
+export const MUG_SINGLE_PANEL = 'mug_single_panel' as const
+export const MUG_TWO_FACE = 'mug_two_face' as const
+export type MugLayout = typeof MUG_SINGLE_PANEL | typeof MUG_TWO_FACE
+/** Where the single panel sits in the 2670 x 1110 print file (and, rolled so the front face is in the middle, in the 1335 x 555 view the preview and the browser beauty shot use). */
+export function mugSinglePanelPlacement(shape: MugComposition) {
+  const rect = mugPanelRectsFor(shape, 1)[1], s = MUG.mockupScale, vw = Math.round(MUG.wrap.w * s), vh = Math.round(MUG.wrap.h * s), vr = { w: Math.round(rect.w * s), h: Math.round(rect.h * s) }
+  return {
+    layout: MUG_SINGLE_PANEL, composition: shape, orientation: shape, face: 'front' as const, handle: 'right' as const, reverse: 'white' as const,
+    panelPx: { w: rect.w, h: rect.h }, filePx: { w: MUG.wrap.w, h: MUG.wrap.h }, rectPx: { x: rect.x, y: rect.y, w: rect.w, h: rect.h },
+    viewPx: { w: vw, h: vh }, viewRectPx: { x: Math.round(vw / 2 - vr.w / 2), y: Math.round(rect.y * s), ...vr },
+  }
+}
+export type MugSinglePanelPlacement = ReturnType<typeof mugSinglePanelPlacement>
+
 /** The panel rectangles (in lab-file pixels) on the two faces. */
 export function mugPanelRects(scale = 1): Rect[] {
   const r = (v: number) => Math.round(v * scale)

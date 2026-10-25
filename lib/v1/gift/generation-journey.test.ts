@@ -226,17 +226,34 @@ describe('beauty scenes and the mug full wrap stay tied to the same composition 
       expect(g.conform!.trimFraction).toBeLessThan(0.1)
       await acceptGeneration(r.gift, U1, sid, g.generationId)
       await setLines(r.gift, U1, sid, [{ lineId: 'm', productId: 'mug:11oz', copies: 1, generationId: g.generationId }])
-      const comp = r.store.compositions.find(c => c.line_id === 'm')!; expect(comp).toMatchObject({ status: 'approved', generation_id: g.generationId, width: g.width, height: g.height }); expect(comp.plan as any).toMatchObject({ artworkSha256: g.sha256, layout: 'mug_panel', composition: shape.composition })
-      const order = await pay(r, sid); expect((order.items[0].frozen as any).composition).toMatchObject({ generationId: g.generationId, artworkSha256: g.sha256, width: g.width, height: g.height })
+      const comp = r.store.compositions.find(c => c.line_id === 'm')!; expect(comp).toMatchObject({ status: 'approved', generation_id: g.generationId, width: g.width, height: g.height }); expect(comp.plan as any).toMatchObject({ artworkSha256: g.sha256, layout: 'mug_single_panel', composition: shape.composition, placement: { rectPx: { w: shape.w, h: shape.h }, face: 'front', reverse: 'white' } })
+      const order = await pay(r, sid); expect((order.items[0].frozen as any).composition).toMatchObject({ generationId: g.generationId, artworkSha256: g.sha256, width: g.width, height: g.height, layout: 'mug_single_panel', composition: shape.composition, placement: { rectPx: { w: shape.w, h: shape.h } } })          // layout and orientation are pinned with the sale
       await finalizeOrder(r.gift, U1, sid); await releaseOrder(r.gift, { operator: 'test-operator', userId: U1, sessionId: sid })
       const bytes = await loadApprovedCompositionWith(r.store, r.gift.storage, { id: order.id }, { render_id: `gift:${sid}:m`, item_index: 0 }); expect(sha(bytes)).toBe(g.sha256)
+      const { approvedLayoutWith } = await import('./print-source'); expect(await approvedLayoutWith(r.store, { id: order.id }, { render_id: `gift:${sid}:m`, item_index: 0 })).toBe('mug_single_panel')          // what the print job freezes
       // the lab file: the real mug profile places exactly this picture on the 2670 x 1110 file, both faces, changing nothing in it
-      const job: any = { id: 'j', finish: 'mug', size: '11oz', sku: 'GLOBAL-MUG-W' }, profile = profileFor(job), p = await profile.prepare({ job, source: bytes, ppi: 300 })
+      const job: any = { id: 'j', finish: 'mug', size: '11oz', sku: 'GLOBAL-MUG-W', settings_snapshot: { layout: (comp.plan as any).layout } }, profile = profileFor(job), p = await profile.prepare({ job, source: bytes, ppi: 300 })
       expect(p).toMatchObject({ width: g.width, height: g.height, outpainted: false }); expect((await sharp(p.working).raw().toBuffer()).equals(await sharp(bytes).removeAlpha().raw().toBuffer())).toBe(true)
       const f = await profile.finish({ job: { ...job, input_w: g.width, input_h: g.height, required_front_w: p.requiredFront.w, required_front_h: p.requiredFront.h }, image: bytes, upscaled: false, targetMp: 8 } as any)
       expect(await sharp(f.jpeg).metadata()).toMatchObject({ width: 2670, height: 1110 })
+      // ONE panel on the front face at the returned placement; everything else, the reverse included, is white
+      const pl = (comp.plan as any).placement.rectPx as { x: number; y: number; w: number; h: number }, full = await sharp(f.jpeg).removeAlpha().raw().toBuffer({ resolveWithObject: true })
+      const at = (x: number, y: number) => { const o = (y * full.info.width + x) * 3; return [full.data[o], full.data[o + 1], full.data[o + 2]] }
+      for (const [x, y] of [[100, 100], [598, 555], [1300, 555], [pl.x - 20, 555], [pl.x + pl.w + 20, 555], [2069, pl.y - 20], [2069, pl.y + pl.h + 20], [2650, 1090]]) expect(at(x, y).every(v => v >= 250), `white at ${x},${y}`).toBe(true)
+      const inside = await sharp(f.jpeg).extract({ left: pl.x, top: pl.y, width: pl.w, height: pl.h }).removeAlpha().raw().toBuffer(), want = await sharp(bytes).resize(pl.w, pl.h, { kernel: 'lanczos3' }).removeAlpha().raw().toBuffer()
+      let diff = 0; for (let i = 0; i < inside.length; i += 97) diff += Math.abs(inside[i] - want[i]); expect(diff / (inside.length / 97)).toBeLessThan(4)          // the picture, whole, unmirrored
+      expect(pl.x + pl.w / 2).toBe(2069)
     })
   }
+
+  it('an existing mug (no layout recorded with its job) keeps the two-face layout: the square on both faces', async () => {
+    const { profileFor } = await import('../print/upscale/profiles')
+    const picture = await sharp({ create: { width: 910, height: 910, channels: 3, background: '#b33' } }).png().toBuffer()
+    const job: any = { id: 'j', finish: 'mug', size: '11oz', sku: 'GLOBAL-MUG-W', settings_snapshot: null }, profile = profileFor(job), p = await profile.prepare({ job, source: picture, ppi: 300 })
+    const f = await profile.finish({ job: { ...job, input_w: 910, input_h: 910, required_front_w: p.requiredFront.w, required_front_h: p.requiredFront.h }, image: picture, upscaled: false, targetMp: 8 } as any)
+    const raw = await sharp(f.jpeg).removeAlpha().raw().toBuffer({ resolveWithObject: true }), at = (x: number, y: number) => { const o = (y * raw.info.width + x) * 3; return [raw.data[o], raw.data[o + 1], raw.data[o + 2]] }
+    expect(at(598, 555)[0]).toBeGreaterThan(150); expect(at(598, 555)[1]).toBeLessThan(100); expect(at(2069, 555)[1]).toBeLessThan(100)          // red on BOTH faces, exactly as before
+  })
 
   it('the mug: a portrait or unknown composition is refused, and a composition on another product is refused', async () => {
     const r = rig(); vi.stubGlobal('fetch', r.fetchMock)

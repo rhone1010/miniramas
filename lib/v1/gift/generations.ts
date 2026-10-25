@@ -13,7 +13,7 @@ import sharp from 'sharp'
 import { createHash } from 'node:crypto'
 import { allProducts, type CanonicalProduct } from '../print/catalog'
 import { generationAspectFor, supportsFavoriteReference } from './aspects'
-import { MUG_COMPOSITIONS, MUG_PANEL_SHAPES, type MugComposition } from '../print/production-profiles'
+import { MUG_COMPOSITIONS, MUG_PANEL_SHAPES, MUG_SINGLE_PANEL, mugSinglePanelPlacement, type MugComposition } from '../print/production-profiles'
 import { liveEffectIds } from './effects'
 import { MAX_CONFORM_CROP, STORAGE } from './policy'
 import { GiftError, fromStoreError, generationViewOf, getSessionView, owned, type GiftDeps } from './service'
@@ -46,6 +46,11 @@ export const geometryKeyOf = (p: CanonicalProduct, composition?: MugComposition 
 /** Every geometry key a product can be made in: one for most products, the three panels for the mug. */
 export const geometryKeysOf = (p: CanonicalProduct): string[] => (p.family === 'mug' ? MUG_COMPOSITIONS.map(c => geometryKeyOf(p, c)) : [geometryKeyOf(p)])
 /** Which mug panel a stored generation (by its geometry key) is; null for any other product. */
+/** What a mug generation's composition plan records, so approval, cart, checkout and manufacturing all see the same layout, orientation and placement. */
+export function mugPlanFields(p: CanonicalProduct, key: string) {
+  const composition = compositionOfKey(p, key) ?? 'square'
+  return { layout: MUG_SINGLE_PANEL, composition, placement: mugSinglePanelPlacement(composition) }
+}
 export const compositionOfKey = (p: CanonicalProduct, key: string): MugComposition | null => (p.family === 'mug' ? MUG_COMPOSITIONS.find(c => geometryKeyOf(p, c) === key) ?? null : null)
 
 /** The product's picture shape as the smallest whole-number ratio (2400 x 3600 -> 2 x 3), the grid an exact picture lands on. */
@@ -251,7 +256,7 @@ export async function bindGenerationLines(deps: GiftDeps, rec: SessionRec, lines
       geometry_key: g.geometry_key, method: 'generated', source_composition_id: null, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
       nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
       plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: (g.generation as { targetAspect?: number } | null)?.targetAspect ?? null, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId, ...(line.productId.startsWith('mug:') ? { layout: 'mug_panel', composition: compositionOfKey(productOf(line.productId)!, g.geometry_key) } : {}), ...(line.frameColor ? { frameColor: line.frameColor } : {}) },
+              sourceArtworkId: rec.artwork_preview_id, correction: false, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: line.productId, ...(line.productId.startsWith('mug:') ? mugPlanFields(productOf(line.productId)!, g.geometry_key) : {}), ...(line.frameColor ? { frameColor: line.frameColor } : {}) },
       ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
     })
     await deps.store.patchComposition(row.id, { approved_at: at })
@@ -283,7 +288,7 @@ export async function correctGenerationLine(deps: GiftDeps, userId: string, rec:
     geometry_key: g.geometry_key, method: 'generated', source_composition_id: current.id, generation_mode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration', generation_aspect: g.aspect,
     nb21_calls: 0, outpaint_calls: 0, cost_usd_est: null, generation_id: g.id,
     plan: { fit: 'exact', outpainted: false, method: 'generated', geometryKey: g.geometry_key, generationAspect: g.aspect, targetAspect: p.requirements.pictureAspect, generationMode: g.generation?.referenced ? 'favorite_reference' : 'photo_regeneration',
-            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? { layout: 'mug_panel', composition: compositionOfKey(p, g.geometry_key) } : {}), ...(keepFinish ? { frameColor: keepFinish } : {}) },
+            sourceArtworkId: current.preview_id, correction: true, source: 'generation', generationId: g.id, artworkSha256: g.sha256, productId: p.productId, sku: p.sku, ...(p.family === 'mug' ? mugPlanFields(p, g.geometry_key) : {}), ...(keepFinish ? { frameColor: keepFinish } : {}) },
     ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}),
   })
 }
