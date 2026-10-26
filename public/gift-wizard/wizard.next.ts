@@ -419,6 +419,7 @@ function ownedCompositionPicture(l:GiftLine){
  if(!source)return serverMockup(l);
  if(scenePictures.has(key))return photo(scenePictures.get(key)!,p.label+' · '+o.label+' · '+(l.frameColor||''),'gift-feature-image');
  if(!scenePending.has(key)&&!sceneFailures.has(key)){scenePending.add(key);void productScene(source,c.previewUrl,c.width/c.height,l.frameColor).then(url=>scenePictures.set(key,url)).catch(()=>sceneFailures.add(key)).finally(()=>{scenePending.delete(key);if(ownedStudio())render()})}
+ if(scenePending.has(key))return '<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><p>Preparing product preview…</p></section>';
  return serverMockup(l);
 }
 function ownedProductLine(){return session.lines.find(l=>l.id===editId)||session.lines.find(l=>l.productId===studioState.productId&&l.size===studioState.size)}
@@ -441,7 +442,7 @@ function renderOwnedProductReview(approval:boolean){
  $('screen').innerHTML=busy?'<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><p>Preparing product preview…</p></section>':line?ownedCompositionPicture(line):configurationPreview(p,o,true);
  $('screen').setAttribute('aria-busy',String(busy));
  $('right').innerHTML='<h2>'+esc(p.label)+'</h2><p>'+esc(o.label)+' · '+money(o.retailCents)+'</p><p>'+esc(Object.entries({...o.attributes,...(selectedFinish(p,o)?{color:selectedFinish(p,o)}:{})}).map(([k,v])=>k+': '+v).join(' · '))+'</p>';
- const ready=!busy&&!!c?.compositionId&&['ready','approved'].includes(c.status)&&!!m&&Date.parse(m.urlExpiresAt)>Date.now();
+ const ready=!busy&&!$('screen').querySelector('.craft-progress')&&!!c?.compositionId&&['ready','approved'].includes(c.status)&&!!m&&Date.parse(m.urlExpiresAt)>Date.now();
  if(approval)primary('Accept Composition',()=>void serverAction(()=>live!.api.approveComposition(live!.id,c!.compositionId!),'cart'),!ready);
  else primary('Review &amp; Approve',()=>go('acceptance'),!ready);
  $('right').insertAdjacentHTML('beforeend',secondary('owned-change-product','Choose a Product'));
