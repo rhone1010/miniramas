@@ -21,7 +21,16 @@ mobileBack.onclick=()=>{retainMobileView();try{const ref=new URL(document.referr
 
 const collectionMasthead=document.querySelector('.liten-masthead,.masthead,#masthead');
 function alignCollectionHeader(){if(collectionMasthead)root.style.setProperty('--collection-masthead-bottom',collectionMasthead.getBoundingClientRect().bottom+'px');}
-if(collectionMasthead){new ResizeObserver(alignCollectionHeader).observe(collectionMasthead);addEventListener('resize',alignCollectionHeader);alignCollectionHeader();}
+if(collectionMasthead){
+ const layoutObserver=new ResizeObserver(alignCollectionHeader);
+ layoutObserver.observe(collectionMasthead);
+ let consentBanner=null;
+ function observeConsentLayout(){const banner=document.querySelector('.lc-consent');if(banner!==consentBanner){if(consentBanner)layoutObserver.unobserve(consentBanner);consentBanner=banner;if(banner)layoutObserver.observe(banner);}alignCollectionHeader();}
+ new MutationObserver(observeConsentLayout).observe(document.body,{childList:true});
+ addEventListener('liten:consentchange',()=>requestAnimationFrame(alignCollectionHeader));
+ addEventListener('resize',alignCollectionHeader);
+ observeConsentLayout();
+}
 function active(){document.body.classList.toggle('mc-designed',root.classList.contains('is-open'));alignCollectionHeader();}
 new MutationObserver(active).observe(root,{attributes:true,attributeFilter:['class']});active();
 const filters=makeDialog('mcDesignFilters','mc-filter-dialog','Filter','<h2 id="mcDesignFiltersTitle">Filter</h2><p>Refine what you see in your collection.</p><fieldset><legend>Status</legend><div class="mc-filter-options" data-group="state"></div></fieldset><fieldset><legend>Series</legend><div class="mc-filter-options" data-group="series"></div></fieldset><fieldset><legend>Sort</legend><div class="mc-filter-options" data-group="sort"></div></fieldset><button type="button" class="mc-primary" data-apply>Apply</button>');
