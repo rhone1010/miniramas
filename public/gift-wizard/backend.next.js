@@ -144,7 +144,7 @@ export class GiftBackend {
     approveOrder(id) { return this.finalize(id); }
     async mockup(id, lineId, compositionId, signal) {
         const v = await this.request('GET', sessionPath(id) + '/lines/' + segment(lineId) + '/mockup?compositionId=' + segment(compositionId), undefined, signal);
-        if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.lineId !== lineId || v.compositionId !== compositionId || typeof v.watermarked !== 'boolean' || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['frozen', 'legacy_catalog'].includes(v.geometrySource))
+        if (!v || v.contractVersion !== 1 || v.sessionId !== id || v.lineId !== lineId || v.compositionId !== compositionId || typeof v.watermarked !== 'boolean' || v.productionPrintFile !== false || v.purchaseAuthorization !== false || !previewURL(v.url) || !(Date.parse(v.urlExpiresAt) > Date.now()) || !(v.width > 0 && v.height > 0) || !['catalog', 'frozen', 'legacy_catalog'].includes(v.geometrySource))
             throw new GiftApiError('invalid_mockup_response', 0);
         if (!isProductRepresentation(v, v.productId, v.scene?.sceneId))
             throw new GiftApiError('approved_scene_required', 0);

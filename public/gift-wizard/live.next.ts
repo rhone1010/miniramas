@@ -15,7 +15,7 @@ export class LiveGift {
  async restore(signal?:AbortSignal){const n=++this.epoch;this.value=null;this.mockups.clear();this.unavailableScenes.clear();const s=await this.api.restore(this.id,signal);if(n===this.epoch)this.accept(s)}
  async mockup(lineId:string,signal?:AbortSignal){
   const s=this.session,n=this.epoch;
-  if(!s||!purchased(s))throw new GiftApiError('order_payment_required',0);
+  if(!s||!purchased(s)&&!(s.entrance==='collection'&&['none','checkout_open'].includes(s.order.state)))throw new GiftApiError('order_payment_required',0);
   const line=s.lines.find(l=>l.lineId===lineId),c=s.compositions.find(c=>c.lineId===lineId&&c.productId===line?.productId&&c.sourceArtworkId===s.artworkPreviewId&&c.compositionId&&['ready','approved'].includes(c.status));
   if(!line||!c?.compositionId)throw new GiftApiError('composition_not_found',0);
   let m:MockupView;

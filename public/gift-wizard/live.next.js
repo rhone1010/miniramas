@@ -25,7 +25,7 @@ export class LiveGift {
         this.accept(s); }
     async mockup(lineId, signal) {
         const s = this.session, n = this.epoch;
-        if (!s || !purchased(s))
+        if (!s || !purchased(s) && !(s.entrance === 'collection' && ['none', 'checkout_open'].includes(s.order.state)))
             throw new GiftApiError('order_payment_required', 0);
         const line = s.lines.find(l => l.lineId === lineId), c = s.compositions.find(c => c.lineId === lineId && c.productId === line?.productId && c.sourceArtworkId === s.artworkPreviewId && c.compositionId && ['ready', 'approved'].includes(c.status));
         if (!line || !c?.compositionId)

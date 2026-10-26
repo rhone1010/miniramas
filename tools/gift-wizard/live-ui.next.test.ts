@@ -749,27 +749,33 @@ test('live Matted 8x12 excludes both grey finishes and defaults safely on size c
  try{win.document.querySelector('[data-feature="matted"]').click();assert.equal(win.document.querySelectorAll('[data-configuration]').length,8);win.document.querySelector('[data-configuration="dark grey"]').click();win.document.querySelector('[data-aspect="Portrait"]').click();assert.equal(win.document.querySelectorAll('[data-configuration]').length,6);assert.equal(win.document.querySelector('[data-configuration="dark grey"]'),null);assert.equal(win.document.querySelector('[data-configuration="light grey"]'),null);assert.equal(win.document.querySelector('[data-configuration="black"]').getAttribute('aria-pressed'),'true');await new Promise(r=>setTimeout(r,20));}finally{dom.window.close()}
 });
 
-test('owned artwork review uses shared products without generation or acceptance writes',async()=>{
+test('owned artwork composes through existing handlers and explicitly approves before checkout',async()=>{
  for(const mobile of ['', '&mobile=1']){
   const s:any=shoppingProject();s.entrance='collection';s.collection={previewId:'owned',portfolioId:'portfolio'};
-  const writes:string[]=[];s.route=(url:string,init:any)=>{if(init.method&&init.method!=='GET')writes.push(url)};
+  const writes:string[]=[];s.route=(url:string,init:any)=>{
+   if(init.method&&init.method!=='GET')writes.push(url);
+   if(url.endsWith('/lines')&&init.method==='PUT'){
+    s.lines=JSON.parse(init.body).lines.map((l:any)=>({...l,size:l.productId.split(':')[1]}));
+    s.geometries=s.lines.map((l:any)=>{const p=catalog.products.find(p=>p.productId===l.productId)!;return {lineId:l.lineId,productId:l.productId,sku:p.sku,requiredPx:p.requirements.finalPx}});return s;
+   }
+   if(url.endsWith('/compositions')){s.compositions=s.lines.map((l:any)=>({lineId:l.lineId,productId:l.productId,sourceArtworkId:s.artworkPreviewId,compositionId:'owned-comp',attempt:1,status:'ready',sku:s.geometries[0].sku,correctionsRemaining:1}));return s}
+   if(url.endsWith('/compositions/owned-comp/approve')){s.compositions[0].status='approved';return s}
+   if(url.includes('/mockup?')){const l=s.lines[0];return {contractVersion:1,sessionId:s.sessionId,lineId:l.lineId,productId:l.productId,sourceArtworkId:s.artworkPreviewId,compositionId:'owned-comp',attempt:1,compositionStatus:s.compositions[0].status,sku:s.geometries[0].sku,renderer:'scene',scene:{sceneId:'fine-art-square'},watermarked:true,productionPrintFile:false,purchaseAuthorization:false,geometrySource:'catalog',url:'https://liten.invalid/owned-product.png',urlExpiresAt:'2099-01-01',width:1254,height:1254}}
+  };
   const {win,dom,calls}=await boot('sessionId=project&ownedArtworkReview=1'+mobile,s);
   try{
    assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
-   assert.equal(win.document.querySelector('.progress').textContent.includes('Effect'),false);
-   win.document.querySelector('[data-feature="fine_art"]').click();
-   win.document.querySelector('[data-size]').click();
-   win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,40));
-   assert.equal(win.document.getElementById('screen').dataset.view,'generation');
-   assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/product.jpg');
-   assert.equal(win.document.getElementById('primary').disabled,false);
-   win.document.getElementById('primary').click();
-   assert.equal(win.document.getElementById('screen').dataset.view,'acceptance');
-   assert.equal(win.document.getElementById('primary').disabled,true);
-   win.navigate('checkout');assert.equal(win.document.getElementById('primary').disabled,true);
-   assert.equal(win.document.getElementById('disclosure'),null);
-   assert.deepEqual(writes,[]);
-   assert.equal(calls.some(x=>/\/(generations|batches|approve|checkout)$/.test(x)),false);
-  }finally{dom.window.close()}
+   win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-size]').click();
+   win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,70));
+   assert.equal(win.document.getElementById('screen').dataset.view,'generation',win.document.getElementById('error').textContent+' '+JSON.stringify(writes));
+   assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/owned-product.png');
+   win.document.getElementById('primary').click();assert.equal(s.compositions[0].status,'ready');
+   win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,50));
+   assert.equal(s.compositions[0].status,'approved');assert.equal(win.document.getElementById('screen').dataset.view,'cart');
+   assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();
+   assert.equal(win.document.getElementById('screen').dataset.view,'checkout');
+   assert.equal(calls.some(x=>/\/(generations|batches)$/.test(x)),false);
+   assert.equal(writes.filter(x=>x.endsWith('/compositions/owned-comp/approve')).length,1);
+  }finally{await new Promise(r=>setTimeout(r,150));dom.window.close()}
  }
 });
