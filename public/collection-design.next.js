@@ -19,7 +19,10 @@ const mobileBack=document.createElement('button');mobileBack.type='button';mobil
 document.querySelector('.masthead,#masthead')?.append(mobileBack);
 mobileBack.onclick=()=>{retainMobileView();try{const ref=new URL(document.referrer);if(ref.origin===location.origin&&ref.pathname!=='/collection'&&history.length>1){history.back();return;}}catch(_){}closeMyCollection();};
 
-function active(){document.body.classList.toggle('mc-designed',root.classList.contains('is-open'));}
+const collectionMasthead=document.querySelector('.liten-masthead,.masthead,#masthead');
+function alignCollectionHeader(){if(collectionMasthead)root.style.setProperty('--collection-masthead-bottom',collectionMasthead.getBoundingClientRect().bottom+'px');}
+if(collectionMasthead){new ResizeObserver(alignCollectionHeader).observe(collectionMasthead);addEventListener('resize',alignCollectionHeader);alignCollectionHeader();}
+function active(){document.body.classList.toggle('mc-designed',root.classList.contains('is-open'));alignCollectionHeader();}
 new MutationObserver(active).observe(root,{attributes:true,attributeFilter:['class']});active();
 const filters=makeDialog('mcDesignFilters','mc-filter-dialog','Filter','<h2 id="mcDesignFiltersTitle">Filter</h2><p>Refine what you see in your collection.</p><fieldset><legend>Status</legend><div class="mc-filter-options" data-group="state"></div></fieldset><fieldset><legend>Series</legend><div class="mc-filter-options" data-group="series"></div></fieldset><fieldset><legend>Sort</legend><div class="mc-filter-options" data-group="sort"></div></fieldset><button type="button" class="mc-primary" data-apply>Apply</button>');
 const choices={state:[['all','All'],['preview','Watermarked'],['purchased','Unlocked']],series:[['all','All'],['Portraits','Portraits'],['Groups','Groups'],['Pets','Pets']],sort:[['newest','Newest First'],['oldest','Oldest First']]};let draft;
