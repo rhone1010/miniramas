@@ -38,7 +38,30 @@ events.forEach(event=>{if(event.file){event.panel=nextPanel;nextPanel=(nextPanel
 events.forEach((event,index)=>{event.at+=(index+1)*500});
 let previousOriginal=0,previousScheduled=0;
 events.forEach((event,index)=>{const original=event.at;event.at=index===0?original:previousScheduled+Math.max(2250,original-previousOriginal);previousOriginal=original;previousScheduled=event.at});
-const cycleEnd=events[events.length-1].at+4500;
+const desktopEvents=events.map(event=>({...event}));
+let cycleEnd=events[events.length-1].at+4500;
+const phone=matchMedia('(max-width: 599px)'),tablet=matchMedia('(max-width: 900px)');
+stage.classList.add('single');panels[0].classList.add('active');
+function configureSequence(){
+ const count=phone.matches?1:tablet.matches?2:3;
+ events.length=0;
+ if(count===3)events.push(...desktopEvents.map(event=>({...event})));
+ else{
+  events.push({at:4500,presentation:'triptych'});
+  const images=groups.map(image=>({...image,series:'Groups',alt:image.pair+(image.phase==='source'?' source photograph':' effect artwork')}));
+  for(const [series,items] of Object.entries(pairs)){
+   for(let start=0;start<items.length;start+=count){
+    const batch=items.slice(start,start+count);
+    for(const phase of ['source','effect'])for(const pair of batch)images.push({file:phase==='source'?pair.a:pair.b,alt:pair.name+(phase==='source'?' source photograph':' effect artwork'),series,pair:pair.name,phase});
+   }
+  }
+  images.forEach((image,i)=>events.push({...image,panel:i%count,at:7000+i*2250}));
+  events.push({at:7000+images.length*2250,presentation:'gifts'});
+ }
+ cycleEnd=events[events.length-1].at+4500;
+ elapsed=0;eventIndex=0;resetPanels();present(motion.matches?'triptych':'gifts');sync();
+}
+phone.addEventListener('change',configureSequence);tablet.addEventListener('change',configureSequence);
 function present(name){stage.dataset.presentation=name;const triptych=name==='triptych';root.hidden=!triptych;root.inert=!triptych;gifts.inert=triptych;gifts.setAttribute('aria-hidden',String(triptych));stage.setAttribute('aria-labelledby',triptych?'splash-title':'groups-title');}
 function flip(event){
  if(event.presentation){if(event.presentation==='triptych')resetPanels();present(event.presentation);return;}
