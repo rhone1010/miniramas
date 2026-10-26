@@ -31,8 +31,13 @@ for(const [series,items] of Object.entries(pairs)){
   }
 }
 events.push({at:time,presentation:'gifts'});
+// One continuous left, middle, right order across all image changes.
+let nextPanel=0;
+events.forEach(event=>{if(event.file){event.panel=nextPanel;nextPanel=(nextPanel+1)%panels.length}});
 // Add half a second to every existing hold, including the Gifts hold.
 events.forEach((event,index)=>{event.at+=(index+1)*500});
+let previousOriginal=0,previousScheduled=0;
+events.forEach((event,index)=>{const original=event.at;event.at=index===0?original:previousScheduled+Math.max(2250,original-previousOriginal);previousOriginal=original;previousScheduled=event.at});
 const cycleEnd=events[events.length-1].at+4500;
 function present(name){stage.dataset.presentation=name;const triptych=name==='triptych';root.hidden=!triptych;root.inert=!triptych;gifts.inert=triptych;gifts.setAttribute('aria-hidden',String(triptych));stage.setAttribute('aria-labelledby',triptych?'splash-title':'groups-title');}
 function flip(event){
@@ -42,6 +47,9 @@ function flip(event){
  incoming.src=base+event.file;incoming.alt=event.alt;incoming.removeAttribute('aria-hidden');outgoing.setAttribute('aria-hidden','true');
  panel.dataset.series=event.series;panel.dataset.pair=event.pair||'';panel.dataset.phase=event.phase;
  flipper.classList.toggle('is-back',back);
+ const turns=Number(flipper.dataset.turns||0)+1;
+ flipper.dataset.turns=String(turns);
+ flipper.style.transform=`rotateY(${turns*180}deg)`;
 }
 function frame(now){
  raf=0;if(stopped)return;
@@ -51,7 +59,7 @@ function frame(now){
 function label(){button.setAttribute('aria-pressed',String(paused));button.setAttribute('aria-label',paused?'Play hero animation':'Pause hero animation');button.firstElementChild.textContent=paused?'▶':'Ⅱ';}
 function schedule(){if(ready&&!stopped&&!paused&&visible&&!document.hidden&&!raf)raf=requestAnimationFrame(frame)}
 function sync(){cancelAnimationFrame(raf);raf=0;last=0;schedule()}
-function resetPanels(){panels.forEach((panel,i)=>{const f=panel.firstElementChild;f.style.transition='none';f.classList.remove('is-back');const front=f.querySelector('.splash-front');front.src=base+initial[i];front.alt=['Portrait mosaic artwork','Group carved artwork','Portrait action figure artwork'][i];front.removeAttribute('aria-hidden');f.querySelector('.splash-back').setAttribute('aria-hidden','true');panel.dataset.phase='initial';panel.dataset.series='Initial';requestAnimationFrame(()=>{f.style.transition=''})})}
+function resetPanels(){panels.forEach((panel,i)=>{const f=panel.firstElementChild;f.style.transition='none';f.classList.remove('is-back');f.dataset.turns='0';f.style.transform='rotateY(0deg)';const front=f.querySelector('.splash-front');front.src=base+initial[i];front.alt=['Portrait mosaic artwork','Group carved artwork','Portrait action figure artwork'][i];front.removeAttribute('aria-hidden');f.querySelector('.splash-back').setAttribute('aria-hidden','true');panel.dataset.phase='initial';panel.dataset.series='Initial';requestAnimationFrame(()=>{f.style.transition=''})})}
 button.addEventListener('click',()=>{paused=!paused;label();sync()});
 motion.addEventListener('change',()=>{paused=motion.matches;if(paused){elapsed=0;eventIndex=0;resetPanels();present('triptych')}else{elapsed=0;eventIndex=0;present('gifts')};label();sync()});
 document.addEventListener('visibilitychange',sync);
