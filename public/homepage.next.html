@@ -8,6 +8,8 @@
 <link rel="icon" href="/favicon.ico">
 <link rel="stylesheet" href="/homepage/homepage.next.css">
 <script src="/homepage/homepage.next.js" defer></script>
+<link rel="stylesheet" href="/homepage/splash.next.css">
+<script src="/homepage/splash.next.js" defer></script>
 <link rel="stylesheet" href="/shared-masthead.next.css"><script src="/shared-masthead.next.js" defer></script>
 </head>
 <body>
@@ -15,15 +17,28 @@
 
 <header class="hp-header liten-masthead"></header>
 <main id="main" tabindex="-1">
+
+
   <section class="hp-section" id="groups" aria-labelledby="groups-title">
-    <div class="hp-chapter hp-hero-chapter" id="groups-hero" tabindex="-1" role="region" aria-labelledby="groups-title">
+    <div class="hp-chapter hp-hero-chapter" id="groups-hero" data-presentation="gifts" tabindex="-1" role="region" aria-labelledby="groups-title">
     <div class="hp-beauty"><picture><source media="(max-width: 900px)" srcset="/homepage/assets/heroes/mobile/m_hero_groups.jpg" width="941" height="1672"><img src="/homepage/assets/heroes/homepage_hero_images_groups.jpg" srcset="/homepage/assets/heroes/responsive/homepage_hero_images_groups.jpg.960.webp 960w, /homepage/assets/heroes/responsive/homepage_hero_images_groups.jpg.1600.webp 1600w, /homepage/assets/heroes/homepage_hero_images_groups.jpg 2076w" sizes="100vw" width="2076" height="757" alt="Groups artwork displayed in a home" fetchpriority="high" loading="eager" decoding="async"></picture>
     <div class="hp-intro hp-wrap">
       <div><p class="hp-eyebrow">Groups</p><h1 id="groups-title">The Whole Gang. Reimagined.</h1></div>
-      <div class="hp-intro-detail"><p>From familiar faces to extraordinary creations. Discover the possibilities together.</p><a class="hp-cta" href="/groups">Explore Group Transformations<span aria-hidden="true"> ↗</span></a></div>
+      <div class="hp-intro-detail"><p>From familiar faces to extraordinary creations. Discover the possibilities together.</p><a class="hp-cta" href="/gifts.next.html">Explore Gifts<span aria-hidden="true"> ↗</span></a></div>
     </div>
     </div>
+  <div class="splash-presentation" hidden inert aria-labelledby="splash-title">
+    <div class="splash-panels" aria-label="Photographs transformed into artwork">
+      <figure class="splash-panel"><div class="splash-flipper"><img class="splash-front" src="/homepage/assets/splash/Portrait_3B.jpg" alt="Portrait transformed into mosaic artwork"><img class="splash-back" alt="" aria-hidden="true"></div></figure>
+      <figure class="splash-panel"><div class="splash-flipper"><img class="splash-front" src="/homepage/assets/splash/Group_4B.jpg" alt="Group transformed into carved artwork"><img class="splash-back" alt="" aria-hidden="true"></div></figure>
+      <figure class="splash-panel"><div class="splash-flipper"><img class="splash-front" src="/homepage/assets/splash/Portrait_1B.jpg" alt="Portrait transformed into an action figure"><img class="splash-back" alt="" aria-hidden="true"></div></figure>
     </div>
+    <div class="splash-copy"><h2 id="splash-title">Imagine a Different You. Or Them.</h2><p>LITEN &amp; Co transforms your favorite photos into something magical.</p><p class="splash-categories">Portraits · Groups · Pets · Prints · Mugs · Greeting Cards</p></div>
+
+  </div>
+    <button class="splash-motion" type="button" aria-label="Pause hero animation" aria-pressed="false"><span aria-hidden="true">Ⅱ</span></button>
+    </div>
+
     <div class="hp-carousel hp-wrap hp-chapter hp-art-chapter" id="groups-artwork" tabindex="-1" data-carousel role="region" aria-label="Groups artwork" aria-roledescription="carousel">
       <div class="hp-slide" id="groups-set-1" data-slide role="group" aria-roledescription="slide" aria-label="1 of 2">
         <div class="hp-rotation-copy"><h3>Together, Anything Is Possible.</h3><p>One favorite group photo. Extraordinary ways to see everyone in a whole new light.</p></div>

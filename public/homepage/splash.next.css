@@ -1,0 +1,35 @@
+/* New screenshot-directed triptych. Independent of the older gallery carousels. */
+.splash-presentation{position:absolute;inset:0;width:100%;height:100%;background:#423e3b;padding:2.7vw 3.4vw 2.8vw;isolation:isolate;overflow:hidden}
+.splash-panels{height:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.7vw}
+.splash-panel{margin:0;min-width:0;perspective:1400px;height:100%}
+.splash-flipper{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 850ms cubic-bezier(.4,0,.2,1)}
+.splash-flipper.is-back{transform:rotateY(180deg)}
+.splash-panel img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;backface-visibility:hidden;border-radius:0}
+.splash-back{transform:rotateY(180deg)}
+.splash-presentation::after{content:"";position:absolute;inset:57% 0 0;z-index:1;pointer-events:none;background:linear-gradient(transparent,rgba(34,32,29,.78))}
+.splash-copy{position:absolute;left:3.4vw;bottom:2.3vw;right:3.4vw;z-index:2;color:#e9e4ce;pointer-events:none}
+.splash-copy h2{font:400 clamp(32px,5.3vw,100px)/1.05 'Cormorant Garamond',Georgia,serif;margin:0 0 .35vw;color:inherit}
+.splash-copy p{font:400 clamp(20px,1.9vw,36px)/1.15 'Cormorant Garamond',Georgia,serif;margin:0 .7vw;color:inherit}
+.splash-motion{position:absolute;right:12px;bottom:10px;z-index:3;width:36px;height:36px;border:1px solid #e9e4ce66;border-radius:5px;color:#e9e4ce;background:#423e3b;font:18px/1 sans-serif;cursor:pointer}
+.splash-motion:focus-visible{outline:2px solid #e9e4ce;outline-offset:3px}
+@media(max-width:600px){.splash-presentation{padding:20px 13px 115px}.splash-panels{gap:12px}.splash-panel{height:100%}.splash-copy{left:13px;right:13px;bottom:24px}.splash-copy h2{font-size:34px;margin-bottom:6px}.splash-copy p{font-size:20px;line-height:1.15;margin:0 24px 0 2px}.splash-desktop-break{display:none}.splash-presentation::after{inset:35% 0 0}.splash-motion{right:8px;bottom:8px;width:30px;height:30px}}
+@media(prefers-reduced-motion:reduce){.splash-flipper{transition:none}}
+.splash-copy .splash-second{font-size:clamp(24px,3.3vw,60px);margin-bottom:.5vw}
+.splash-copy .splash-categories{font-size:clamp(18px,1.6vw,30px);margin-top:.5vw}
+@media(max-width:600px){.splash-presentation{padding-bottom:190px}.splash-panel img{object-fit:contain}.splash-copy h2{font-size:32px}.splash-copy .splash-second{font-size:25px;margin-bottom:6px}.splash-copy .splash-categories{font-size:18px;margin-top:8px}.splash-copy{bottom:24px}}
+
+/* Both presentations occupy the original hero's footprint. The photograph sets its height. */
+#groups-hero{position:relative}
+#groups-hero[data-presentation="triptych"]>.hp-beauty{visibility:hidden;pointer-events:none}
+.splash-presentation[hidden]{display:none!important}
+#groups-hero>.hp-beauty,#groups-hero>.splash-presentation{animation:splash-arrive 450ms ease-out}
+@keyframes splash-arrive{from{opacity:0}to{opacity:1}}
+@media(max-width:600px){.splash-presentation{padding:20px 13px 190px}.splash-panels{align-items:center}.splash-panel{height:auto;aspect-ratio:1}.splash-copy h2{font-size:34px}.splash-panel img{object-fit:contain}}
+@media(prefers-reduced-motion:reduce){#groups-hero>.hp-beauty,#groups-hero>.splash-presentation{animation:none}}
+/* Mockup transition: both layers share one footprint; only the active layer is interactive. */
+#groups-hero>.hp-beauty{opacity:1;visibility:visible;transform:translateX(0);transition:opacity 1100ms cubic-bezier(.22,1,.36,1),transform 1100ms cubic-bezier(.22,1,.36,1),visibility 0s;animation:none}
+#groups-hero[data-presentation="triptych"]>.hp-beauty{opacity:0;visibility:hidden;transform:translateX(-18px);transition:opacity 1100ms cubic-bezier(.22,1,.36,1),transform 1100ms cubic-bezier(.22,1,.36,1),visibility 0s 1100ms}
+#groups-hero>.splash-presentation{display:block!important;opacity:1;visibility:visible;transform:translateX(0);transition:opacity 1100ms cubic-bezier(.22,1,.36,1),transform 1100ms cubic-bezier(.22,1,.36,1),visibility 0s;animation:none}
+#groups-hero>.splash-presentation[hidden]{display:block!important;opacity:0;visibility:hidden;transform:translateX(18px);pointer-events:none;transition:opacity 1100ms cubic-bezier(.22,1,.36,1),transform 1100ms cubic-bezier(.22,1,.36,1),visibility 0s 1100ms}
+#groups-hero{overflow:hidden;background:#423e3b}
+@media(prefers-reduced-motion:reduce){#groups-hero>.hp-beauty,#groups-hero>.splash-presentation,#groups-hero>.splash-presentation[hidden],#groups-hero[data-presentation="triptych"]>.hp-beauty{transition:none;transform:none}}
