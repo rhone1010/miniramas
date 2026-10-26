@@ -82,3 +82,6 @@ body.mc-designed #mycollGrid>.card:focus-visible{outline:3px solid #efc57d;outli
 }
 
 body.mc-designed .mycoll__empty .mc-primary{width:auto;margin-inline:auto;}
+
+body.mc-designed .mc-collection-loading{position:relative;grid-column:1/-1;min-height:112px;}
+@media(prefers-reduced-motion:reduce){body.mc-designed .mc-collection-loading .mc-mark__turn{animation:none}}
