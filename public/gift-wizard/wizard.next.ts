@@ -445,7 +445,7 @@ function renderOwnedProductReview(approval:boolean){
  if(approval)primary('Accept Composition',()=>void serverAction(()=>live!.api.approveComposition(live!.id,c!.compositionId!),'cart'),!ready);
  else primary('Review &amp; Approve',()=>go('acceptance'),!ready);
  $('right').insertAdjacentHTML('beforeend',secondary('owned-change-product','Choose a Product'));
- $('owned-change-product').onclick=()=>{cartPreview=false;editId=null;studioState.step='product';go('products')};
+ $('owned-change-product').onclick=()=>{cartPreview=false;editId=line&&c?.status!=='approved'?line.id:null;studioState.step='product';go('products')};
  if(cartPreview)$('back').hidden=false;
  $('back').onclick=()=>{if(approval)go('generation');else if(cartPreview){cartPreview=false;go('cart')}else{studioState.step='review';go('products')}};
 }

@@ -1083,7 +1083,7 @@ function renderOwnedProductReview(approval) {
     else
         primary('Review &amp; Approve', () => go('acceptance'), !ready);
     $('right').insertAdjacentHTML('beforeend', secondary('owned-change-product', 'Choose a Product'));
-    $('owned-change-product').onclick = () => { cartPreview = false; editId = null; studioState.step = 'product'; go('products'); };
+    $('owned-change-product').onclick = () => { cartPreview = false; editId = line && c?.status !== 'approved' ? line.id : null; studioState.step = 'product'; go('products'); };
     if (cartPreview)
         $('back').hidden = false;
     $('back').onclick = () => { if (approval)
