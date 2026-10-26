@@ -1,8 +1,11 @@
 /* Directed Groups phone Discovery composition; other stages/series unchanged. */
 #phoneGroupsSilo{display:none;}
+@media(min-width:768px){
+ body:has(#workshop) #workshop .lc-footer{display:none!important;}
+}
 @media(max-width:767px){
  html:has(body.groups-catalog),body.groups-catalog{overflow:clip!important;}
- body.groups-catalog .rooms{position:fixed!important;left:16px;right:16px;width:auto!important;margin:0!important;top:56px;bottom:calc(76px + env(safe-area-inset-bottom));height:auto!important;}
+ body.groups-catalog .rooms{position:fixed!important;left:16px;right:16px;width:auto!important;margin:0!important;top:var(--groups-masthead-bottom, var(--mh-h));bottom:calc(76px + env(safe-area-inset-bottom));height:auto!important;}
  body.groups-catalog #workshop{height:100%!important;min-height:0!important;}
  body.groups-catalog #phoneGroupsSilo{display:block;position:relative;flex:none;margin:0 28px 12px 16px;z-index:901;}
  #phoneGroupsSilo .dcur__room{display:flex;align-items:center;gap:8px;min-height:60px;padding:6px;border:1px solid var(--gold-soft);border-radius:6px;background:var(--vellum);color:var(--ink);font:400 18px/1.1 var(--serif);text-align:left;cursor:pointer;}
@@ -20,6 +23,9 @@
  body.groups-catalog #workshop .floor>.silo-card{width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;aspect-ratio:4/3!important;scroll-margin-top:0!important;}
  body.groups-catalog #deck{scrollbar-width:none!important;scrollbar-gutter:auto!important;}
  body.groups-catalog #deck::-webkit-scrollbar{display:none!important;width:0!important;}
+ body.groups-catalog #workshop .floor:has(>.lc-footer){padding-bottom:0!important;}
+ body.groups-catalog #deck{overscroll-behavior-y:contain;}
+ body.groups-catalog #workshop .crumb{flex-shrink:0;}
  html:has(body.groups-catalog),body.groups-catalog{scrollbar-width:none!important;}
  html:has(body.groups-catalog)::-webkit-scrollbar,body.groups-catalog::-webkit-scrollbar{display:none!important;width:0!important;}
 }

@@ -3,6 +3,13 @@
 'use strict';
 const phone=matchMedia('(max-width:767px)'),groups=!!document.getElementById('workshop');
 const $=s=>document.querySelector(s);
+if(groups){
+ const measureHeader=()=>{const head=$('.liten-masthead,.masthead,#masthead');if(head)document.documentElement.style.setProperty('--groups-masthead-bottom',Math.max(0,head.getBoundingClientRect().bottom)+'px');};
+ const watched=new WeakSet(),watchHeader=()=>{document.querySelectorAll('.liten-masthead,.masthead,#masthead,.lc-consent').forEach(el=>{if(!watched.has(el)){watched.add(el);headerResize.observe(el);}});measureHeader();};
+ const headerResize=new ResizeObserver(measureHeader);
+ new MutationObserver(watchHeader).observe(document.body,{childList:true});
+ window.addEventListener('resize',measureHeader);window.addEventListener('liten:consentchange',()=>requestAnimationFrame(measureHeader));watchHeader();
+}
 function toggle(el,c,on){if(el.classList.contains(c)!==on)el.classList.toggle(c,on);}
 function state(){if(groups)return window.PhoneGroupsState?.();if(typeof SELECTED==='undefined')return null;const n=SELECTED.length;return {n,sizes:VALID_SIZES,price:sizeInfo(n).price,unlocks:INCLUDED_UNLOCKS_BY_SIZE[n],stage:document.body.classList.contains('is-format')?'format':document.body.classList.contains('is-review')?'review':'discovery'};}
 function click(sel){$(sel)?.click();}
