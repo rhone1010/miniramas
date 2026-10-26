@@ -1,5 +1,6 @@
 import sharp from 'sharp'
-import { SKU_MAP, LAUNCH_FAMILIES, type SkuEntry } from './sku-map'
+import type { SkuEntry } from './sku-map'
+import { CARD, MUG } from './production-profiles'
 
 export type Compatibility = 'recommended' | 'extension' | 'unavailable'
 export function aspectCompatibility(w:number,h:number,targetW:number,targetH:number) {
@@ -47,6 +48,20 @@ export function printPlan(w:number,h:number,entry:SkuEntry) {
     extension:{left:Math.floor(dx/2),right:dx-Math.floor(dx/2),top:Math.floor(dy/2),bottom:dy-Math.floor(dy/2)}}
 }
 
+/**
+ * The plan for ANY product's picture, flat or panel. The flat families (fine art, premium, canvas, classic frame, matted frame, framed canvas) use printPlan above. The mug and the
+ * card place the picture whole inside a PANEL of a larger layout (production-profiles.ts), so their picture is the panel and their orientation is never turned. The bounds are the
+ * ones preparePanelComposition applies when the file is made: refused here means refused there.
+ */
+export function productPlan(w:number,h:number,entry:SkuEntry) {
+  if(entry.family!=='mug'&&entry.family!=='card')return printPlan(w,h,entry)
+  const panel=entry.family==='mug'?MUG.panel:{w:CARD.frontTrim.w,h:CARD.frontTrim.h}
+  const composition=compositionPlan(w,h,panel.w,panel.h)
+  if(!artworkFormat(w,h)||composition.compatibility==='unavailable')throw new Error('incompatible_print_aspect')
+  if(composition.compatibility==='extension'&&(w*h>9437184||Math.max(...Object.values(composition.padding))>2000))throw new Error('print_outpaint_dimensions_unavailable')
+  return {panel,composition}
+}
+
 /** Full image resize, then external reflection. Never crop or distort the front. */
 export async function finishPrintPixels(buf: Buffer, plan: ReturnType<typeof printPlan>) {
   const meta=await sharp(buf).metadata()
@@ -54,17 +69,4 @@ export async function finishPrintPixels(buf: Buffer, plan: ReturnType<typeof pri
   const front=await sharp(buf).resize(plan.front.w,plan.front.h,{fit:'inside',kernel:'lanczos3'}).toColourspace('srgb').png().toBuffer()
   const output=await sharp(front).extend({...plan.extension,extendWith:'mirror'}).png().toBuffer()
   return {front,output}
-}
-
-export function catalogFor(w:number,h:number){
-  if(!artworkFormat(w,h))return []
-  return LAUNCH_FAMILIES.map(f=>{
-    const entries=Object.entries(SKU_MAP[f]),first=entries[0][1]!
-    return {id:f,label:first.familyLabel,note:first.familyNote,sizes:entries.map(([size,e])=>{
-      const assessment=aspectCompatibility(w,h,w>h?e!.imageHeightIn:e!.imageWidthIn,w>h?e!.imageWidthIn:e!.imageHeightIn)
-      let compatibility=assessment.compatibility
-      try{printPlan(w,h,e!)}catch{compatibility='unavailable'}
-      return {size,finish:f,cents:e!.retailCents,label:w>h?e!.imageHeightIn+' × '+e!.imageWidthIn+'″':e!.label,compatibility}
-    })}
-  }).filter(f=>f.sizes.some(s=>s.compatibility!=='unavailable'))
 }

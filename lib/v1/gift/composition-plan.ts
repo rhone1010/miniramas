@@ -41,7 +41,18 @@ export interface PlanContext {
   peopleCount: number | null
   /** The aspect the six artistic previews (and so the selected artwork) are generated in. */
   masterAspect: string
+  /**
+   * False when this session cannot make a generated adaptation: an owned (My Collection) artwork whose original photograph is no longer kept (60-day retention) has nothing to
+   * regenerate from. Such a product is unavailable rather than cropped, stretched or invented. Absent/true: unchanged.
+   */
+  canGenerate?: boolean
 }
+
+/** The plan context of a session. One definition, so availability, selection, composition, checkout and the view can never disagree about what a session can make. */
+export const planContextFor = (rec: { series: Series | null; analysis: { peopleCount?: number | null }; master_aspect: string | null; collection_preview_id?: string | null; source_path: string | null }): PlanContext => ({
+  series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1',
+  ...(rec.collection_preview_id ? { canGenerate: !!rec.source_path } : {}),
+})
 
 /** Nominal pixels for a ratio, only to ask the catalog how a product's shape fits it. */
 export function masterDims(aspect: string | null): { width: number; height: number } {
@@ -69,6 +80,7 @@ export function planFor(product: CanonicalProduct, ctx: PlanContext): Compositio
     const fraction = Math.round(extension * 1e4) / 1e4
     return { geometryKey: key, targetAspect: target, method: 'deterministic', fit: classify(extension), extensionFraction: fraction, generationAspect: null, generationExtensionFraction: null }
   }
+  if (ctx.canGenerate === false) return null
   const gen = generationAspectFor(ctx.series, ctx.peopleCount, target)
   if (!gen) return null
   return { geometryKey: key, targetAspect: target, method: 'generated', fit: classify(gen.extensionFraction), extensionFraction: gen.extensionFraction, generationAspect: gen.aspect, generationExtensionFraction: gen.extensionFraction }
@@ -83,6 +95,7 @@ export function planFor(product: CanonicalProduct, ctx: PlanContext): Compositio
  */
 export function correctionPlanFor(product: CanonicalProduct, ctx: PlanContext, plan: CompositionPlan): CompositionPlan | null {
   if (plan.method === 'generated') return plan
+  if (ctx.canGenerate === false) return null
   const gen = generationAspectFor(ctx.series, ctx.peopleCount, product.requirements.pictureAspect)
   if (!gen) return null
   return { ...plan, method: 'generated', fit: classify(gen.extensionFraction), extensionFraction: gen.extensionFraction, generationAspect: gen.aspect, generationExtensionFraction: gen.extensionFraction }

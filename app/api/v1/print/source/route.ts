@@ -1,4 +1,4 @@
-import { catalogFor } from '@/lib/v1/print/geometry'
+import { printShopCatalog } from '@/lib/v1/print/catalog'
 import { NextResponse } from 'next/server'
 import { getUser } from '@/lib/store/auth'
 import { ownedPrintPreview, ownedPrintSource, requireSandboxPrint } from '@/lib/v1/print/owned-source'
@@ -36,7 +36,7 @@ export async function GET(req:Request){
       return NextResponse.json({eligible:true},{headers:{'Cache-Control':'private, no-store'}})
     }
     const piece=await ownedPrintPreview(user.id,id)
-    return NextResponse.json({piece,catalog:catalogFor(piece.width,piece.height),fulfilment:await canFulfil(user.id)},
+    return NextResponse.json({piece,catalog:printShopCatalog(piece.width,piece.height),fulfilment:await canFulfil(user.id)},
       {headers:{'Cache-Control':'private, no-store'}})
   }catch(e){return NextResponse.json({error:e instanceof Error?e.message:'print_source_unavailable'},{status:409})}
 }

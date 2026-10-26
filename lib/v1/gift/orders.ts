@@ -16,7 +16,7 @@ import { allProducts, catalogVersion } from '../print/catalog'
 import { compositionFitsProduct, freezeLine, type CompositionPin } from './frozen'
 import { generationTargetFor } from './generations'
 import { resolveFrameColor, withFrameColor } from './frame-colors'
-import { planFor } from './composition-plan'
+import { planContextFor, planFor } from './composition-plan'
 import { approvedSceneFor, requireApprovedScene } from './presentation'
 import { realSceneRenderer } from './mockup-real'
 import type { PrintOrderItem, ShippingAddress } from '../print/db'
@@ -112,7 +112,7 @@ export async function createGiftCheckout(
 
   // Server-owned lines: catalog price, SKU and attributes. A product the artwork this session makes cannot fit is refused now.
   const catalog = new Map(allProducts().map(p => [p.productId, p]))
-  const planCtx = { series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }
+  const planCtx = planContextFor(rec)
   const frozenVersion = catalogVersion()
   const lines = rec.lines.map(l => {
     const p = catalog.get(l.productId)

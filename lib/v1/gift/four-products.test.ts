@@ -112,16 +112,17 @@ describe('the four products are visible but cannot be bought until the owner ope
     expect(getProduct('framed_canvas:8x12')).toMatchObject({ status: 'launch', disabledReason: null, label: '12 × 8″ landscape', retailCents: 8900 })
     expect(allProducts().filter(p => p.status === 'launch').every(p => ['fine_art', 'premium', 'canvas', 'framed', 'matted', 'framed_canvas', 'mug', 'card'].includes(p.family))).toBe(true)
   })
-  it('a line for any of them is refused at selection, so checkout never sees one', async () => {
+  it('a line for an unpriced product is refused at selection, so checkout never sees one; a priced square is accepted', async () => {
     const service = await import('./service'), store = await import('./store')
-    const memory = store.memoryGiftStore(), deps: any = { store: memory, storage: { put: async () => {}, get: async () => null, remove: async () => {}, signedUrl: async () => null }, analyze: async () => ({ status: 'supported', series: 'portraits', peopleCount: null }), generate: async () => ({}), watermark: async () => Buffer.alloc(0) }
+    const memory = store.memoryGiftStore(), deps: any = { store: memory, storage: { put: async () => {}, get: async () => null, remove: async () => {}, signedUrl: async () => null }, analyze: async () => ({ status: 'supported', series: 'portraits', peopleCount: null }), generate: async () => ({}), watermark: async (b: string) => Buffer.from(b, 'base64'), compose: async () => ({}), kick: async () => ({}) }
     const photo = (await sharp({ create: { width: 600, height: 600, channels: 3, background: '#a33' } }).jpeg().toBuffer()).toString('base64')
     const v = await service.createSession(deps, { userId: U1, imageB64: photo })
     for (const productId of ['card:7x5-gloss', 'card:6x6-gloss']) await expect(service.setLines(deps, U1, v.sessionId, [{ lineId: 'a', productId, copies: 1 }])).rejects.toMatchObject({ code: 'product_not_available' })
   })
-  it('the Print Shop never offers them (its catalog is the four launch families)', async () => {
-    const { catalogFor } = await import('../print/geometry')
-    const text = JSON.stringify(catalogFor(1200, 1800)) + JSON.stringify(catalogFor(1200, 1200))
-    for (const k of ['matted', 'framed_canvas', 'mug', 'card']) expect(text).not.toContain(`"${k}"`)
+  it('the Print Shop catalog serves the priced products of all families from the same table', async () => {
+    const { printShopCatalog } = await import('../print/catalog')
+    expect(JSON.stringify(printShopCatalog(1200, 1200))).toContain('"matted"')
+    const text = JSON.stringify(printShopCatalog(1200, 1800))
+    for (const k of ['mug', 'card']) expect(text).not.toContain(`"${k}"`)        // no approved price yet
   })
 })

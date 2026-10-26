@@ -7,13 +7,13 @@
 //   2. an approved retail price                        (SkuEntry.retailApproved is not false)
 //   3. its family is in GIFT_ENABLED_FAMILIES          (the owner's decision to launch)
 // Mockup photography is NOT a condition (2026-10-22): a product without an approved in-situ scene is reviewed through the exact product-shaped artwork (presentation.ts).
-// Nothing here changes the four launch families or the Print Shop.
+// Nothing here changes the four original launch families.
 
 import type { DisabledReason, ProductFamily } from './catalog-types'
 
 /**
- * Owner decision: the families that may be sold. 2026-10-23: Matted Frame and Framed Canvas. Only products with an approved retail price are actually sellable (rule 2 above): their eight SQUARE sizes carry the
- * prices from the original SKU map; the rectangles are still 'retail_price_pending' and framed_canvas:8x12 also has its Prodigi hold. The Photo Mug and the Greeting Card stay out until their prices are approved.
+ * Owner decision (2026-10-22): the Print Shop offers all eight families, so the four Gift Shop families are launched. A family being launched does NOT price anything: a product is
+ * still sold only with an approved retail price (rule 2 above), so every product whose price is still a placeholder stays disabled as 'retail_price_pending'.
  */
 export const GIFT_ENABLED_FAMILIES: ProductFamily[] = ['matted', 'framed_canvas', 'mug', 'card']
 

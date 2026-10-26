@@ -3,7 +3,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import fs from 'node:fs'
 import { memoryJobStore, memoryStorage } from './upscale/store'
-import { allProducts, catalogResponse, getProductBySku } from './catalog'
+import { allProducts, catalogResponse, getProductBySku, sellableSku } from './catalog'
 import { GIFT_ENABLED_FAMILIES, GIFT_MOCKUP_READY, GIFT_PRODUCT_HOLDS } from './gift-enablement'
 import { GIFT_PRODUCT_FAMILIES, LAUNCH_FAMILIES, SKU_MAP, getSku, getLaunchSku, type PrintFinish, type PrintSize } from './sku-map'
 import { templateFor } from '../gift/mockup'
@@ -83,10 +83,11 @@ describe('launch gates', () => {
   it('a family can only be marked mockup-ready if the renderer can actually pick its template', () => {
     for (const f of GIFT_MOCKUP_READY) for (const p of allProducts().filter(x => x.family === f)) expect(templateFor(p), p.productId).not.toBeNull()
   })
-  it('the four launch families and the Print Shop are unchanged: the Print Shop still refuses a gift product', () => {
+  it('getLaunchSku (the four original families) is unchanged; the Print Shop sells through sellableSku, which follows the canonical catalog', () => {
     for (const f of ['matted', 'framed_canvas', 'mug', 'card'] as PrintFinish[]) expect(() => getLaunchSku((f === 'mug' ? '11oz' : f === 'card' ? '7x5' : '8x8') as PrintSize, f)).toThrow('print_product_unavailable')
-    expect(allProducts().filter(p => p.status === 'launch' && (LAUNCH_FAMILIES as string[]).includes(p.family)).length).toBe(32)
-    for (const c of (catalogResponse(null) as any).products.filter((p: any) => ['matted', 'framed_canvas'].includes(p.family))) expect(c.selectable, c.productId).toBe(false)          // the Print Shop never offers a Gift family, even a launched one
+    expect(sellableSku('11oz', 'mug').retailCents).toBe(1999)
+    expect(sellableSku('7x5', 'card').retailCents).toBe(799)
+    expect(allProducts().filter(p => p.status === 'launch')).toHaveLength(50)
   })
 })
 

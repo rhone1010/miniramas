@@ -75,8 +75,6 @@ describe('starting a session from an owned artwork', () => {
     for (const [msg, status, code] of [['compatible_artwork_required', 409, 'artwork_not_compatible'], ['square_artwork_required', 409, 'artwork_not_compatible'], ['clean_original_unavailable', 503, 'artwork_unavailable'], ['socket hang up', 503, 'artwork_unavailable']] as const) {
       const r = await rig({ port: async () => { throw new Error(msg) } }); expect(await read(await createCollectionSessionH(req({ previewId: OWNED }), { id: U1 }, r.deps)), msg).toMatchObject({ status, body: { error: code } }); expect(r.store.sessions.size).toBe(0)
     }
-    const noPhoto = await rig({ port: async (_u, id) => ({ previewId: id, portfolioId: PORTFOLIO, series: 'portraits', preset: 'bronze', bytes: Buffer.from('x'), width: 10, height: 10, sourcePhoto: null }) })
-    expect(await read(await createCollectionSessionH(req({ previewId: OWNED }), { id: U1 }, noPhoto.deps))).toMatchObject({ status: 503, body: { error: 'artwork_unavailable' } })      // corrections need the customer's photograph
     const age = await rig({ analysis: { status: 'age_restricted' } }); expect(await read(await createCollectionSessionH(req({ previewId: OWNED }), { id: U1 }, age.deps))).toMatchObject({ status: 403 }); expect(age.store.sessions.size).toBe(0)
     const none = await rig(); delete (none.deps as any).collection; expect(await read(await createCollectionSessionH(req({ previewId: OWNED }), { id: U1 }, none.deps))).toMatchObject({ status: 503, body: { error: 'collection_unavailable' } })
   })

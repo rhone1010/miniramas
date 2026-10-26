@@ -24,7 +24,7 @@ import { GiftError, owned, type GiftDeps } from './service'
 import { templateFor, mockupArtwork, MOCKUP_URL_SECONDS, MOCKUP_CONTRACT_VERSION } from './mockup'
 import { resolveScene, prepareSceneArtwork, SCENE_REPRESENTATION_VERSION, SCENE_MAX_EDGE } from './scenes'
 import { logSceneDiagnostic, sceneErrorDiagnostic } from './scene-diagnostics'
-import { planFor } from './composition-plan'
+import { planContextFor, planFor } from './composition-plan'
 import { allProducts, getProductBySku, type CanonicalProduct } from '../print/catalog'
 import { aspectCompatibility } from '../print/geometry'
 import { STORAGE } from './policy'
@@ -113,8 +113,9 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
   const { w: pw, h: ph } = generation ? generationShapeOf(product, compositionOfKey(product, generation.geometry_key)) : product.requirements.picturePx, pictureAspect = pw / ph, favoriteAspect = fav.width / fav.height
   const { extension } = aspectCompatibility(fav.width, fav.height, pw, ph)
   const far = !generation && extension > FREE_BAND
-  const plan = far && rec.series ? planFor(product, { series: rec.series, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }) : null
+  const plan = far && rec.series ? planFor(product, planContextFor(rec)) : null
   const provisional = far && opts.provisional === true
+  if (far && rec.series && !plan) return { ...base, status: 'not_available', reason: 'product_not_available_for_artwork', sku: product.sku }       // no bounded way to make this shape from this artwork (an owned piece whose photograph is gone): never cropped, stretched or invented
   if (far && !provisional) {
     return { ...base, status: 'adaptation_required', reason: 'shape_needs_composition', sku: product.sku, favoriteAspect: Math.round(favoriteAspect * 1e4) / 1e4, pictureAspect: Math.round(pictureAspect * 1e4) / 1e4, extension: Math.round(extension * 1e4) / 1e4, method: plan?.method ?? null }
   }

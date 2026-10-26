@@ -45,11 +45,11 @@
 //   made. It is recorded with a null owner and withheld at the webhook, which
 //   is the same protection one step later and no money lost either way.
 
-import {printPlan} from '@/lib/v1/print/geometry'
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/v1/print/stripe-client'
 import { getQuote, type ShippingMethod } from '@/lib/v1/print/prodigi-client'
-import { getLaunchSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
+import { LAUNCH_FAMILIES, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
+import { assertPrintable, sellableSku } from '@/lib/v1/print/catalog'
 import { ownedPrintPreview, requireSandboxPrint } from '@/lib/v1/print/owned-source'
 import { createPrintOrder, canFulfil, type ShippingAddress } from '@/lib/v1/print/db'
 import { getUser } from '@/lib/store/auth'
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
         .filter(h => h.status === 'enabled' && new URL(h.url).pathname === '/api/v1/print/webhook' && (h.enabled_events.includes('*') || h.enabled_events.includes('checkout.session.completed')))
       if (!printHooks.length || printHooks.some(h => new URL(h.url).origin !== origin)) throw new Error('print_webhook_preview_required')
       if ([body.successUrl, body.cancelUrl].some(url => new URL(url).origin !== origin)) throw new Error('invalid_return_url')
-      for(const item of body.items){const piece=await ownedPrintPreview(ownerKey,item.renderId);printPlan(piece.width,piece.height,getLaunchSku(item.size,item.finish));item.renderUrl=piece.art;const entry=getLaunchSku(item.size,item.finish);labels.set(item.renderId+':'+item.size+':'+item.finish,{sizeLabel:piece.width>piece.height?entry.imageHeightIn+' × '+entry.imageWidthIn+'″':entry.label,familyLabel:entry.familyLabel})}
+      for(const item of body.items){const piece=await ownedPrintPreview(ownerKey,item.renderId);const entry=sellableSku(item.size,item.finish);assertPrintable(piece.width,piece.height,entry);item.renderUrl=piece.art;labels.set(item.renderId+':'+item.size+':'+item.finish,{sizeLabel:piece.width>piece.height&&LAUNCH_FAMILIES.includes(item.finish)?entry.imageHeightIn+' × '+entry.imageWidthIn+'″':entry.label,familyLabel:entry.familyLabel})}
     } catch (err) {
       return NextResponse.json({ error: err instanceof Error ? err.message : 'print_unavailable' }, { status: 409 })
     }
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'copies must be >= 1' }, { status: 400 })
     }
     let entry
-    try { entry = getLaunchSku(item.size, item.finish) }
+    try { entry = sellableSku(item.size, item.finish) }
     catch (err) {
       return NextResponse.json({ error: err instanceof Error ? err.message : 'Bad SKU' }, { status: 400 })
     }
@@ -160,7 +160,7 @@ export async function POST(req: Request) {
       items: dbItems.map(i => ({
         sku:    i.sku,
         copies: i.copies,
-        attributes:getLaunchSku(i.size,i.finish).attributes,
+        attributes:sellableSku(i.size,i.finish).attributes,
         assets: [{ printArea: 'default' }],
       })),
     })
@@ -181,7 +181,7 @@ export async function POST(req: Request) {
 
   // ── Build Stripe line items ─────────────────────────────────
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = dbItems.map(i => {
-    const entry = getLaunchSku(i.size, i.finish)
+    const entry = sellableSku(i.size, i.finish)
     return {
       price_data: {
         currency: 'usd',

@@ -5,15 +5,15 @@
 // prices and attributes stay exactly as they are) and adds the products sku-map.ts does not carry, as DISABLED entries
 // with the geometry Prodigi's sandbox returned on 2026-10-15 (docs/GOVERNANCE/prodigi-catalog-verified-2026-10-15.json).
 //
-// Only the four launch families in LAUNCH_FAMILIES are 'launch' for the Print Shop. The four Gift Shop products (matted frame, framed canvas, photo mug,
-// 7 x 5 card) are fully built and stay visible; gift-enablement.ts says when each may be sold, and the catalog reports the first open item as its
-// disabledReason. getLaunchSku() and the checkout route are untouched.
+// All EIGHT families are sold by the Print Shop and the Gift Shop from this one table. The four original families (LAUNCH_FAMILIES) are 'launch' as they always were; the four
+// Gift Shop products (matted frame, framed canvas, photo mug, 7 x 5 card) are 'launch' when gift-enablement.ts says so AND the product has an approved price, and the catalog
+// reports the first open item as its disabledReason. sellableSku() and printShopCatalog() below are how the legacy {size, finish} Print Shop routes read it.
 
 import { createHash } from 'node:crypto'
-import { SKU_MAP, LAUNCH_FAMILIES, GIFT_PRODUCT_FAMILIES, type PrintFinish, type PrintSize, type SkuEntry } from './sku-map'
+import { SKU_MAP, LAUNCH_FAMILIES, GIFT_PRODUCT_FAMILIES, getSku, type PrintFinish, type PrintSize, type SkuEntry } from './sku-map'
 import { GIFT_ENABLED_FAMILIES, GIFT_PRODUCT_HOLDS } from './gift-enablement'
 import { CARD, MUG, PRODUCTION_SPECS } from './production-profiles'
-import { aspectCompatibility } from './geometry'
+import { artworkFormat, aspectCompatibility, productPlan } from './geometry'
 import {
   CATALOG_CONTRACT_VERSION,
   type ArtworkFit, type CanonicalProduct, type CatalogProduct, type CatalogResponse, type DisabledReason,
@@ -148,7 +148,9 @@ export function catalogVersion(products: CanonicalProduct[] = allProducts()): st
 /** Fit of an artwork to a product's picture area. Orientation-agnostic for rectangles: a landscape artwork fits the same product turned. */
 export function fitFor(artwork: { width: number; height: number }, product: CanonicalProduct): ProductFit {
   const { picturePx } = product.requirements
-  const turned = artwork.width > artwork.height !== picturePx.w > picturePx.h && picturePx.w !== picturePx.h && artwork.width !== artwork.height
+  // The mug and the card are never turned: their picture is a panel of a layout the lab prints one way only (production-profiles.ts).
+  const turnable = product.artworkProfile !== 'mug_wrap' && product.artworkProfile !== 'card_spread'
+  const turned = turnable && artwork.width > artwork.height !== picturePx.w > picturePx.h && picturePx.w !== picturePx.h && artwork.width !== artwork.height
   const target = turned ? { w: picturePx.h, h: picturePx.w } : picturePx
   const { extension } = aspectCompatibility(artwork.width, artwork.height, target.w, target.h)
   const fit: ArtworkFit = extension <= 1e-6 ? 'exact' : extension <= FIT_RULES.resampleMaxFraction + 1e-10 ? 'resample' : extension <= FIT_RULES.extendMaxFraction + 1e-10 ? 'extend' : 'unavailable'
@@ -167,4 +169,38 @@ export function catalogResponse(artwork?: { width: number; height: number } | nu
     contractVersion: CATALOG_CONTRACT_VERSION, catalogVersion: catalogVersion(base), fitRules: { ...FIT_RULES },
     artwork: valid ? { width: artwork!.width, height: artwork!.height } : null, products,
   }
+}
+
+// ── THE LEGACY {size, finish} PRINT SHOP, READING THE SAME CATALOG ──────────────────────────────────────────────────────────────────────
+/** The sku-map entry for a product the customer may buy RIGHT NOW: launched and priced in the canonical catalog. Everything else is 'print_product_unavailable'. */
+export function sellableSku(size: PrintSize, finish: PrintFinish): SkuEntry {
+  const p = getProduct(`${finish}:${size}`)
+  if (!p || p.status !== 'launch' || p.retailCents === null) throw new Error('print_product_unavailable')
+  return getSku(size, finish)
+}
+
+/**
+ * Whether an artwork of this size can be made into this product at all, by the rules the file is made with (geometry.ts productPlan). Throws the geometry's own error code.
+ * The artwork is the customer's OWNED piece, used as it is: this never asks for the original photograph and never generates anything.
+ */
+export function assertPrintable(width: number, height: number, entry: SkuEntry): void { productPlan(width, height, entry) }
+
+/** What `/api/v1/print/source` offers for an owned artwork: every sellable size of every family, with how the artwork fits it. Shape unchanged from the four-family catalog. */
+export function printShopCatalog(w: number, h: number) {
+  if (!artworkFormat(w, h)) return []
+  const out: Array<{ id: PrintFinish; label: string; note: string; sizes: Array<{ size: PrintSize; finish: PrintFinish; cents: number; label: string; compatibility: 'recommended' | 'extension' | 'unavailable' }> }> = []
+  for (const family of FAMILY_ORDER as PrintFinish[]) {
+    const sizes = (Object.entries(SKU_MAP[family] ?? {}) as Array<[PrintSize, SkuEntry]>).flatMap(([size, e]) => {
+      let entry: SkuEntry
+      try { entry = sellableSku(size, family) } catch { return [] }
+      const product = getProduct(`${family}:${size}`)!
+      const fit = fitFor({ width: w, height: h }, product).fit
+      let compatibility: 'recommended' | 'extension' | 'unavailable' = fit === 'exact' || fit === 'resample' ? 'recommended' : fit === 'extend' ? 'extension' : 'unavailable'
+      try { assertPrintable(w, h, entry) } catch { compatibility = 'unavailable' }
+      const turns = w > h && LAUNCH_FAMILIES.includes(family)
+      return [{ size, finish: family, cents: entry.retailCents, label: turns ? e.imageHeightIn + ' × ' + e.imageWidthIn + '″' : e.label, compatibility }]
+    })
+    if (sizes.some(s => s.compatibility !== 'unavailable')) out.push({ id: family, label: SKU_MAP[family][sizes[0].size]!.familyLabel, note: SKU_MAP[family][sizes[0].size]!.familyNote, sizes })
+  }
+  return out
 }

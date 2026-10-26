@@ -20,7 +20,7 @@ import type { CanonicalProduct } from '../print/catalog'
 import { compositionFitsProduct, resolveFrozenProduct } from './frozen'
 import { requireOpen, scopeOf } from './scope'
 import { removeMockupFile } from './mockup'
-import { correctionPlanFor, groupLines, planFor, type CompositionPlan, type PlanContext } from './composition-plan'
+import { correctionPlanFor, groupLines, planContextFor, planFor, type CompositionPlan, type PlanContext } from './composition-plan'
 import { supportsFavoriteReference } from './aspects'
 import { COMPOSITION_LEASE_MS, COMPOSITION_MAX_ATTEMPTS, estimateCompositionCost } from './policy'
 import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
@@ -69,7 +69,7 @@ function frozenProducts(order: { items: Array<{ sku: string; frozen?: unknown }>
   }
   return m
 }
-const ctxOf = (rec: SessionRec): PlanContext => ({ series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' })
+const ctxOf = (rec: SessionRec): PlanContext => planContextFor(rec)
 const planOf = (rec: SessionRec, product: CanonicalProduct): CompositionPlan => {
   const plan = planFor(product, ctxOf(rec))
   if (!plan) throw new GiftError('product_not_available_for_artwork')
@@ -274,7 +274,7 @@ export async function finalizeOrder(deps: GiftDeps, userId: string, sessionId: s
   const master = await deps.storage.get(genComps[0]?.composed_path ?? preview.master_path!)
   const watermarked = genComps[0]?.preview_path ? await deps.storage.get(genComps[0].preview_path) : preview.preview_path ? await deps.storage.get(preview.preview_path) : null
   const source = rec.source_path ? await deps.storage.get(rec.source_path) : null
-  if (!master || !watermarked || !source) throw new GiftError('generation_unavailable')
+  if (!master || !watermarked || (!source && !rec.collection_preview_id)) throw new GiftError('generation_unavailable')          // an owned artwork's photograph is optional: it may be gone (60-day retention), and the owned piece already exists
   const cleanPath = `${series}/${preview.id}.png`
   // A My Collection session already owns its piece (unlock_portfolio_id was set when it started, so the database creates no second one): nothing is copied into My Collection.
   if (!rec.collection_preview_id) {
@@ -284,7 +284,7 @@ export async function finalizeOrder(deps: GiftDeps, userId: string, sessionId: s
 
   // The customer's FINAL APPROVAL ONLY. Nothing below can reach manufacturing: the store records final_approved_at and does not touch the order's status
   // (it stays 'awaiting_artwork', which the fulfilment pipeline cannot see), deps.kick is not called, and the Prodigi client is not imported here.
-  try { await deps.store.finalizeOrder({ sessionId: rec.id, userId, portfolioId: (deps.newId ?? randomUUID)(), cleanPath, sourceImage: source.toString('base64') }) } catch (e) { fromStoreError(e) }
+  try { await deps.store.finalizeOrder({ sessionId: rec.id, userId, portfolioId: (deps.newId ?? randomUUID)(), cleanPath, sourceImage: source ? source.toString('base64') : '' }) } catch (e) { fromStoreError(e) }
   return getSessionView(deps, userId, sessionId)
 }
 

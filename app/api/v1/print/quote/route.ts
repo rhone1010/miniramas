@@ -41,7 +41,8 @@
 
 import { NextResponse } from 'next/server'
 import { getQuote, type ShippingMethod } from '@/lib/v1/print/prodigi-client'
-import { getLaunchSku, type PrintSize, type PrintFinish } from '@/lib/v1/print/sku-map'
+import type { PrintSize, PrintFinish } from '@/lib/v1/print/sku-map'
+import { sellableSku } from '@/lib/v1/print/catalog'
 
 export const runtime = 'nodejs'
 
@@ -91,7 +92,7 @@ export async function POST(req: Request) {
   for (const item of body.items) {
     let entry
     try {
-      entry = getLaunchSku(item.size, item.finish)
+      entry = sellableSku(item.size, item.finish)
     } catch (err) {
       return NextResponse.json(
         { error: err instanceof Error ? err.message : 'Bad SKU' },

@@ -9,7 +9,7 @@
 import { randomUUID, createHash } from 'node:crypto'
 import sharp from 'sharp'
 import { allProducts, catalogVersion } from '../print/catalog'
-import { planFor, type PlanContext } from './composition-plan'
+import { planContextFor, planFor, type PlanContext } from './composition-plan'
 import { draftOrderLines, resolveFrozenProduct } from './frozen'
 import { decodeSource } from '../foyer/foyer-source'
 import { approvedSceneFor, requireApprovedScene } from './presentation'
@@ -184,28 +184,32 @@ export async function createSessionFromCollection(deps: GiftDeps, input: { userI
     if (/square_artwork_required|compatible_artwork_required|artwork_not_compatible/.test(m)) throw new GiftError('artwork_not_compatible')
     throw new GiftError('artwork_unavailable')
   }
-  if (!art.sourcePhoto) throw new GiftError('artwork_unavailable')                                                    // corrections regenerate from the customer's photograph
-  let analysis: SourceAnalysis
-  try { analysis = await deps.analyze({ b64: art.sourcePhoto.toString('base64'), bytes: art.sourcePhoto }) } catch { throw new GiftError('analysis_unavailable') }
-  if (analysis.status === 'age_restricted') throw new GiftError('age_restricted')
-  if (analysis.status !== 'supported') throw new GiftError('unsupported_subject')
-  const jpeg = await sharp(art.sourcePhoto).rotate().jpeg({ quality: 92 }).toBuffer({ resolveWithObject: true })
+  // THE PHOTOGRAPH IS OPTIONAL. The customer's original is deleted after 60 days; the owned artwork is all this purchase needs. While the photograph still exists it is kept for the one thing only it can do (a
+  // product-specific generated adaptation, and the head count that generation needs); once it is gone the session is the owned artwork alone and offers only the products that artwork can become without it.
+  let analysis: SourceAnalysis | null = null, jpeg: { data: Buffer; info: { width: number; height: number } } | null = null
+  if (art.sourcePhoto) {
+    try { analysis = await deps.analyze({ b64: art.sourcePhoto.toString('base64'), bytes: art.sourcePhoto }) } catch { throw new GiftError('analysis_unavailable') }
+    if (analysis.status === 'age_restricted') throw new GiftError('age_restricted')
+    if (analysis.status !== 'supported') throw new GiftError('unsupported_subject')
+    jpeg = await sharp(art.sourcePhoto).rotate().jpeg({ quality: 92 }).toBuffer({ resolveWithObject: true })
+  }
   const id = (deps.newId ?? randomUUID)(), batchId = (deps.newId ?? randomUUID)(), previewId = (deps.newId ?? randomUUID)()
-  const masterPath = STORAGE.master(id, previewId, 'png'), previewPath = STORAGE.preview(id, previewId), sourcePath = STORAGE.source(id)
+  const masterPath = STORAGE.master(id, previewId, 'png'), previewPath = STORAGE.preview(id, previewId), sourcePath = jpeg ? STORAGE.source(id) : null
   const marked = await deps.watermark(art.bytes.toString('base64'))                                                    // fails closed: never an unmarked customer view
-  const peopleCount = art.series === 'groups' && analysis.series === 'groups' ? analysis.peopleCount : null
+  const peopleCount = analysis && art.series === 'groups' && analysis.series === 'groups' ? analysis.peopleCount : null
   const t = now(deps)
   const rec: SessionRec = {
-    id, user_id: input.userId, status: 'active', source_path: sourcePath, source_sha256: createHash('sha256').update(art.sourcePhoto).digest('hex'),
-    source_width: jpeg.info.width, source_height: jpeg.info.height, series: art.series, analysis: { peopleCount, subjectGender: genderFor(art.series, analysis.series === 'portraits' ? analysis.subjectGender : undefined) },
+    id, user_id: input.userId, status: 'active', source_path: sourcePath, source_sha256: createHash('sha256').update(art.sourcePhoto ?? art.bytes).digest('hex'),
+    source_width: jpeg?.info.width ?? art.width, source_height: jpeg?.info.height ?? art.height, series: art.series, analysis: { peopleCount, subjectGender: genderFor(art.series, analysis?.series === 'portraits' ? analysis.subjectGender : undefined) },
     lines: [], master_aspect: collectionMasterAspect(art.width, art.height),
     created_at: iso(t), last_activity_at: iso(t), expires_at: iso(t + RETENTION.sessionIdleDays * DAY), pinned_at: null,
     order_id: null, free_batches_granted: 0, artwork_preview_id: null, approved_at: null, final_approved_at: null, refund_requested_at: null, refunded_at: null,
     unlock_portfolio_id: art.portfolioId, disclosure_version: null, disclosure_accepted_at: null, collection_preview_id: ownedId,
   }
-  const files = [sourcePath, masterPath, previewPath]
+  const files = [...(sourcePath ? [sourcePath] : []), masterPath, previewPath]
   try {
-    await deps.storage.put(sourcePath, jpeg.data, 'image/jpeg'); await deps.storage.put(masterPath, art.bytes, 'image/png'); await deps.storage.put(previewPath, marked, 'image/jpeg')
+    if (sourcePath && jpeg) await deps.storage.put(sourcePath, jpeg.data, 'image/jpeg')
+    await deps.storage.put(masterPath, art.bytes, 'image/png'); await deps.storage.put(previewPath, marked, 'image/jpeg')
     const out = await deps.store.createCollectionSession({ userId: input.userId, ownedPreviewId: ownedId, rec, batchId, previewId, master_path: masterPath, preview_path: previewPath, width: art.width, height: art.height })
     if (!out.created) { await deps.storage.remove(files).catch(() => {}); const existing = await deps.store.collectionSession(input.userId, ownedId); return { view: await buildView(deps, existing ?? rec), created: false } }      // lost a race: the winner's session
     return { view: await buildView(deps, { ...rec, artwork_preview_id: previewId }), created: true }
@@ -247,6 +251,8 @@ export async function setLines(deps: GiftDeps, userId: string, sessionId: string
     if (!p || p.status !== 'launch') throw new GiftError('product_not_available')
     if (requireApprovedScene() && !approvedSceneFor(p, sceneDescriber(deps))) throw new GiftError('product_not_available')       // no approved scene: it could not be shown or approved after payment (presentation.ts)
     if (!Number.isInteger(l.copies) || l.copies < 1 || l.copies > MAX_COPIES) throw new GiftError('invalid_quantity')
+    // An owned artwork is adapted only by what it can still be adapted by: a product whose shape needs a generation cannot be chosen once the photograph that generation needs is gone.
+    if (rec.collection_preview_id && rec.series && !planFor(p, planContextFor(rec))) throw new GiftError('product_not_available_for_artwork')
     if (l.generationId !== undefined && l.generationId !== null && (typeof l.generationId !== 'string' || !/^[0-9a-f-]{36}$/i.test(l.generationId))) throw new GiftError('invalid_lines')
     // FRAME COLOUR (Gift Shop only): validated here against the product's exact Prodigi values; absent = black for a frame product; refused for a product with no frame colour.
     const before = rec.lines.find(x => x.lineId === l.lineId && x.productId === p.productId)
@@ -438,7 +444,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
   }
   const used = all.flatMap(b => b.previews.map(p => p.effect_id))
   const catalog = allProducts()
-  const planCtx: PlanContext = { series: rec.series!, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }
+  const planCtx: PlanContext = planContextFor(rec)
   // Once the order exists, geometry comes from the snapshot frozen at checkout, never from today's catalog (see frozen.ts).
   const orderItems = order?.items ?? []
   const planned = rec.lines.flatMap(l => {

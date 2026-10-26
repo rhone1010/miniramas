@@ -10,7 +10,7 @@
 import { allProducts, type CanonicalProduct } from '../print/catalog'
 import { ratioOf } from './aspects'
 import type { Series } from './types'
-import { planFor } from './composition-plan'
+import { planContextFor, planFor } from './composition-plan'
 import { GIFT_ENABLED_FAMILIES, GIFT_PRODUCT_HOLDS } from '../print/gift-enablement'
 import { resolveBeautyScene } from './beauty-scenes'
 import { FRAME_COLOR_DEFAULT, frameColorsFor, lineFrameColor } from './frame-colors'
@@ -117,7 +117,7 @@ export async function getProductAvailability(deps: GiftDeps, userId: string, ses
   const rec = await owned(deps, userId, sessionId)
   if (rec.refunded_at) throw new GiftError('order_refunded')
   if (!rec.series) throw new GiftError('session_not_found')
-  const ctx = { series: rec.series, peopleCount: rec.analysis.peopleCount ?? null, masterAspect: rec.master_aspect ?? '1:1' }
+  const ctx = planContextFor(rec)
   const scenes = scenesEnabledNow() ? (deps.mockup?.scenes ?? realSceneRenderer) : null
   const legacy = noScenePresentation() === 'calibrated'
   const selectedColor = (p: CanonicalProduct) => { const line = rec.lines.find(l => l.productId === p.productId); return line ? lineFrameColor(p, line) : frameColorsFor(p) ? FRAME_COLOR_DEFAULT : null }
@@ -130,7 +130,7 @@ export async function getProductAvailability(deps: GiftDeps, userId: string, ses
     const outpaint = plan ? (plan.method === 'deterministic' ? (plan.fit === 'extend' ? 1 : 0) : ((plan.generationExtensionFraction ?? 0) > 0.02 + 1e-10 ? 1 : 0)) : 0
     return {
       productId: p.productId, sku: p.sku, family: p.family, familyLabel: p.familyLabel, size: p.size, label: p.label, orientation: p.requirements.skuOrientation, retailCents: p.retailCents,
-      purchasable: purchasable && !!plan, disabledReason: purchasable ? (plan ? null : 'no_bounded_adaptation') : (p.disabledReason ?? 'not_launched'),
+      purchasable: purchasable && !!plan, disabledReason: purchasable ? (plan ? null : rec.collection_preview_id && !rec.source_path ? 'source_photograph_not_kept' : 'no_bounded_adaptation') : (p.disabledReason ?? 'not_launched'),
       adaptation: plan ? { required: !(plan.method === 'deterministic' && (plan.fit === 'exact' || plan.fit === 'resample')), method: plan.method === 'deterministic' && plan.fit === 'exact' ? 'none' : plan.method, fit: plan.fit, extensionFraction: plan.extensionFraction, generationAspect: plan.generationAspect, paidCalls: { nb21, outpaint }, originalPreserved: true } : null,
       preview: { representation: rep.representation === 'scene' ? 'scene' : 'artwork_only', sceneId, previewBasis: rep.previewBasis, physicalProductShown: rep.physicalProductShown, disclosureCode: rep.disclosureCode, disclosure: rep.disclosure },
       approval: { possible: purchasable && !!plan, basis: rep.previewBasis },

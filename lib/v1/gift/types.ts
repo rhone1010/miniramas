@@ -299,7 +299,7 @@ export type CreateSessionError =
 
 /** PUT /api/v1/gift/sessions/{id}/lines  { lines }  -> 200 SessionView. Replaces the selection. Launch products only. */
 export interface SetLinesRequest { lines: Array<{ lineId: string; productId: string; copies: number }> }
-export type SetLinesError = 'invalid_lines' | 'product_not_available' | 'invalid_quantity' | 'duplicate_line' | 'catalog_unavailable'
+export type SetLinesError = 'invalid_lines' | 'product_not_available' | 'product_not_available_for_artwork' | 'invalid_quantity' | 'duplicate_line' | 'catalog_unavailable'
 
 /** POST /api/v1/gift/sessions/{id}/batches. Reserves the next batch (free or paid) and generates it. */
 export interface BatchRequest {
@@ -464,7 +464,7 @@ export interface RestoreResponse {
  *                        calibrated template renderer; fit says whether a few pixels of mirror-extension reached the product's shape)
  *   adaptation_required  the favorite's shape differs from the product's picture shape by more than the free 2% band: an accurate picture needs the real composition step (a bounded
  *                        extension or a new generation, which is paid and customer-approved). Nothing was rendered; show the product's own state, not a sample.
- *   not_available        the product is not purchasable or has no mockup template
+ *   not_available        the product is not purchasable or has no mockup template, or (product_not_available_for_artwork) this owned artwork cannot become it: its shape needs a generated adaptation and the original photograph is no longer kept
  * Errors (non-200): 404 session_not_found; 409 artwork_not_selected (choose a favorite first), order_refunded, refund_pending; 502 mockup_failed; 503 mockup_renderer_unavailable.
  * Never a composition, a production file, an approval, a correction or an authorization to buy; no clean (unwatermarked) image is ever returned.
  */
@@ -520,7 +520,7 @@ export type ProductPreviewView =
         finalComposition: 'deterministic' | 'generated' | null
       }
     }
-  | { contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'not_available'; reason: 'product_not_available' | 'no_mockup_template'; sessionId: string; productId: string; sku: string | null; favoriteId: string }
+  | { contractVersion: typeof GIFT_CONTRACT_VERSION; status: 'not_available'; reason: 'product_not_available' | 'no_mockup_template' | 'product_not_available_for_artwork'; sessionId: string; productId: string; sku: string | null; favoriteId: string }
 
 /** Why no approved photographic scene shows a configuration (scenes.ts). openingAspect/productAspect/extension are present for the two shape reasons: e.g. fine-art-square 0.9338 against a 1.0 product = 0.0709, beyond the free 2% band. */
 export interface SceneRefusalView {
