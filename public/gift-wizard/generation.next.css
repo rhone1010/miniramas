@@ -20,3 +20,4 @@
 /* Bind existing Collection tokens and gallery dimensions without changing the mark. */
 [data-view="review"] .card{--oxblood:#7d4242;--gold-soft:#d9b876;--card-ar:1}
 @media(prefers-reduced-motion:reduce){.mc-mark__turn{animation:none}}
+#screen[aria-busy="true"]{--gold-soft:#d9b876}

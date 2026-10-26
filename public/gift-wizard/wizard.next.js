@@ -117,6 +117,8 @@ function confirmGiftExit(destination) {
     dialog.querySelector('#keep-creating').focus();
 }
 function render() {
+    document.querySelector('.progress').hidden = false;
+    $('screen').removeAttribute('aria-busy');
     document.body.classList.toggle('gift-pivot', pivotMode);
     if (pivotMode) {
         if (layoutReview)
@@ -2040,6 +2042,9 @@ function initializeLayoutReview() {
 // Keep the source object URL valid for browser Back/forward cache restoration.
 async function start() {
     try {
+        const ownedArtwork = serverMode ? params.get('ownedArtwork') : null;
+        const collectionApi = new GiftBackend((url, init) => fetch(url, init));
+        const collectionEntrance = ownedArtwork ? collectionApi.fromCollection(ownedArtwork).then(value => ({ value, error: null }), error => ({ value: null, error })) : null;
         const [c, f, m, samples, original] = await Promise.all([fetch(asset('./catalog.next.json')), serverMode ? Promise.resolve(new Response('[]', { status: 200 })) : fetch(asset('./fixtures.next.json')), fetch(asset('./effect-previews/index.next.json')), fetch(asset('./catalog-samples/index.next.json')).catch(() => null), fetch('/previews/effects-manifest.json').catch(() => null)]);
         if (!c.ok || !f.ok || !m.ok)
             throw Error();
@@ -2059,6 +2064,29 @@ async function start() {
             await import(path);
             registries[series] = window.EFFECT_REGISTRY;
         }
+        if (collectionEntrance) {
+            const result = await collectionEntrance;
+            if (result.error)
+                throw result.error;
+            const owned = result.value;
+            if (owned.entrance !== 'collection' || owned.collection?.previewId !== ownedArtwork)
+                throw new GiftApiError('owned_artwork_required', 409);
+            live = new LiveGift(collectionApi, owned.sessionId);
+            live.accept(owned);
+            pivotMode = true;
+            await syncCatalog();
+            applyServer(owned);
+            await loadMockups();
+            params.delete('ownedArtwork');
+            const destination = new URL(location.href);
+            destination.searchParams.delete('ownedArtwork');
+            destination.searchParams.set('sessionId', owned.sessionId);
+            window.history.replaceState(null, '', destination);
+            paymentState = purchased(owned) ? 'payment-verified' : 'pending';
+            restoreView(owned);
+            render();
+            return;
+        }
         initializeLayoutReview();
         if (pivotMode && layoutReview) {
             restorePivotReview();
@@ -2071,6 +2099,8 @@ async function start() {
         }
     }
     catch {
+        $('screen').replaceChildren();
+        $('screen').removeAttribute('aria-busy');
         error('This page could not load. Please reload to try again.');
     }
 }

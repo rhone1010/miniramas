@@ -779,3 +779,12 @@ test('owned artwork composes through existing handlers and explicitly approves b
   }finally{await new Promise(r=>setTimeout(r,150));dom.window.close()}
  }
 });
+
+test('Collection opens directly in Studio without a second session restore',async()=>{
+ const s:any=shoppingProject();s.entrance='collection';s.collection={previewId:'owned',portfolioId:'portfolio'};
+ let created=0;s.route=(url:string,init:any)=>{if(url.endsWith('/from-collection')){assert.equal(JSON.parse(init.body).previewId,'owned');created++;return s;}};
+ const {win,dom,calls}=await boot('ownedArtwork=owned',s);
+ assert.equal(created,1);assert.equal(win.document.getElementById('screen').dataset.view,'products');
+ assert.equal(win.location.search,'?sessionId=project');assert(!calls.some(url=>url.endsWith('/sessions/project')));
+ assert(!win.document.getElementById('screen').hasAttribute('aria-busy'));dom.window.close();
+});
