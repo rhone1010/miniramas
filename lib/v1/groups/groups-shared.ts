@@ -115,14 +115,18 @@ export const MAX_SUBJECTS = 15
 export const TYPICAL_MAX  = 12
 
 // ═══════════════════════════════════════════════════════════════
-// AGE GATING — approved 2026-09-27
-// Adult-containing families and all-adult groups pass. Only a confidently
-// all-minor set is refused; unknown or low-confidence ages remain uncertain.
+// AGE GATING — TEMPORARY CHILDREN GATE, 2026-10-26 (supersedes the 2026-09-27 family rule)
+// Any confidently detected infant, child or teen blocks the set, with or without adults in it:
+// an adult never overrides the block. Only a set with NO confident minor can proceed, and
+// 'allowed' means every face is confidently an adult. Unknown or low-confidence ages are
+// 'uncertain': they are not refused (a minor is refused only when CONFIDENTLY detected),
+// exactly as the portrait intake treats an age it cannot read. To lift the gate, restore the
+// previous rule here: it is the single definition every Groups and Gift intake calls.
 export type GroupsAgeClass = 'infant' | 'child' | 'teen' | 'adult' | 'elder' | 'unknown'
 export interface GroupsAgeEvidence { age_class: GroupsAgeClass; age_confidence: number }
 export function groupsAgeDecision(faces: GroupsAgeEvidence[]): 'allowed' | 'blocked' | 'uncertain' {
-  if (faces.some(f => (f.age_class === 'adult' || f.age_class === 'elder') && f.age_confidence >= 7)) return 'allowed'
-  if (faces.length && faces.every(f => ['infant','child','teen'].includes(f.age_class) && f.age_confidence >= 7)) return 'blocked'
+  if (faces.some(f => ['infant','child','teen'].includes(f.age_class) && f.age_confidence >= 7)) return 'blocked'
+  if (faces.length && faces.every(f => (f.age_class === 'adult' || f.age_class === 'elder') && f.age_confidence >= 7)) return 'allowed'
   return 'uncertain'
 }
 export function groupsAgeEvidence(face: any): GroupsAgeEvidence {

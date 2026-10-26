@@ -223,6 +223,24 @@ function collectionMasterAspect(w: number, h: number): string {
   return std.reduce((b, c) => Math.abs(c[1] - r) < Math.abs(b[1] - r) ? c : b)[0]
 }
 
+/**
+ * TEMPORARY CHILDREN GATE for Groups (2026-10-26). Every Gift generation for a Groups session goes through here, so a session created BEFORE the gate (an unpaid restored session, a Collection
+ * adaptation of an owned Groups piece) can never start new processing from a photograph with a minor in it. The photograph is analysed again by the same analyser and the same shared age policy
+ * the intake uses; the series route re-checks too (groups-generator). Nothing already made is touched: paid orders, approved compositions, owned artwork and downloads are not read here.
+ * If the photograph cannot be analysed the answer is 503 analysis_unavailable (retry), never a pass.
+ */
+export async function assertGroupsAdultsOnly(deps: GiftDeps, series: string | null, photo: Buffer | null | undefined): Promise<void> {
+  if (series !== 'groups' || !photo) return
+  let a: SourceAnalysis
+  try { a = await deps.analyze({ b64: photo.toString('base64'), bytes: photo }) } catch { throw new GiftError('analysis_unavailable') }
+  if (a.status === 'age_restricted') throw new GiftError('age_restricted')
+}
+/** deps.generate, behind the Groups children gate; the series route's own refusal is mapped to the same code. */
+export async function generateGated(deps: GiftDeps, input: Parameters<GiftDeps['generate']>[0]): ReturnType<GiftDeps['generate']> {
+  await assertGroupsAdultsOnly(deps, input.series, Buffer.from(input.sourceB64, 'base64'))
+  try { return await deps.generate(input) } catch (e) { if (e instanceof Error && e.message === 'age_restricted') throw new GiftError('age_restricted'); throw e }
+}
+
 export async function owned(deps: GiftDeps, userId: string, sessionId: string): Promise<SessionRec> {
   const rec = typeof sessionId === 'string' && /^[0-9a-f-]{36}$/i.test(sessionId) ? await deps.store.getSession(sessionId, userId) : null
   if (!rec) throw new GiftError('session_not_found')
@@ -305,6 +323,7 @@ export async function startBatch(deps: GiftDeps, userId: string, sessionId: stri
     batchRec = repeat.batch                                  // same key: the same batch, nothing charged, nothing reselected
   } else {
     if (!rec.series) throw new GiftError('unsupported_subject')
+    if (rec.series === 'groups' && rec.source_path) await assertGroupsAdultsOnly(deps, rec.series, await deps.storage.get(rec.source_path))          // before a free or paid batch is reserved: a refused session spends nothing
     const used = batches.flatMap(b => b.previews.map(p => p.effect_id))
     let effects: string[]
     try { effects = fillEffects(rec.series, req.effectIds, used) }
@@ -325,6 +344,7 @@ export async function runBatch(deps: GiftDeps, userId: string, recIn: SessionRec
   if (todo.length && rec.series && rec.source_path) {
     const source = await deps.storage.get(rec.source_path)
     if (!source) throw new GiftError('generation_unavailable')
+    await assertGroupsAdultsOnly(deps, rec.series, source)                  // a retry of a batch from a session older than the gate stops here, before any preview is claimed
     const sourceB64 = source.toString('base64')
     const pass = async (list: PreviewRec[], workers: number) => {
       let next = 0
@@ -351,7 +371,7 @@ const isRateLimited = (error: string | null) => !!error && /\b429\b|rate.?limit|
 
 async function renderOne(deps: GiftDeps, rec: SessionRec, p: PreviewRec, sourceB64: string): Promise<void> {
   try {
-    const { imageB64, generation } = await deps.generate({ series: rec.series!, sourceB64, effectId: p.effect_id, aspect: rec.master_aspect ?? masterAspectFor(rec.series!, null), userId: rec.user_id, peopleCount: rec.analysis.peopleCount ?? null })
+    const { imageB64, generation } = await generateGated(deps, { series: rec.series!, sourceB64, effectId: p.effect_id, aspect: rec.master_aspect ?? masterAspectFor(rec.series!, null), userId: rec.user_id, peopleCount: rec.analysis.peopleCount ?? null })
     // The customer may have cancelled (deleted the project) or it may have expired while the provider worked: the paid result is then discarded and nothing is stored.
     const live = await deps.store.getSession(rec.id, rec.user_id).catch(() => rec)
     if (!live || live.status !== 'active') return

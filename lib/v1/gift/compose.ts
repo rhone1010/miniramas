@@ -24,7 +24,7 @@ import { correctionPlanFor, groupLines, planContextFor, planFor, type Compositio
 import { supportsFavoriteReference } from './aspects'
 import { frameColorsFor, lineFrameColor } from './frame-colors'
 import { COMPOSITION_LEASE_MS, COMPOSITION_MAX_ATTEMPTS, estimateCompositionCost } from './policy'
-import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
+import { GiftError, fromStoreError, generateGated, getSessionView, owned, type GiftDeps } from './service'
 import { StoreError, byNewest, correctionUsed, finalizedAt, type CompositionJobKey, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
 import type { SessionView } from './types'
 import { correctGenerationLine } from './generations'
@@ -109,7 +109,7 @@ async function composeGroup(deps: GiftDeps, rec: SessionRec, preview: PreviewRec
     const kept = await deps.storage.get(`${base}.gen.png`).catch(() => null)
     if (kept) source = kept
     else {
-      const out = await stage('generate', () => deps.generate({
+      const out = await stage('generate', () => generateGated(deps, {
         series: rec.series!, sourceB64: photo.toString('base64'), effectId: preview.effect_id, aspect: plan.generationAspect!, userId: rec.user_id,
         peopleCount: rec.analysis.peopleCount ?? null, productComposition: true, ...(useReference ? { referenceB64: master.toString('base64') } : {}),
       }))
@@ -183,7 +183,7 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
       if (!c.token) { if (c.reason !== 'in_progress') failed++; continue }
       claim = { sessionId: rec.id, previewId: preview.id, geometryKey: g.geometryKey, token: c.token }
       try { files = await composeGroup(deps, rec, preview, g.items[0].product, g.plan, master, g.geometryKey) }
-      catch (e) { await deps.store.failComposition({ ...claim, code: e instanceof GiftError ? e.code : 'composition_error' }).catch(() => {}); failed++; continue }
+      catch (e) { await deps.store.failComposition({ ...claim, code: e instanceof GiftError ? e.code : 'composition_error' }).catch(() => {}); if (e instanceof GiftError && e.code === 'age_restricted') throw e; failed++; continue }
     }
     let creatorId: string | null = existing?.id ?? null
     for (const it of g.items) {

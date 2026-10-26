@@ -16,7 +16,7 @@ import { generationAspectFor, supportsFavoriteReference } from './aspects'
 import { MUG_COMPOSITIONS, MUG_SINGLE_PANEL_SHAPES, MUG_SINGLE_PANEL_V2, isMugSingleLayout, mugSinglePanelPlacement, type MugComposition, type MugSingleLayout } from '../print/production-profiles'
 import { liveEffectIds } from './effects'
 import { MAX_CONFORM_CROP, STORAGE } from './policy'
-import { GiftError, fromStoreError, generationViewOf, getSessionView, owned, type GiftDeps } from './service'
+import { GiftError, fromStoreError, generateGated, generationViewOf, getSessionView, owned, type GiftDeps } from './service'
 import { finalizedAt, type CompositionRec, type SessionRec } from './store'
 import type { GenerationRec } from './generation-store'
 import type { GenerationView, GiftLine, SessionView } from './types'
@@ -171,7 +171,7 @@ async function renderGeneration(deps: GiftDeps, rec: SessionRec, g: GenerationRe
       if (m) referenceB64 = m.toString('base64')
     }
     const t0 = now(deps)
-    const out = await deps.generate({ series: rec.series, sourceB64: source.toString('base64'), effectId: g.effect_id, aspect: g.aspect, userId: rec.user_id, peopleCount: rec.analysis.peopleCount ?? null, exactAspect: true, ...(referenceB64 ? { referenceB64 } : {}) })
+    const out = await generateGated(deps, { series: rec.series, sourceB64: source.toString('base64'), effectId: g.effect_id, aspect: g.aspect, userId: rec.user_id, peopleCount: rec.analysis.peopleCount ?? null, exactAspect: true, ...(referenceB64 ? { referenceB64 } : {}) })
     // The customer may have cancelled while the model worked: the result is then discarded and nothing is stored.
     const live = await deps.store.getSession(rec.id, rec.user_id).catch(() => rec)
     if (!live || live.status !== 'active') { await deps.store.failGeneration(g.id, g.user_id, 'session_gone').catch(() => {}); return }
