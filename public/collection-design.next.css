@@ -80,3 +80,5 @@ body.mc-designed #mycollGrid>.card:focus-visible{outline:3px solid #efc57d;outli
  body.mc-designed .mc-mobile-back{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:none;color:#efc57d;font:400 24px var(--serif);cursor:pointer;}
  body.mc-designed .masthead>.ux-menu-toggle,body.mc-designed #masthead>.ux-menu-toggle{display:none!important;}
 }
+
+body.mc-designed .mycoll__empty .mc-primary{width:auto;margin-inline:auto;}

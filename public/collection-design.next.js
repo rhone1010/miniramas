@@ -9,6 +9,17 @@ let mobileView=null;
 function retainMobileView(){try{sessionStorage.setItem('liten_collection_mobile_view',JSON.stringify({state:MC_STATE,series:MC_SERIES,sort,scroll:grid.scrollTop}));}catch(_){} }
 addEventListener('pagehide',retainMobileView);
 
+let collectionSignedOut=false;
+function showCollectionSignin(){
+ if(!collectionSignedOut)return;
+ grid.replaceChildren();
+ const empty=document.createElement('div');empty.className='mycoll__empty';
+ const message=document.createElement('p');message.textContent='Sign in or create an account to see your created images';
+ const button=document.createElement('button');button.type='button';button.className='mc-primary';button.textContent='Sign in';
+ button.onclick=()=>window.LitenAuth?window.LitenAuth.open():window.openSignin();
+ empty.append(message,button);grid.append(empty);
+}
+fetch('/api/v1/auth/me',{credentials:'same-origin',cache:'no-store'}).then(r=>r.status===401?{user:null}:r.ok?r.json():null).then(result=>{if(!result)return;collectionSignedOut=!result.user;if(collectionSignedOut){showCollectionSignin();new MutationObserver(()=>{if(!grid.querySelector('.mc-primary'))showCollectionSignin();}).observe(grid,{childList:true});}}).catch(()=>{});
 const busy=new Set();
 const svg=(paths)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths+'</svg>';
 const icons={filter:svg('<path d="M3 4h18l-7 8v8l-4-2v-6z"/>'),download:svg('<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>'),share:svg('<circle cx="5" cy="12" r="3"/><circle cx="18" cy="5" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8 10 7-4M8 14l7 4"/>'),post:svg('<rect x="3" y="3" width="18" height="18"/><circle cx="8" cy="8" r="1"/><path d="m4 18 6-6 4 4 3-3 4 5"/>'),print:svg('<path d="M6 6V3h14v14h-3M3 9V6h14v14h-3"/><rect x="6" y="9" width="15" height="13"/><path d="m7 20 4-5 3 3 3-4 4 6"/>')};

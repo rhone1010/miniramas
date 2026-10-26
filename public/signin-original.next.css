@@ -1,0 +1,98 @@
+#signinModal{
+  --ink:#231f1b;
+  --oxblood:#7d4242;        /* real --oxblood */
+  --gold:#b68a53;           /* real --gold */
+  --vellum-100:#f8f4eb;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Manrope',Arial,sans-serif;
+}
+@scope (#signinModal){
+.signin-lbl{
+  display:block; margin:1.1em 0 .35em;
+  font:600 .68rem/1 var(--mono, ui-monospace, monospace);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--vellum-300);
+}
+.signin-in{
+  width:100%; padding:.7em .8em;
+  font:400 1rem/1.2 var(--sans, system-ui, sans-serif);
+  color:var(--ink, #2a241e); background:#fff;
+  border:1px solid rgba(42,36,30,.22); border-radius:4px;
+}
+.signin-in:focus{ outline:none; border-color:var(--gold) }
+.signin-err{ min-height:1.2em; margin-top:.5em;
+  font:400 .82rem/1.3 var(--sans, system-ui, sans-serif); color:#a05a5a }
+
+.m-scrim{ display:none }
+.m-scrim.is-open{
+  display:grid; place-items:center;
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:1200;
+  background:rgba(31,27,20,.52);
+  padding:24px;
+  overflow-y:auto;
+}
+.m-card{
+  width:min(680px, 100%);
+  background:linear-gradient(180deg,#faf6ec,#f3ecdd);
+  border:1px solid rgba(147,111,67,.34);
+  border-radius:6px;
+  padding:2rem 2.2rem 1.9rem;
+  position:relative;
+  box-shadow:0 24px 60px rgba(31,27,20,.42), 0 4px 12px rgba(31,27,20,.24),
+             inset 0 1px 0 rgba(255,255,255,.75);
+}
+.m-head{ display:flex; align-items:center; gap:.7rem; }
+.m-head .m-mark{
+  width:2.4rem; height:2.4rem; flex:0 0 auto; display:block;
+}
+.m-head .m-title{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.7rem; font-weight:400; color:var(--ink); letter-spacing:.01em;
+}
+.m-x{
+  position:absolute; top:1.1rem; right:1.2rem;
+  width:2rem; height:2rem; border:0; border-radius:50%;
+  background:none; color:var(--taupe, #a59478); font-size:1.4rem; line-height:1;
+  cursor:pointer; transition:color .15s, background .15s;
+}
+.m-x:hover{ color:var(--ink); background:rgba(42,36,30,.06) }
+.m-rule{
+  display:flex; align-items:center; gap:.8rem;
+  margin:1.15rem 0;
+  color:rgba(147,111,67,.5);
+}
+.m-rule::before, .m-rule::after{
+  content:""; flex:1; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(147,111,67,.45), transparent);
+}
+.m-rule .m-fleuron{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:.95rem; color:rgba(147,111,67,.75); line-height:1;
+}
+.m-say{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-size:1.2rem;
+  line-height:1.4;
+  color:var(--ink);
+}
+.m-say .sig{
+  display:block; margin-top:.75rem;
+  font-size:1.15rem; color:var(--ink-soft, #5a5142); font-style:italic;
+}
+.m-safe{
+  margin-top:1.15rem;
+  font-family:var(--sans, system-ui, sans-serif);
+  font-size:.82rem; line-height:1.5; color:var(--ink-soft, #5a5142);
+}
+.m-card .acts{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.m-card .btn{
+  font-family:var(--serif, 'Cormorant Garamond', Georgia, serif);
+  font-style:italic; font-size:1.22rem; line-height:1.2;
+  padding:.62rem .9rem; border-radius:5px; text-align:center; cursor:pointer;
+  border:1px solid transparent; transition:filter .15s, background .15s;
+}
+.m-card .btn.fill{ background:var(--oxblood); color:var(--vellum-100) }
+.m-card .btn.fill:hover{ background:#6a3737 }
+}
+@media (min-width:1025px){
+  #signinModal .m-card{ width:min(calc(680px * 2 / 3), 100%) }
+}
