@@ -416,6 +416,7 @@ function ownedProductLine(){return session.lines.find(l=>l.id===editId)||session
 async function prepareOwnedProduct(){
  const {p,o}=selectedProduct();if(!live||busy||!p||!o)return;
  const old=editId?session.lines.find(l=>l.id===editId):undefined,id=old?.id||crypto.randomUUID();
+ view='generation';
  await serverAction(async()=>{
   const lines=live!.session!.lines.filter(l=>l.lineId!==id).map(l=>({lineId:l.lineId,productId:l.productId,copies:l.copies,...(l.frameColor?{frameColor:l.frameColor}:{})}));
   lines.push({lineId:id,productId:p.id+':'+o.size,copies:studioState.copies,...(selectedFinish(p,o)?{frameColor:selectedFinish(p,o)}:{})});
@@ -427,9 +428,10 @@ function renderOwnedProductReview(approval:boolean){
  const {p,o}=selectedProduct();if(!p||!o){studioState.step='product';view='products';renderPivotProducts();return}
  const line=ownedProductLine(),c=live?.session?.compositions.find(c=>c.lineId===line?.id),m=line?live?.mockups.get(line.id):null;
  pivotRail(approval?'Approve<br>Composition':'Personalized<br>Review');
- $('screen').innerHTML=line?ownedCompositionPicture(line):configurationPreview(p,o,true);
+ $('screen').innerHTML=busy?'<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><p>Preparing product preview…</p></section>':line?ownedCompositionPicture(line):configurationPreview(p,o,true);
+ $('screen').setAttribute('aria-busy',String(busy));
  $('right').innerHTML='<h2>'+esc(p.label)+'</h2><p>'+esc(o.label)+' · '+money(o.retailCents)+'</p><p>'+esc(Object.entries({...o.attributes,...(selectedFinish(p,o)?{color:selectedFinish(p,o)}:{})}).map(([k,v])=>k+': '+v).join(' · '))+'</p>';
- const ready=!!c?.compositionId&&['ready','approved'].includes(c.status)&&!!m&&Date.parse(m.urlExpiresAt)>Date.now();
+ const ready=!busy&&!!c?.compositionId&&['ready','approved'].includes(c.status)&&!!m&&Date.parse(m.urlExpiresAt)>Date.now();
  if(approval)primary('Accept Composition',()=>void serverAction(()=>live!.api.approveComposition(live!.id,c!.compositionId!),'cart'),!ready);
  else primary('Review &amp; Approve',()=>go('acceptance'),!ready);
  $('right').insertAdjacentHTML('beforeend',secondary('owned-change-product','Choose a Product'));
