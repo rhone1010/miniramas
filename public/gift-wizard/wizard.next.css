@@ -498,3 +498,13 @@ body.gift-pivot #workspace .studio-media img,body.gift-pivot #workspace #screen 
 .gift-pivot #workspace #screen .mug-review figcaption,.gift-pivot #workspace #screen .mug-review summary{font-size:22px}
 .gift-pivot #workspace #screen .mug-review summary{cursor:pointer;padding:12px 16px}
 @media(max-width:600px){.gift-pivot #workspace #screen .mug-pair{grid-template-columns:minmax(0,1fr)}}
+
+/* Compact mobile Cart and Review header — owner revision 2026-10-26. */
+@media(max-width:1000px){
+ .gift-pivot #mobile-progress.mobile-stage-heading{background:var(--sage);color:var(--ivory);border:0;font:400 26px/1.15 Cormorant,serif;padding:12px 24px 8px}
+ .gift-pivot:has(#screen:is([data-view="cart"],[data-view="generation"],[data-view="acceptance"])) #left{padding:0 24px 12px!important;min-height:0}
+ .gift-pivot:has(#screen:is([data-view="cart"],[data-view="generation"],[data-view="acceptance"])) #left>.stage-guidance{display:none!important}
+ .gift-pivot:has(#screen:is([data-view="cart"],[data-view="generation"],[data-view="acceptance"])) #workspace #left .stage-navigation{padding-top:0;gap:8px}
+ .gift-pivot:has(#screen:is([data-view="cart"],[data-view="generation"],[data-view="acceptance"])) #workspace #left .stage-navigation button{font-size:18px;padding:8px 12px;margin:0;min-width:0;min-height:44px}
+ .gift-pivot #screen[data-view="cart"]>h2{display:none}
+}

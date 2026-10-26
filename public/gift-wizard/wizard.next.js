@@ -206,6 +206,14 @@ function render() {
     rememberView();
 }
 function renderMobileProgress() {
+    if (pivotMode && ['cart', 'generation', 'acceptance'].includes(view)) {
+        const panel = document.createElement('div');
+        panel.id = 'mobile-progress';
+        panel.className = 'mobile-progress-name mobile-stage-heading';
+        panel.textContent = view === 'cart' ? 'Cart · Your gifts' : view === 'acceptance' ? 'Approve Composition' : 'Personalized Review';
+        document.querySelector('.progress').after(panel);
+        return;
+    }
     if (ownedStudio()) {
         const panel = document.createElement('div');
         panel.id = 'mobile-progress';

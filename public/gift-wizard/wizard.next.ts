@@ -95,6 +95,7 @@ function render(){
 }
 
 function renderMobileProgress(){
+ if(pivotMode&&['cart','generation','acceptance'].includes(view)){const panel=document.createElement('div');panel.id='mobile-progress';panel.className='mobile-progress-name mobile-stage-heading';panel.textContent=view==='cart'?'Cart · Your gifts':view==='acceptance'?'Approve Composition':'Personalized Review';document.querySelector('.progress')!.after(panel);return}
  if(ownedStudio()){const panel=document.createElement('div');panel.id='mobile-progress';panel.className='mobile-progress-name';panel.textContent=['Choose Product','Product Details','Personalized Review','Approve','Cart','Checkout'][stage()];document.querySelector('.progress')!.after(panel);return}
  const labels=Array.from(document.querySelectorAll('.progress li'),el=>el.textContent||'');
  const paid=!!live?.session&&purchased(live.session),restricted=!!live?.session&&['needs_attention','refunded','refund_requested','cancelled'].includes(live.session.order.state);
