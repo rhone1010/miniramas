@@ -42,7 +42,7 @@ function registry() { return registries[session.source?.series || fixtureSeries]
 function effects() { return liveEffects(registry()); }
 function currentArt() { return session.batches.flat().find(p => p.id === artFocus) || session.batches[batchIndex]?.[0]; }
 function favorite() { return session.batches.flat().find(p => p.id === (shoppingFavoriteId || session.favoriteId)); }
-function ownedStudio() { return params.get('ownedArtworkReview') === '1' && live?.session?.entrance === 'collection' && !purchased(live.session); }
+function ownedStudio() { return live?.session?.entrance === 'collection' && !purchased(live.session); }
 function stage() { if (ownedStudio())
     return view === 'generation' ? 2 : view === 'acceptance' ? 3 : view === 'cart' ? 4 : view === 'checkout' ? 5 : studioState.step === 'product' ? 0 : 1; if (pivotMode)
     return view === 'acceptance' ? 5 : view === 'generation' ? 4 : ['cart', 'checkout', 'compositions', 'payment', 'complete'].includes(view) ? 6 : ['entry', 'photo'].includes(view) ? 0 : view === 'effects' ? 1 : studioState.step === 'product' ? 2 : 3; return view === 'photo' ? 0 : view === 'effects' ? 1 : ['review', 'focus', 'compare', 'more'].includes(view) ? 2 : ['products', 'configuration', 'cart'].includes(view) ? 3 : view === 'compositions' ? 5 : 4; }
@@ -992,6 +992,34 @@ function generationPicture(g, productId = studioState.productId, size = studioSt
 function mugCompositionText(g) { const c = mugOptions().find(o => o.geometryKey === g?.geometryKey)?.composition; return c ? ({ square: 'Square', landscape: 'Landscape' }[c]) : ''; }
 function generationDetails() { const { p, o } = selectedProduct(); return '<h2>' + esc(p?.label || 'Your Gift') + '</h2><p>' + esc([o?.label, p?.id === 'mug' ? mugCompositionText(selectedGeneration()) : ''].filter(Boolean).join(' · ')) + '</p><p>' + esc(Object.entries({ ...o?.attributes, ...(p && o && selectedFinish(p, o) ? { color: journeyDemo ? generationFrameColors[selectedGeneration()?.generationId || ''] || selectedFinish(p, o) : selectedFinish(p, o) } : {}) }).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p><p>' + esc(effects().find(e => e.id === session.effectIds[0])?.label || '') + '</p>'; }
 function changeGenerationSelection() { go('effects'); }
+function ownedCompositionPicture(l) {
+    const c = live?.session?.compositions.find(c => c.lineId === l.id), m = live?.mockups.get(l.id), { product: p, option: o } = giftOption(l, products), beauty = productAvailability.get(p.id + ':' + o.size)?.beauty;
+    if (!c?.compositionId || !c.previewUrl || !c.width || !c.height)
+        return serverMockup(l);
+    const source = beauty?.sceneId ? beautySource(beauty) : null, key = 'owned:' + c.compositionId + ':' + (l.frameColor || '') + ':' + (source || '');
+    if (p.id === 'mug') {
+        if (!m || m.renderer !== 'artwork' || Math.abs(m.width / m.height - 2670 / 1110) > .02)
+            return serverMockup(l);
+        if (mugPictures.has(key))
+            return ['generation', 'acceptance'].includes(view) ? mugReview(mugPictures.get(key)) : photo(mugPictures.get(key).front, p.label, 'gift-feature-image');
+        if (!scenePending.has(key) && !sceneFailures.has(key)) {
+            scenePending.add(key);
+            void mugBeautyViews(m.url).then(pictures => mugPictures.set(key, pictures)).catch(() => sceneFailures.add(key)).finally(() => { scenePending.delete(key); if (ownedStudio())
+                render(); });
+        }
+        return serverMockup(l);
+    }
+    if (!source)
+        return serverMockup(l);
+    if (scenePictures.has(key))
+        return photo(scenePictures.get(key), p.label + ' · ' + o.label + ' · ' + (l.frameColor || ''), 'gift-feature-image');
+    if (!scenePending.has(key) && !sceneFailures.has(key)) {
+        scenePending.add(key);
+        void productScene(source, c.previewUrl, c.width / c.height, l.frameColor).then(url => scenePictures.set(key, url)).catch(() => sceneFailures.add(key)).finally(() => { scenePending.delete(key); if (ownedStudio())
+            render(); });
+    }
+    return serverMockup(l);
+}
 function ownedProductLine() { return session.lines.find(l => l.id === editId) || session.lines.find(l => l.productId === studioState.productId && l.size === studioState.size); }
 async function prepareOwnedProduct() {
     const { p, o } = selectedProduct();
@@ -1018,7 +1046,7 @@ function renderOwnedProductReview(approval) {
     }
     const line = ownedProductLine(), c = live?.session?.compositions.find(c => c.lineId === line?.id), m = line ? live?.mockups.get(line.id) : null;
     pivotRail(approval ? 'Approve<br>Composition' : 'Personalized<br>Review');
-    $('screen').innerHTML = line ? serverMockup(line) : configurationPreview(p, o, true);
+    $('screen').innerHTML = line ? ownedCompositionPicture(line) : configurationPreview(p, o, true);
     $('right').innerHTML = '<h2>' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><p>' + esc(Object.entries({ ...o.attributes, ...(selectedFinish(p, o) ? { color: selectedFinish(p, o) } : {}) }).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>';
     const ready = !!c?.compositionId && ['ready', 'approved'].includes(c.status) && !!m && Date.parse(m.urlExpiresAt) > Date.now();
     if (approval)
@@ -1524,7 +1552,8 @@ function renderMore() {
     // Paid preview packs remain blocked; no purchase event or entitlement mutation.
     primary('Return to My Art', () => go('review'));
 }
-function mockup(l) { if (live)
+function mockup(l) { if (ownedStudio())
+    return ownedCompositionPicture(l); if (live)
     return serverMockup(l); const { product: p } = giftOption(l, products); return photo(asset(p.image), p.label); }
 async function prepareCompositions() { go('compositions'); }
 let productReviewIndex = 0, orderReviewExample = false;
@@ -2081,7 +2110,7 @@ async function syncCatalog() {
     products = products.map(p => ({ ...p, available: catalog.products.some(c => c.family === p.id && allowed(c.productId, c.selectable)), options: catalog.products.filter(c => c.family === p.id && c.status === 'launch' && c.retailCents !== null && offeredOrientation(c)).map(c => ({ sku: c.sku, size: c.size, family: c.family, label: c.label, retailCents: c.retailCents, attributes: c.attributes, compatible: allowed(c.productId, c.selectable) && (live?.session?.flow !== 'generations' || productAvailability.get(c.productId)?.generation?.supported !== false), imageWidthIn: c.requirements.picturePx.w / c.requirements.ppi, imageHeightIn: c.requirements.picturePx.h / c.requirements.ppi, requiredPx: c.requirements.finalPx, familyNote: productAvailability.get(c.productId)?.generation?.supported === false ? productAvailability.get(c.productId).generation.reason.replace(/_/g, ' ') : c.note })) }));
 }
 function applyServer(s) {
-    pivotMode = (s.flow === 'generations' || params.get('ownedArtworkReview') === '1' && s.entrance === 'collection') && !purchased(s);
+    pivotMode = (s.flow === 'generations' || s.entrance === 'collection') && !purchased(s);
     sourceURL = s.source.photoUrl || (session.sessionId === s.sessionId ? sourceURL : '');
     const lines = s.lines.map(l => {
         const split = l.productId.lastIndexOf(':'), family = l.productId.slice(0, split);
