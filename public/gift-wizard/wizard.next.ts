@@ -984,7 +984,7 @@ async function loadMockups(){
 }
 function serverMockup(l:GiftLine){
  const c=live?.session?.compositions.find(c=>c.lineId===l.id);
- if(c?.state==='failed')return '<section role="alert"><h2>Didn’t finish</h2></section>'+secondary('retry-preparation-'+l.id,c.retryable?'Try again':'Concierge');
+ if(c?.state==='failed')return '<section role="alert"><h2>Didn’t finish</h2></section>'+secondary('retry-preparation-'+l.id,c.retryable&&c.failureCode!=='age_restricted'?'Try again':'Concierge');
  if(c?.state==='not_started'&&!compositionRequestPending)return '<section role="status"><h2>Product artwork review</h2></section>'+secondary('retry-preparation-'+l.id,'Try again');
  if(c?.state==='stalled')return '<section role="status"><h2>Preparing Your Masterpiece</h2></section>'+secondary('check-composition-'+l.id,'Check Again');
  if(c?.state==='preparing'||(compositionRequestPending&&!c?.compositionId))return '<section role="status"><h2>Preparing Your Masterpiece</h2>'+ (favorite()?photo(favorite()!.url,'Selected artwork'):'')+'</section>';
@@ -1057,7 +1057,7 @@ function adaptServerView(){
   if(incomplete){$('right').insertAdjacentHTML('beforeend',secondary('retry-batch','Try again'));$('retry-batch').onclick=()=>void serverAction(async()=>{const r=await live!.api.retryBatch(live!.id,incomplete.batchIndex);return r.session},'review')}
  }
  if(view==='compositions'){
-  document.querySelectorAll<HTMLButtonElement>('[id^="retry-preparation-"]').forEach(b=>{b.disabled=busy;b.onclick=()=>{const c=s.compositions.find(c=>c.lineId===b.id.slice('retry-preparation-'.length));if(c?.state==='not_started'||(c?.state==='failed'&&c.retryable))void serverAction(()=>composePurchasedArtwork(true),'compositions');else location.assign('/help')}});
+  document.querySelectorAll<HTMLButtonElement>('[id^="retry-preparation-"]').forEach(b=>{b.disabled=busy;b.onclick=()=>{const c=s.compositions.find(c=>c.lineId===b.id.slice('retry-preparation-'.length));if(c?.state==='not_started'||(c?.state==='failed'&&c.retryable&&c.failureCode!=='age_restricted'))void serverAction(()=>composePurchasedArtwork(true),'compositions');else location.assign('/help')}});
   document.querySelectorAll<HTMLButtonElement>('[id^="check-composition-"]').forEach(b=>{b.disabled=busy;b.onclick=()=>void readCompositionState(false)});
   if(orderReviewExample){
    $('right').querySelectorAll('p.small').forEach(el=>el.textContent='');

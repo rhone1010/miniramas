@@ -2325,7 +2325,7 @@ async function loadMockups() {
 function serverMockup(l) {
     const c = live?.session?.compositions.find(c => c.lineId === l.id);
     if (c?.state === 'failed')
-        return '<section role="alert"><h2>Didn’t finish</h2></section>' + secondary('retry-preparation-' + l.id, c.retryable ? 'Try again' : 'Concierge');
+        return '<section role="alert"><h2>Didn’t finish</h2></section>' + secondary('retry-preparation-' + l.id, c.retryable && c.failureCode !== 'age_restricted' ? 'Try again' : 'Concierge');
     if (c?.state === 'not_started' && !compositionRequestPending)
         return '<section role="status"><h2>Product artwork review</h2></section>' + secondary('retry-preparation-' + l.id, 'Try again');
     if (c?.state === 'stalled')
@@ -2443,7 +2443,7 @@ function adaptServerView() {
         }
     }
     if (view === 'compositions') {
-        document.querySelectorAll('[id^="retry-preparation-"]').forEach(b => { b.disabled = busy; b.onclick = () => { const c = s.compositions.find(c => c.lineId === b.id.slice('retry-preparation-'.length)); if (c?.state === 'not_started' || (c?.state === 'failed' && c.retryable))
+        document.querySelectorAll('[id^="retry-preparation-"]').forEach(b => { b.disabled = busy; b.onclick = () => { const c = s.compositions.find(c => c.lineId === b.id.slice('retry-preparation-'.length)); if (c?.state === 'not_started' || (c?.state === 'failed' && c.retryable && c.failureCode !== 'age_restricted'))
             void serverAction(() => composePurchasedArtwork(true), 'compositions');
         else
             location.assign('/help'); }; });
