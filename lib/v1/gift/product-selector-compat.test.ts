@@ -22,9 +22,8 @@ describe('product families, orientations, sizes and finishes from the existing c
   })
   it('launch families, each once, with these orientation/size options (square and portrait only: there is no landscape launch SKU)', () => {
     const fam = by(launch, p => p.family)
-    expect(Object.keys(fam).sort()).toEqual(['canvas', 'fine_art', 'framed', 'framed_canvas', 'matted', 'premium'])
-    for (const f of ['matted', 'framed_canvas']) expect(fam[f].map(p => p.size), f).toEqual(['8x8', '12x12', '16x16', '20x20'])             // the priced squares; their rectangles wait for an approved price
-    for (const [f, ps] of Object.entries(fam).filter(([f]) => !['matted', 'framed_canvas'].includes(f))) {
+    expect(Object.keys(fam).sort()).toEqual(['canvas', 'fine_art', 'framed', 'premium'])
+    for (const [f, ps] of Object.entries(fam)) {
       const o = by(ps, p => orientationOf(p))
       expect(Object.keys(o).sort(), f).toEqual(['portrait', 'square'])
       expect(o.square.map(p => p.size), f).toEqual(['8x8', '12x12', '16x16', '20x20']); expect(o.portrait.map(p => p.size), f).toEqual(['8x12', '12x18', '16x24', '20x30'])

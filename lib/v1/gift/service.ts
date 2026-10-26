@@ -488,7 +488,7 @@ async function buildView(deps: GiftDeps, rec: SessionRec): Promise<SessionView> 
     order: orderView(rec, order),
     entrance: rec.collection_preview_id ? 'collection' : 'photo', collection: rec.collection_preview_id ? { previewId: rec.collection_preview_id, portfolioId: rec.unlock_portfolio_id } : null,
     artworkPreviewId: rec.artwork_preview_id,
-    compositions: await Promise.all((orderLines.length || !deps.draftCompositions ? orderLines : draftOrderLines(rec, catalog)).map(async l => {
+    compositions: await Promise.all((orderLines.length || !(deps.draftCompositions || rec.collection_preview_id) ? orderLines : draftOrderLines(rec, catalog)).map(async l => {
       const mine = comps.filter(c => c.line_id === l.line_id && c.preview_id === rec.artwork_preview_id && c.status !== 'superseded' && c.status !== 'failed').sort(byNewest)[0]
       const g = geometries.find(x => x.lineId === l.line_id)
       const gp = planned.find(x => x.l.lineId === l.line_id)

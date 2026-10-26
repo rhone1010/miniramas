@@ -56,7 +56,7 @@ async function world() {
 }
 type W = Awaited<ReturnType<typeof world>>
 
-async function rig(W: W, o: { art: Buffer; width: number; height: number; series?: 'portraits' | 'pets' | 'groups'; photo: boolean }) {
+async function rig(W: W, o: { art: Buffer; width: number; height: number; series?: 'portraits' | 'pets' | 'groups'; photo: boolean; globalFlagsOff?: boolean }) {
   const store = W.store.memoryGiftStore(), files = new Map<string, Buffer>()
   files.set('portraits/owned.png', o.art)                                                          // the owned original, as My Collection stores it: must survive everything below
   store.ownedArtwork.set(OWNED, { userId: U1, portfolioId: PORTFOLIO, series: o.series ?? 'portraits', preset: 'bronze', unlocked: true, done: true })
@@ -65,7 +65,7 @@ async function rig(W: W, o: { art: Buffer; width: number; height: number; series
   const analyze = vi.fn(async () => ({ status: 'supported', series: o.series ?? 'portraits', peopleCount: null }) as any)
   const kick = vi.fn(async () => ({}))
   const gift: import('./service').GiftDeps = {
-    store, draftCompositions: true, generate, analyze, kick, compose: W.compose.composeWithPrintShop,
+    store, draftCompositions: !o.globalFlagsOff, generate, analyze, kick, compose: W.compose.composeWithPrintShop,
     collection: { resolve: async (u, id) => { const a = store.ownedArtwork.get(id); if (!a || a.userId !== u) throw new Error('owned_artwork_required'); return { previewId: id, portfolioId: a.portfolioId, series: a.series as any, preset: a.preset, bytes: o.art, width: o.width, height: o.height, sourcePhoto: o.photo ? photo : null } } },
     storage: { put: async (p, b) => { files.set(p, b) }, get: async p => files.get(p) ?? null, remove: async ps => { for (const p of ps) files.delete(p) }, signedUrl: async p => (files.has(p) ? 'https://signed.test/' + p : null) },
     watermark: async b64 => sharp(Buffer.from(b64, 'base64')).jpeg().toBuffer(),
@@ -83,7 +83,7 @@ async function rig(W: W, o: { art: Buffer; width: number; height: number; series
     async updateUnpaid() { return true },
   }
   const quote = vi.fn(async (_r: any) => ({ outcome: 'Ok', quotes: [{ costSummary: { shipping: { amount: '6.85', currency: 'USD' } } }] }) as any)
-  const orderDeps = { gift, store, stripe, printOrders, quote, canFulfil: vi.fn(async () => true), publishableKey: 'pk_test_x', requireReviewedCompositions: true } as any
+  const orderDeps = { gift, store, stripe, printOrders, quote, canFulfil: vi.fn(async () => true), publishableKey: 'pk_test_x', requireReviewedCompositions: !o.globalFlagsOff } as any
   const pay = (id: string) => { const s = sessions.get(id); s.payment_status = 'paid'; s.status = 'complete'; s.payment_intent = 'pi_test_1' }
   const ownedSnapshot = () => JSON.stringify([[...store.ownedArtwork.entries()], sha(files.get('portraits/owned.png')!)])
   return { gift, store, files, generate, analyze, kick, stripe, orderDeps, quote, pay, ownedSnapshot }
@@ -262,6 +262,51 @@ describe('a square owned artwork whose photograph still exists: a rectangle and 
     expect(R.ownedSnapshot()).toBe(before)                                                                 // the adaptation is a separate file; the original is the favorite it was made from
     expect((await read(await W.handlers.getSessionH({ id: U1 }, R.gift, sid))).body.entitlement).toMatchObject({ freeBatchesUsed: 0, paidPacksAvailable: 0 })
   }, 240_000)
+})
+
+describe('Collection sessions: review before payment is mandatory, and the frame finish is part of the approval', () => {
+  const user = { id: U1 }
+  const lines = (c1: string) => [{ lineId: 'f', productId: 'framed:8x8', copies: 1, frameColor: c1 }, { lineId: 'm', productId: 'matted:8x8', copies: 1, frameColor: 'natural' }, { lineId: 'p', productId: 'fine_art:8x8', copies: 1 }]
+  const checkout = (W: W, R: R, sid: string) => W.handlers.checkoutH(req({ email: 'ada@example.test', shippingAddress: ADDRESS, disclosureAccepted: true, disclosureVersion: W.orders.DISCLOSURE.version, returnPath: '/gift-wizard' }), user, R.orderDeps, sid).then(read)
+  it('with every global flag OFF, a Collection session still composes before payment and checkout still refuses unapproved lines', async () => {
+    const W = await world(), art = await artwork(1024, 1024), R = await rig(W, { art, width: 1024, height: 1024, photo: false, globalFlagsOff: true })
+    expect(R.gift.draftCompositions).toBe(false); expect(R.orderDeps.requireReviewedCompositions).toBe(false)
+    const sid = (await read(await W.handlers.createCollectionSessionH(req({ previewId: OWNED }), user, R.gift))).body.sessionId
+    await W.handlers.setLinesH(req({ lines: lines('white') }), user, R.gift, sid)
+    expect(await checkout(W, R, sid)).toMatchObject({ status: 409, body: { error: 'compositions_not_approved' } }); expect(R.stripe.checkout.sessions.create).not.toHaveBeenCalled()
+    const comps = await read(await W.handlers.compositionsH(user, R.gift, sid)); expect(comps.status).toBe(200)
+    expect((await checkout(W, R, sid)).body.error).toBe('compositions_not_approved')               // composed, not yet approved
+    for (const c of comps.body.compositions) await W.handlers.approveCompositionH(user, R.gift, sid, c.compositionId)
+    expect((await checkout(W, R, sid)).status).toBe(200)
+  })
+  it('a legacy photo session is unchanged by the Collection rule: with the flags off it still composes only after payment', async () => {
+    const W = await world(), art = await artwork(600, 600), R = await rig(W, { art, width: 600, height: 600, photo: true, globalFlagsOff: true })
+    const v = await W.service.createSession(R.gift, { userId: U1, imageB64: art.toString('base64') })
+    await expect(W.compose.ensureCompositions(R.gift, U1, v.sessionId)).rejects.toMatchObject({ code: 'order_payment_required' })
+  })
+  it('the selected finish is recorded with the composition, shown in the preview, checked at checkout, and changing it voids the approval', async () => {
+    const W = await world(), art = await artwork(1024, 1024), R = await rig(W, { art, width: 1024, height: 1024, photo: false })
+    const sid = (await read(await W.handlers.createCollectionSessionH(req({ previewId: OWNED }), user, R.gift))).body.sessionId
+    await W.handlers.setLinesH(req({ lines: lines('white') }), user, R.gift, sid)
+    const prev = (id: string) => W.handlers.productPreviewH(new Request('https://x.test/api?productId=' + id), user, R.gift, sid).then(read)
+    expect((await prev('framed:8x8')).body.frameColor).toBe('white'); expect((await prev('matted:8x8')).body.frameColor).toBe('natural'); expect((await prev('fine_art:8x8')).body.frameColor).toBeNull()
+    const comps = await read(await W.handlers.compositionsH(user, R.gift, sid))
+    const colors = () => Object.fromEntries(R.store.compositions.filter((c: any) => c.status !== 'superseded').map((c: any) => [c.line_id, c.plan.frameColor ?? null]))
+    expect(colors()).toEqual({ f: 'white', m: 'natural', p: null })
+    for (const c of comps.body.compositions) await W.handlers.approveCompositionH(user, R.gift, sid, c.compositionId)
+    // the finish changes AFTER approval: that line's approval is void and checkout refuses until it is composed and approved again; the others keep theirs
+    const changed = await read(await W.handlers.setLinesH(req({ lines: lines('gold') }), user, R.gift, sid)); expect(changed.status).toBe(200)
+    expect(R.store.compositions.filter((c: any) => c.line_id === 'f').map((c: any) => c.status)).toEqual(['superseded']); expect(R.store.compositions.filter((c: any) => c.line_id !== 'f').every((c: any) => c.status === 'approved')).toBe(true)
+    expect((await prev('framed:8x8')).body.frameColor).toBe('gold')
+    expect(await checkout(W, R, sid)).toMatchObject({ status: 409, body: { error: 'compositions_not_approved' } })
+    const again = await read(await W.handlers.compositionsH(user, R.gift, sid)); expect(colors().f).toBe('gold')
+    const fresh = again.body.compositions.find((c: any) => c.lineId === 'f'); expect(fresh.state).toBe('ready'); await W.handlers.approveCompositionH(user, R.gift, sid, fresh.compositionId)
+    const ok = await checkout(W, R, sid); expect(ok.status).toBe(200)
+    const order = [...R.store.orders.values()][0]; expect((order.items[0].frozen as any).composition.frameColor).toBe('gold'); expect((order.items[0].frozen as any).product.attributes.color).toBe('gold')
+    // and a composition approved for one finish never sells another, even if the line is forced back to it
+    const comp = R.store.compositions.find((c: any) => c.line_id === 'f' && c.status === 'approved')!; (comp.plan as any).frameColor = 'white'
+    R.store.orders.clear(); expect(await checkout(W, R, sid)).toMatchObject({ status: 409, body: { error: 'compositions_not_approved' } })
+  }, 120_000)
 })
 
 // OPT-IN, and the only test here that talks to anything outside the process: PRINT_SHOP_LIVE_STRIPE_TEST=1 with a Stripe TEST key (sk_test_...) creates ONE embedded Checkout Session in Stripe's

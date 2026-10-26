@@ -24,8 +24,8 @@ export async function scopeOf(deps: GiftDeps, rec: SessionRec): Promise<Scope> {
   const order = rec.order_id ? await deps.store.getOrder(rec.order_id) : null
   if (!order || order.status === 'created') {
     // The approved journey composes AFTER the Stripe test checkout. Composing before payment (a draft) exists but is OFF unless deps.draftCompositions is set,
-    // so an unpaid customer can neither spend generation nor see a composition: the original rules apply.
-    if (!deps.draftCompositions) throw new GiftError(order ? 'order_not_paid' : 'order_payment_required')
+    // so an unpaid customer can neither spend generation nor see a composition: the original rules apply. A Collection (owned artwork) session is always reviewed before payment, whatever the flag.
+    if (!deps.draftCompositions && !rec.collection_preview_id) throw new GiftError(order ? 'order_not_paid' : 'order_payment_required')
     const catalog = allProducts()
     return { phase: 'draft', order, lines: draftOrderLines(rec, catalog).map(line => ({ line, product: catalog.find(p => p.productId === line.product_id)!, source: 'catalog' as const, catalogVersion: null })) }
   }

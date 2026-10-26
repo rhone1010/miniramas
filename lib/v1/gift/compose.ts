@@ -22,6 +22,7 @@ import { requireOpen, scopeOf } from './scope'
 import { removeMockupFile } from './mockup'
 import { correctionPlanFor, groupLines, planContextFor, planFor, type CompositionPlan, type PlanContext } from './composition-plan'
 import { supportsFavoriteReference } from './aspects'
+import { frameColorsFor, lineFrameColor } from './frame-colors'
 import { COMPOSITION_LEASE_MS, COMPOSITION_MAX_ATTEMPTS, estimateCompositionCost } from './policy'
 import { GiftError, fromStoreError, getSessionView, owned, type GiftDeps } from './service'
 import { StoreError, byNewest, correctionUsed, finalizedAt, type CompositionJobKey, type CompositionRec, type OrderLineRec, type PreviewRec, type SessionRec } from './store'
@@ -125,6 +126,14 @@ async function composeGroup(deps: GiftDeps, rec: SessionRec, preview: PreviewRec
   return { image: `${base}.png`, preview: `${base}.jpg`, width: made.width, height: made.height, fit: made.fit, outpainted: made.outpainted, generationMode, nb21Calls: generationMode === 'none' ? 0 : 1, sha256: createHash('sha256').update(made.image).digest('hex') }
 }
 
+/** The finish the customer selected for a frame line, recorded WITH its composition so the approval is for that finish (checkout and the print source compare it). Nothing for products with no finish. */
+const finishOf = (rec: SessionRec, product: CanonicalProduct, lineId: string): { frameColor?: string } => {
+  if (!frameColorsFor(product)) return {}
+  const line = rec.lines.find(l => l.lineId === lineId)
+  const color = line ? lineFrameColor(product, line) : null
+  return color ? { frameColor: color } : {}
+}
+
 /** `paid` is true only for the row that CREATED the files: rows that reuse a shared composition cost nothing of their own. */
 const recordFor = (rec: SessionRec, preview: PreviewRec, line: LineInfo, attempt: 1 | 2, plan: CompositionPlan, f: GroupFiles, sourceId: string | null, paid: boolean, extra?: Record<string, unknown>) => {
   const nb21 = paid ? f.nb21Calls : 0, outpaint = paid && f.outpainted ? 1 : 0
@@ -181,7 +190,7 @@ export async function ensureCompositions(deps: GiftDeps, userId: string, session
       try {
         // A superseded first attempt for this line and artwork may exist (the favorite was switched away and back, or the product changed): the new row takes the next repair_seq.
         const priorSeq = comps.filter(c => c.line_id === it.line.line_id && c.preview_id === preview.id && c.attempt === 1).map(c => c.repair_seq ?? 0)
-        const row = await deps.store.insertComposition({ ...recordFor(rec, preview, it.line, 1, g.plan, files, creatorId, creatorId === null, { sku: it.product.sku }), ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}) })
+        const row = await deps.store.insertComposition({ ...recordFor(rec, preview, it.line, 1, g.plan, files, creatorId, creatorId === null, { sku: it.product.sku, ...finishOf(rec, it.product, it.line.line_id) }), ...(priorSeq.length ? { repair_seq: Math.max(...priorSeq) + 1 } : {}) })
         creatorId ??= row.id
       } catch { /* a concurrent call already recorded this line: the unique key makes the repeat harmless */ }
     }
@@ -221,7 +230,7 @@ export async function correctLine(deps: GiftDeps, userId: string, sessionId: str
   const fallback = basePlan.method === 'deterministic' && plan.method === 'generated'
   let files: GroupFiles
   try { files = await composeGroup(deps, rec, preview, product, plan, master, `${lineId}-2`) } catch (e) { if (e instanceof GiftError) throw e; throw new GiftError('composition_failed') }
-  try { await deps.store.insertComposition(recordFor(rec, preview, line, 2, plan, files, null, true, { sku: product.sku, ...(fallback ? { correctionFallbackFrom: 'deterministic' } : {}) })) } catch (e) { fromStoreError(e); throw new GiftError('composition_failed') }
+  try { await deps.store.insertComposition(recordFor(rec, preview, line, 2, plan, files, null, true, { sku: product.sku, ...finishOf(rec, product, lineId), ...(fallback ? { correctionFallbackFrom: 'deterministic' } : {}) })) } catch (e) { fromStoreError(e); throw new GiftError('composition_failed') }
   if (scope.phase === 'purchased') { try { await deps.store.useCorrection(rec.id, userId, lineId) } catch (e) { fromStoreError(e) } }        // a draft has no order line; its attempt-2 row is the record
   await deps.store.patchComposition(current.id, { status: 'superseded' })
   await removeMockupFile(deps, current)                          // the superseded composition's mockup is stale: its file goes, a new identity renders the new one

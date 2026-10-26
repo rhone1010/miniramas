@@ -31,12 +31,13 @@ describe('native print composition and external MirrorWrap',()=>{
   })
   it('checks original resolution on both axes and skips unnecessary upscale',()=>{const e=getLaunchSku('8x12','canvas');expect(printPlan(2400,3600,e).upscale).toBe(false);expect(printPlan(1200,1800,e).upscale).toBe(true);expect(printPlan(3600,2400,e).upscale).toBe(false)})
   it('rejects incompatible ratios and upscale distortion',async()=>{expect(artworkFormat(2048,900)).toBeNull();expect(()=>printPlan(1024,1024,getLaunchSku('8x12','fine_art'))).toThrow();const src=await sharp({create:{width:25,height:36,channels:3,background:'red'}}).png().toBuffer();await expect(finishPrintPixels(src,printPlan(2400,3600,getLaunchSku('8x12','fine_art')))).rejects.toThrow('upscale_changed_aspect')})
-  it('serves every SELLABLE size of every family from the canonical catalog (eight families; a size without an approved price is not served); preserves hidden data',()=>{
+  it('serves every SELLABLE size of every family from the canonical catalog (a square piece fits seven of the eight: the card is 5:7); preserves hidden data',()=>{
     // 2026-10-22: the legacy {size, finish} Print Shop reads the one canonical catalog. The four original families and the SQUARE matted frames and framed canvases are priced; the matted/framed-canvas rectangles, the mug and the card are not yet.
-    const square=catalogFor(1024,1024);expect(square.map(f=>f.id)).toEqual(['fine_art','premium','canvas','framed','matted','framed_canvas'])
+    const square=catalogFor(1024,1024);expect(square.map(f=>f.id)).toEqual(['fine_art','premium','canvas','framed','matted','framed_canvas','mug'])
     for(const f of square.filter(f=>['fine_art','premium','canvas','framed'].includes(f.id)))expect(f.sizes.length).toBe(8)
-    for(const f of square.filter(f=>['matted','framed_canvas'].includes(f.id)))expect(f.sizes.map(s=>s.size)).toEqual(['8x8','12x12','16x16','20x20'])
-    for(const [w,h]of [[1024,1536],[1536,1024]]){const families=catalogFor(w,h);expect(families.map(f=>f!.id)).toEqual(['fine_art','premium','canvas','framed']);expect(families.every(f=>f!.sizes.length===8&&f!.sizes.filter(s=>s.compatibility!=='unavailable').length===4)).toBe(true)}
+    for(const f of square.filter(f=>['matted','framed_canvas'].includes(f.id)))expect(f.sizes.filter(s=>s.compatibility!=='unavailable').map(s=>s.size)).toEqual(['8x8','12x12','16x16','20x20'])
+    for(const [w,h]of [[1024,1536],[1536,1024]]){const families=catalogFor(w,h);expect(families.map(f=>f!.id)).toEqual(['fine_art','premium','canvas','framed','matted','framed_canvas',...(h>w?['card']:[])]);        // the card is never turned, so a wide piece is not offered it
+expect(families.filter(f=>['fine_art','premium','canvas','framed'].includes(f.id)).every(f=>f!.sizes.length===8&&f!.sizes.filter(s=>s.compatibility!=='unavailable').length===4)).toBe(true)}
     expect(getLaunchSku('20x30','canvas').retailCents).toBe(13900);expect(()=>getLaunchSku('8x8','matted')).toThrow();expect(SKU_MAP.matted['8x8']).toBeTruthy();expect(SKU_MAP.framed_canvas['8x8']).toBeTruthy()})
 })
 

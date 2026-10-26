@@ -127,13 +127,14 @@ export async function createGiftCheckout(
   // Reviewed compositions: the exact approved composition of each line is what the customer pays for. A line whose composition is missing, not approved (a repair
   // makes the replacement 'ready' until re-approved), of another artwork, or the wrong shape or SKU for the product being frozen, stops checkout before any quote or Stripe session.
   const pins = new Map<string, CompositionPin>()
-  if (deps.requireReviewedCompositions || rec.flow === 'generations') {           // the product-first journey always sells exactly the pictures the customer accepted
+  if (deps.requireReviewedCompositions || rec.flow === 'generations' || rec.collection_preview_id) {           // the product-first journey always sells exactly the pictures the customer accepted
     const comps = await deps.gift.store.listCompositions(rec.id)
     for (const x of lines) {
       const c = comps.filter(k => k.line_id === x.line.lineId && k.preview_id === rec.artwork_preview_id && k.status === 'approved').sort(byNewest)[0]
       if (!c || !compositionFitsProduct(c, x.product)) throw new GiftError('compositions_not_approved')
       const cf = (c.plan as { frameColor?: string }).frameColor          // the approval was for ONE finish: a composition approved for another colour does not sell this line
       if (cf !== undefined && cf !== (x.color ?? undefined)) throw new GiftError('compositions_not_approved')
+      if (rec.collection_preview_id && x.color && cf !== x.color) throw new GiftError('compositions_not_approved')          // a Collection frame line is sold only with a composition approved FOR its finish
       if (rec.flow === 'generations') {
         if (!c.generation_id) throw new GiftError('compositions_not_approved')
         const g = await deps.gift.store.getGeneration(rec.id, c.generation_id).catch(() => null)

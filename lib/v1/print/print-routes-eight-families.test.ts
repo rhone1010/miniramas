@@ -36,22 +36,22 @@ const CHECKOUT = (items: any[]) => ({ items, email: 'ada@example.test', shipping
 beforeEach(() => { h.create.mockClear(); h.quote.mockClear(); h.orders.length = 0; h.piece = { width: 1024, height: 1024, art: 'https://signed.test/owned.png' } })
 
 describe('/api/v1/print/source offers every sellable size of every family for the owned artwork', () => {
-  it('a square piece: six families (the mug and the card have no approved price yet), the squares of matted frame and framed canvas, prices from the catalog', async () => {
+  it('a square piece: seven of the eight families (the card is 5:7), prices from the catalog', async () => {
     const W = await world(false), res = await W.source.GET(new Request('https://x.test/api/v1/print/source?piece=00000000-0000-4000-8000-000000000000'))
     const body = await res.json(); expect(res.status).toBe(200)
-    expect(body.catalog.map((f: any) => f.id)).toEqual(['fine_art', 'premium', 'canvas', 'framed', 'matted', 'framed_canvas'])
-    const matted = body.catalog.find((f: any) => f.id === 'matted'); expect(matted.sizes.map((s: any) => [s.size, s.cents, s.compatibility])).toEqual([['8x8', 9400, 'recommended'], ['12x12', 10900, 'recommended'], ['16x16', 12900, 'recommended'], ['20x20', 14900, 'recommended']])
+    expect(body.catalog.map((f: any) => f.id)).toEqual(['fine_art', 'premium', 'canvas', 'framed', 'matted', 'framed_canvas', 'mug'])
+    const matted = body.catalog.find((f: any) => f.id === 'matted'); expect(matted.sizes.filter((s: any) => s.compatibility !== 'unavailable').map((s: any) => [s.size, s.cents, s.compatibility])).toEqual([['8x8', 9400, 'recommended'], ['12x12', 10900, 'recommended'], ['16x16', 12900, 'recommended'], ['20x20', 14900, 'recommended']])
   })
   it('with approved prices a square piece also offers the mug (the panel is square) and not the card; a 2:3 piece offers the card and the rectangles and not the mug', async () => {
     const W = await world(true)
     let body = await (await W.source.GET(new Request('https://x.test/api/v1/print/source?piece=00000000-0000-4000-8000-000000000000'))).json()
     expect(body.catalog.map((f: any) => f.id)).toEqual(['fine_art', 'premium', 'canvas', 'framed', 'matted', 'framed_canvas', 'mug'])
-    expect(body.catalog.find((f: any) => f.id === 'mug').sizes).toEqual([{ size: '11oz', finish: 'mug', cents: 1900, label: '11 oz White Mug', compatibility: 'recommended' }])
+    expect(body.catalog.find((f: any) => f.id === 'mug').sizes).toEqual([{ size: '11oz', finish: 'mug', cents: 1999, label: '11 oz White Mug', compatibility: 'recommended' }])
     h.piece = { width: 1024, height: 1536, art: 'https://signed.test/owned.png' }
     body = await (await W.source.GET(new Request('https://x.test/api/v1/print/source?piece=00000000-0000-4000-8000-000000000000'))).json()
     expect(body.catalog.map((f: any) => f.id)).toEqual(['fine_art', 'premium', 'canvas', 'framed', 'matted', 'framed_canvas', 'card'])
-    expect(body.catalog.find((f: any) => f.id === 'card').sizes[0]).toMatchObject({ size: '7x5', cents: 700, compatibility: 'extension' })
-    expect(body.catalog.find((f: any) => f.id === 'framed_canvas').sizes.map((s: any) => s.size)).toEqual(['8x8', '12x12', '16x16', '20x20', '12x18', '16x24', '20x30'])      // 8x12 stays held (orientation_unverified)
+    expect(body.catalog.find((f: any) => f.id === 'card').sizes[0]).toMatchObject({ size: '7x5', cents: 799, compatibility: 'extension' })
+    expect(body.catalog.find((f: any) => f.id === 'framed_canvas').sizes.map((s: any) => s.size)).toEqual(expect.arrayContaining(['12x18', '16x24', '20x30']))      // 8x12 is the landscape 12 x 8, which a tall piece does not fit
   })
 })
 
@@ -67,9 +67,9 @@ describe('/api/v1/print/quote and /checkout sell all eight families', () => {
     const res = await post(W.checkout, CHECKOUT([{ renderId: 'r1', renderUrl: 'ignored', size: '11oz', finish: 'mug', copies: 2 }, { renderId: 'r1', renderUrl: 'ignored', size: '8x8', finish: 'framed_canvas', copies: 1 }]))
     expect(res.status, JSON.stringify(await res.clone().json())).toBe(200)
     const stripe = h.create.mock.calls[0][0]
-    expect(stripe.line_items.slice(0, 2).map((l: any) => [l.price_data.unit_amount, l.quantity])).toEqual([[1900, 2], [7900, 1]])
-    expect(h.orders[0].items.map((i: any) => [i.sku, i.finish, i.size, i.renderUrl, i.retailCents])).toEqual([['GLOBAL-MUG-W', 'mug', '11oz', 'https://signed.test/owned.png', 1900], ['GLOBAL-FRA-CAN-8X8', 'framed_canvas', '8x8', 'https://signed.test/owned.png', 7900]])      // the renderUrl is the OWNED artwork, never the client's
-    expect(h.orders[0].retailSubtotalCents).toBe(1900 * 2 + 7900)
+    expect(stripe.line_items.slice(0, 2).map((l: any) => [l.price_data.unit_amount, l.quantity])).toEqual([[1999, 2], [7900, 1]])
+    expect(h.orders[0].items.map((i: any) => [i.sku, i.finish, i.size, i.renderUrl, i.retailCents])).toEqual([['GLOBAL-MUG-W', 'mug', '11oz', 'https://signed.test/owned.png', 1999], ['GLOBAL-FRA-CAN-8X8', 'framed_canvas', '8x8', 'https://signed.test/owned.png', 7900]])      // the renderUrl is the OWNED artwork, never the client's
+    expect(h.orders[0].retailSubtotalCents).toBe(1999 * 2 + 7900)
   })
   it('refuses what the artwork cannot become, by the same rules the file is made with, and never crops: a square piece cannot be a card; a tall piece cannot be a mug', async () => {
     const W = await world(true)
@@ -79,12 +79,12 @@ describe('/api/v1/print/quote and /checkout sell all eight families', () => {
     res = await post(W.checkout, CHECKOUT([{ renderId: 'r1', renderUrl: 'x', size: '7x5', finish: 'card', copies: 1 }])); expect(res.status, JSON.stringify(await res.clone().json())).toBe(200)       // 2:3 into 5:7 is a bounded extension
     expect(h.create).toHaveBeenCalledTimes(1)
   })
-  it('with the real, unapproved prices the mug, the card and the unpriced rectangles are refused as unavailable; nothing reaches Stripe', async () => {
+  it('refuses what the catalog does not sell: an unknown finish, a variant that is not a launch candidate, a bad size; nothing reaches Stripe', async () => {
     const W = await world(false)
-    for (const [size, finish] of [['11oz', 'mug'], ['7x5', 'card'], ['12x18', 'matted'], ['12x18', 'framed_canvas'], ['8x12', 'framed_canvas']]) {
+    for (const [size, finish] of [['8x8', 'nope'], ['6x4', 'card'], ['11oz', 'matted'], ['7x5', 'mug']]) {
       const res = await post(W.checkout, CHECKOUT([{ renderId: 'r1', renderUrl: 'x', size, finish, copies: 1 }])); expect(res.status, finish + size).toBe(409); expect(await res.json()).toEqual({ error: 'print_product_unavailable' })
     }
-    expect((await post(W.quote, { items: [{ size: '11oz', finish: 'mug', copies: 1 }], destination: { countryCode: 'US' } })).status).toBe(400)
+    expect((await post(W.quote, { items: [{ size: '11oz', finish: 'matted', copies: 1 }], destination: { countryCode: 'US' } })).status).toBe(400)
     expect(h.create).not.toHaveBeenCalled()
   })
 })

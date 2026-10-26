@@ -121,8 +121,7 @@ describe('the four products are visible but cannot be bought until the owner ope
   })
   it('the Print Shop catalog serves the priced products of all families from the same table', async () => {
     const { printShopCatalog } = await import('../print/catalog')
-    expect(JSON.stringify(printShopCatalog(1200, 1200))).toContain('"matted"')
-    const text = JSON.stringify(printShopCatalog(1200, 1800))
-    for (const k of ['mug', 'card']) expect(text).not.toContain(`"${k}"`)        // no approved price yet
+    expect(printShopCatalog(1200, 1200).map(f => f.id)).toEqual(['fine_art', 'premium', 'canvas', 'framed', 'matted', 'framed_canvas', 'mug'])      // a square piece fits the mug's square panel, not the card
+    expect(printShopCatalog(1200, 1800).map(f => f.id)).toEqual(['fine_art', 'premium', 'canvas', 'framed', 'matted', 'framed_canvas', 'card'])
   })
 })

@@ -88,7 +88,7 @@ export async function getProductPreview(deps: GiftDeps, userId: string, sessionI
 
   const catalogProduct = allProducts().find(p => p.productId === productIdRaw && p.status === 'launch')
   // Frame colour: validated against the product's exact values (null = black for a frame product). The product below IS the one in that colour, so its attributes (and so the identity and every cache key) carry it.
-  const frameColor = catalogProduct ? resolveFrameColor(catalogProduct, opts.frameColor ?? undefined) : null
+  const frameColor = catalogProduct ? resolveFrameColor(catalogProduct, opts.frameColor ?? rec.lines.find(l => l.productId === catalogProduct.productId)?.frameColor ?? undefined) : null
   const product = catalogProduct ? withFrameColor(catalogProduct, frameColor) : undefined
   const legacyCalibrated = noScenePresentation() === 'calibrated'                       // legacy template renderer for products without a scene; off by default
   const templateId = product ? templateFor(product) : null                             // only the legacy renderer needs one: a missing template never makes a product unavailable
