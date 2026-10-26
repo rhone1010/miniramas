@@ -256,6 +256,15 @@ async function persistCart(lines:GiftLine[],acceptedLineId?:string){
  },'cart');
 }
 function bindCart(){
+ if(ownedStudio())document.querySelectorAll<HTMLElement>('.cart-thumbnail').forEach((thumbnail,index)=>{
+  const line=session.lines[index];if(!line||!thumbnail.querySelector('img'))return;
+  const {product:p,option:o}=giftOption(line,products);thumbnail.setAttribute('role','button');thumbnail.tabIndex=0;thumbnail.setAttribute('aria-label',p.label+' · '+o.label);
+  const open=()=>{editId=line.id;activeProduct=line.productId;size=line.size;copies=line.copies;studioState={...studioState,productId:line.productId,size:line.size,copies:line.copies};if(line.frameColor)frameDrafts[line.productId+':'+line.size]=line.frameColor;cartPreview=true;go('generation')};
+  thumbnail.onclick=open;thumbnail.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open()}};
+  if(!live!.session!.compositions.some(c=>c.lineId===line.id&&c.status==='approved')){
+   const review=document.createElement('button');review.type='button';review.textContent='Review & Approve';review.onclick=open;thumbnail.closest('.cart-line')?.querySelector('.cart-details .row')?.append(review);
+  }
+ });
  document.querySelectorAll<HTMLButtonElement>('[data-qty]').forEach(b=>b.onclick=()=>void persistCart(session.lines.map(l=>l.id===b.dataset.qty?{...l,copies:l.copies+Number(b.dataset.delta)}:l)));
  document.querySelectorAll<HTMLButtonElement>('[data-edit]').forEach(b=>b.onclick=()=>{const l=session.lines.find(l=>l.id===b.dataset.edit)!;activeProduct=l.productId;size=l.size;copies=l.copies;editId=l.id;if(l.frameColor)frameDrafts[l.productId+':'+l.size]=l.frameColor;if(pivotMode){studioState={...studioState,step:'size',productId:l.productId,size:l.size,copies:l.copies};go('products')}else go('configuration')});
  document.querySelectorAll<HTMLButtonElement>('[data-remove]').forEach(b=>b.onclick=()=>{if(!confirm('Remove this gift from your order?'))return;void persistCart(session.lines.filter(l=>l.id!==b.dataset.remove))});
@@ -413,6 +422,7 @@ function ownedCompositionPicture(l:GiftLine){
  return serverMockup(l);
 }
 function ownedProductLine(){return session.lines.find(l=>l.id===editId)||session.lines.find(l=>l.productId===studioState.productId&&l.size===studioState.size)}
+let cartPreview=false;
 async function prepareOwnedProduct(){
  const {p,o}=selectedProduct();if(!live||busy||!p||!o)return;
  const old=editId?session.lines.find(l=>l.id===editId):undefined,id=old?.id||crypto.randomUUID();
@@ -435,8 +445,9 @@ function renderOwnedProductReview(approval:boolean){
  if(approval)primary('Accept Composition',()=>void serverAction(()=>live!.api.approveComposition(live!.id,c!.compositionId!),'cart'),!ready);
  else primary('Review &amp; Approve',()=>go('acceptance'),!ready);
  $('right').insertAdjacentHTML('beforeend',secondary('owned-change-product','Choose a Product'));
- $('owned-change-product').onclick=()=>{editId=null;studioState.step='product';go('products')};
- $('back').onclick=()=>{if(approval)go('generation');else{studioState.step='review';go('products')}};
+ $('owned-change-product').onclick=()=>{cartPreview=false;editId=null;studioState.step='product';go('products')};
+ if(cartPreview)$('back').hidden=false;
+ $('back').onclick=()=>{if(approval)go('generation');else if(cartPreview){cartPreview=false;go('cart')}else{studioState.step='review';go('products')}};
 }
 function renderProductGeneration(){
  if(ownedStudio()){renderOwnedProductReview(false);return}
@@ -897,8 +908,7 @@ async function start(){try{
 let batchIntent:{idempotencyKey:string;effectIds:string[]}|null=null;
 async function syncCatalog(){
  const api=live?.api||new GiftBackend((url,init)=>fetch(url,init));
- const catalog=await api.catalog();
- const availability=live?await api.availability(live.id):null;
+ const [catalog,availability]=await Promise.all([api.catalog(),live?api.availability(live.id):Promise.resolve(null)]);
  productAvailability.clear();for(const p of availability?.products||[])productAvailability.set(p.productId,p);
  unavailableCatalogOptions.clear();
  for(const p of catalog.products.filter(p=>p.status!=='launch'||p.retailCents===null)){const list=unavailableCatalogOptions.get(p.family)||[];list.push({label:p.label,reason:(p.disabledReason||'retail_price_pending').replace(/_/g,' ')});unavailableCatalogOptions.set(p.family,list)}

@@ -776,6 +776,14 @@ test('owned artwork composes through existing handlers and explicitly approves b
    const requestsBeforeReview=calls.length;win.document.getElementById('primary').click();assert.equal(s.compositions[0].status,'ready');assert.equal(win.document.getElementById('screen').dataset.view,'acceptance');assert.equal(calls.length,requestsBeforeReview);
    win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,50));
    assert.equal(s.compositions[0].status,'approved');assert.equal(win.document.getElementById('screen').dataset.view,'cart');
+   const beforeInspection=JSON.stringify(s.lines),beforeInspectionWrites=writes.length;
+   win.document.querySelector('.cart-thumbnail[role="button"]').click();
+   assert.equal(win.document.getElementById('screen').dataset.view,'generation');
+   assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/owned-product.png');
+   assert.equal(win.document.getElementById('back').hidden,false);
+   win.document.getElementById('back').click();
+   assert.equal(win.document.getElementById('screen').dataset.view,'cart');
+   assert.equal(JSON.stringify(s.lines),beforeInspection);assert.equal(writes.length,beforeInspectionWrites);
    assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();
    assert.equal(win.document.getElementById('screen').dataset.view,'checkout');
    assert.equal(calls.some(x=>/\/(generations|batches)$/.test(x)),false);

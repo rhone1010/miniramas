@@ -614,6 +614,30 @@ async function persistCart(lines, acceptedLineId) {
     }, 'cart');
 }
 function bindCart() {
+    if (ownedStudio())
+        document.querySelectorAll('.cart-thumbnail').forEach((thumbnail, index) => {
+            const line = session.lines[index];
+            if (!line || !thumbnail.querySelector('img'))
+                return;
+            const { product: p, option: o } = giftOption(line, products);
+            thumbnail.setAttribute('role', 'button');
+            thumbnail.tabIndex = 0;
+            thumbnail.setAttribute('aria-label', p.label + ' · ' + o.label);
+            const open = () => { editId = line.id; activeProduct = line.productId; size = line.size; copies = line.copies; studioState = { ...studioState, productId: line.productId, size: line.size, copies: line.copies }; if (line.frameColor)
+                frameDrafts[line.productId + ':' + line.size] = line.frameColor; cartPreview = true; go('generation'); };
+            thumbnail.onclick = open;
+            thumbnail.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                open();
+            } };
+            if (!live.session.compositions.some(c => c.lineId === line.id && c.status === 'approved')) {
+                const review = document.createElement('button');
+                review.type = 'button';
+                review.textContent = 'Review & Approve';
+                review.onclick = open;
+                thumbnail.closest('.cart-line')?.querySelector('.cart-details .row')?.append(review);
+            }
+        });
     document.querySelectorAll('[data-qty]').forEach(b => b.onclick = () => void persistCart(session.lines.map(l => l.id === b.dataset.qty ? { ...l, copies: l.copies + Number(b.dataset.delta) } : l)));
     document.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const l = session.lines.find(l => l.id === b.dataset.edit); activeProduct = l.productId; size = l.size; copies = l.copies; editId = l.id; if (l.frameColor)
         frameDrafts[l.productId + ':' + l.size] = l.frameColor; if (pivotMode) {
@@ -1023,6 +1047,7 @@ function ownedCompositionPicture(l) {
     return serverMockup(l);
 }
 function ownedProductLine() { return session.lines.find(l => l.id === editId) || session.lines.find(l => l.productId === studioState.productId && l.size === studioState.size); }
+let cartPreview = false;
 async function prepareOwnedProduct() {
     const { p, o } = selectedProduct();
     if (!live || busy || !p || !o)
@@ -1058,9 +1083,15 @@ function renderOwnedProductReview(approval) {
     else
         primary('Review &amp; Approve', () => go('acceptance'), !ready);
     $('right').insertAdjacentHTML('beforeend', secondary('owned-change-product', 'Choose a Product'));
-    $('owned-change-product').onclick = () => { editId = null; studioState.step = 'product'; go('products'); };
+    $('owned-change-product').onclick = () => { cartPreview = false; editId = null; studioState.step = 'product'; go('products'); };
+    if (cartPreview)
+        $('back').hidden = false;
     $('back').onclick = () => { if (approval)
         go('generation');
+    else if (cartPreview) {
+        cartPreview = false;
+        go('cart');
+    }
     else {
         studioState.step = 'review';
         go('products');
@@ -2109,8 +2140,7 @@ async function start() {
 let batchIntent = null;
 async function syncCatalog() {
     const api = live?.api || new GiftBackend((url, init) => fetch(url, init));
-    const catalog = await api.catalog();
-    const availability = live ? await api.availability(live.id) : null;
+    const [catalog, availability] = await Promise.all([api.catalog(), live ? api.availability(live.id) : Promise.resolve(null)]);
     productAvailability.clear();
     for (const p of availability?.products || [])
         productAvailability.set(p.productId, p);
