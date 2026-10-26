@@ -748,3 +748,28 @@ test('live Matted 8x12 excludes both grey finishes and defaults safely on size c
  const {win,dom}=await boot('sessionId=project',s);
  try{win.document.querySelector('[data-feature="matted"]').click();assert.equal(win.document.querySelectorAll('[data-configuration]').length,8);win.document.querySelector('[data-configuration="dark grey"]').click();win.document.querySelector('[data-aspect="Portrait"]').click();assert.equal(win.document.querySelectorAll('[data-configuration]').length,6);assert.equal(win.document.querySelector('[data-configuration="dark grey"]'),null);assert.equal(win.document.querySelector('[data-configuration="light grey"]'),null);assert.equal(win.document.querySelector('[data-configuration="black"]').getAttribute('aria-pressed'),'true');await new Promise(r=>setTimeout(r,20));}finally{dom.window.close()}
 });
+
+test('owned artwork review uses shared products without generation or acceptance writes',async()=>{
+ for(const mobile of ['', '&mobile=1']){
+  const s:any=shoppingProject();s.entrance='collection';s.collection={previewId:'owned',portfolioId:'portfolio'};
+  const writes:string[]=[];s.route=(url:string,init:any)=>{if(init.method&&init.method!=='GET')writes.push(url)};
+  const {win,dom,calls}=await boot('sessionId=project&ownedArtworkReview=1'+mobile,s);
+  try{
+   assert.equal(win.document.querySelectorAll('[data-feature]').length,8);
+   assert.equal(win.document.querySelector('.progress').textContent.includes('Effect'),false);
+   win.document.querySelector('[data-feature="fine_art"]').click();
+   win.document.querySelector('[data-size]').click();
+   win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,40));
+   assert.equal(win.document.getElementById('screen').dataset.view,'generation');
+   assert.equal(win.document.querySelector('#screen img').src,'https://liten.invalid/product.jpg');
+   assert.equal(win.document.getElementById('primary').disabled,false);
+   win.document.getElementById('primary').click();
+   assert.equal(win.document.getElementById('screen').dataset.view,'acceptance');
+   assert.equal(win.document.getElementById('primary').disabled,true);
+   win.navigate('checkout');assert.equal(win.document.getElementById('primary').disabled,true);
+   assert.equal(win.document.getElementById('disclosure'),null);
+   assert.deepEqual(writes,[]);
+   assert.equal(calls.some(x=>/\/(generations|batches|approve|checkout)$/.test(x)),false);
+  }finally{dom.window.close()}
+ }
+});
