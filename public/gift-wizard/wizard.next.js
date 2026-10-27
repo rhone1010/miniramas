@@ -622,6 +622,13 @@ async function persistCart(lines, acceptedLineId) {
     }, 'cart');
 }
 function bindCart() {
+    document.querySelectorAll('[id="refresh-mockups"]').forEach(b => b.onclick = async () => { if (busy)
+        return; b.disabled = true; try {
+        await loadMockups();
+    }
+    finally {
+        render();
+    } });
     if (ownedStudio())
         document.querySelectorAll('.cart-thumbnail').forEach((thumbnail, index) => {
             const line = session.lines[index];
@@ -1062,7 +1069,14 @@ async function prepareOwnedProduct() {
     const { p, o } = selectedProduct();
     if (!live || busy || !p || !o)
         return;
-    const old = editId ? session.lines.find(l => l.id === editId) : undefined, id = old?.id || crypto.randomUUID();
+    const finish = selectedFinish(p, o);
+    const old = editId ? session.lines.find(l => l.id === editId) : session.lines.find(l => l.productId === p.id && l.size === o.size && (l.frameColor || '') === (finish || '')), id = old?.id || crypto.randomUUID();
+    const existing = live.session?.compositions.find(c => c.lineId === id);
+    if (old && old.productId === p.id && old.size === o.size && old.copies === studioState.copies && (old.frameColor || '') === (finish || '') && existing?.compositionId && ['ready', 'approved'].includes(existing.status)) {
+        editId = id;
+        go('generation');
+        return;
+    }
     view = 'generation';
     await serverAction(async () => {
         const lines = live.session.lines.filter(l => l.lineId !== id).map(l => ({ lineId: l.lineId, productId: l.productId, copies: l.copies, ...(l.frameColor ? { frameColor: l.frameColor } : {}) }));
@@ -1084,7 +1098,7 @@ function renderOwnedProductReview(approval) {
     }
     const line = ownedProductLine(), c = live?.session?.compositions.find(c => c.lineId === line?.id), m = line ? live?.mockups.get(line.id) : null;
     pivotRail(approval ? 'Approve<br>Composition' : 'Personalized<br>Review');
-    $('screen').innerHTML = busy ? '<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><p>Preparing product preview…</p></section>' : line ? ownedCompositionPicture(line) : configurationPreview(p, o, true);
+    $('screen').innerHTML = busy && !approval ? '<section class="craft-progress" role="status"><div class="craft-gears" aria-hidden="true">⚙<span>⚙</span></div><p>Preparing product preview…</p></section>' : line ? ownedCompositionPicture(line) : configurationPreview(p, o, true);
     $('screen').setAttribute('aria-busy', String(busy));
     $('right').innerHTML = '<h2>' + esc(p.label) + '</h2><p>' + esc(o.label) + ' · ' + money(o.retailCents) + '</p><p>' + esc(Object.entries({ ...o.attributes, ...(selectedFinish(p, o) ? { color: selectedFinish(p, o) } : {}) }).map(([k, v]) => k + ': ' + v).join(' · ')) + '</p>';
     const ready = !busy && !$('screen').querySelector('.craft-progress') && !!c?.compositionId && ['ready', 'approved'].includes(c.status) && !!m && Date.parse(m.urlExpiresAt) > Date.now();
@@ -1311,7 +1325,11 @@ function renderPivotProducts() {
             $('mobile-progress')?.remove();
             renderMobileProgress();
         } },
-        onExit: () => ownedStudio() ? location.assign('/collection?from=' + live.session.source.series) : go('effects'), utilityHtml: '' });
+        onExit: () => ownedStudio() ? location.assign('/collection?from=' + live.session.source.series) : go('effects'), utilityHtml: ownedStudio() && session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '' });
+    const panel = document.querySelector('.studio-panel');
+    if (panel)
+        panel.addEventListener('click', event => { if (event.target.closest('#view-cart') && !busy)
+            go('cart'); });
     document.body.dataset.pivotStep = studioState.step;
 }
 function renderEffects() {

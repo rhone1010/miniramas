@@ -779,7 +779,7 @@ test('owned artwork composes through existing handlers and explicitly approves b
    win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,70));
    assert.equal(s.lines.length,1);assert.equal(s.lines[0].lineId,draftLineId);
    const requestsBeforeReview=calls.length;win.document.getElementById('primary').click();assert.equal(s.compositions[0].status,'ready');assert.equal(win.document.getElementById('screen').dataset.view,'acceptance');assert.equal(calls.length,requestsBeforeReview);
-   win.document.getElementById('primary').click();await new Promise(r=>setTimeout(r,50));
+   win.document.getElementById('primary').click();assert.equal(win.document.querySelector('.craft-gears'),null);assert.ok(win.document.querySelector('#screen img'));await new Promise(r=>setTimeout(r,50));
    assert.equal(s.compositions[0].status,'approved');assert.equal(win.document.getElementById('screen').dataset.view,'cart');
    const beforeInspection=JSON.stringify(s.lines),beforeInspectionWrites=writes.length;
    win.document.querySelector('.cart-thumbnail[role="button"]').click();
@@ -791,7 +791,10 @@ test('owned artwork composes through existing handlers and explicitly approves b
    assert.equal(JSON.stringify(s.lines),beforeInspection);assert.equal(writes.length,beforeInspectionWrites);
    win.document.querySelector('.cart-thumbnail[role="button"]').click();win.document.getElementById('owned-change-product').click();
    assert.equal(JSON.stringify(s.lines),beforeInspection);assert.equal(s.compositions[0].status,'approved');assert.equal(writes.length,beforeInspectionWrites);
-   win.navigate('cart');
+   win.document.querySelector('[data-feature="fine_art"]').click();win.document.querySelector('[data-size]').click();win.document.getElementById('primary').click();
+   assert.equal(s.lines.length,1);assert.equal(s.compositions[0].status,'approved');assert.equal(writes.length,beforeInspectionWrites);
+   win.document.getElementById('owned-change-product').click();win.document.getElementById('view-cart').click();
+   assert.equal(win.document.getElementById('screen').dataset.view,'cart');
    assert.equal(win.document.getElementById('primary').disabled,false);win.document.getElementById('primary').click();
    assert.equal(win.document.getElementById('screen').dataset.view,'checkout');
    assert.equal(calls.some(x=>/\/(generations|batches)$/.test(x)),false);
