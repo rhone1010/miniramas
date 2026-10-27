@@ -822,6 +822,11 @@ function sharedStageLayout() {
     if (backButton)
         nav.append(backButton);
     nav.append(start);
+    if (ownedStudio() && session.lines.length && view === 'products') {
+        nav.insertAdjacentHTML('beforeend', secondary('view-cart', 'Your gifts (' + session.lines.length + ')'));
+        nav.querySelector('#view-cart').onclick = () => { if (!busy)
+            go('cart'); };
+    }
     rail.querySelectorAll('.stage-navigation').forEach(n => n.remove());
     rail.append(nav);
     const guidance = document.createElement('div');
@@ -1325,11 +1330,7 @@ function renderPivotProducts() {
             $('mobile-progress')?.remove();
             renderMobileProgress();
         } },
-        onExit: () => ownedStudio() ? location.assign('/collection?from=' + live.session.source.series) : go('effects'), utilityHtml: ownedStudio() && session.lines.length ? secondary('view-cart', 'Your gifts (' + session.lines.length + ')') : '' });
-    const panel = document.querySelector('.studio-panel');
-    if (panel)
-        panel.addEventListener('click', event => { if (event.target.closest('#view-cart') && !busy)
-            go('cart'); });
+        onExit: () => ownedStudio() ? location.assign('/collection?from=' + live.session.source.series) : go('effects'), utilityHtml: '' });
     document.body.dataset.pivotStep = studioState.step;
 }
 function renderEffects() {
